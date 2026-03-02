@@ -1,0 +1,299 @@
+# Dicloak 文章任务 - 防关联浏览器对比评测
+
+# ============================================
+# 基本信息
+# ============================================
+article:
+  id: "dicloak-blog-001"
+  title: "2026年最佳防关联浏览器对比：Dicloak vs Multilogin vs AdsPower"
+  slug: "best-antidetect-browsers-comparison-2026"
+  type: "technical_blog"
+
+  status: "planning"
+  created_date: "2026-03-02"
+  target_publish_date: "2026-03-10"
+
+# ============================================
+# 核心论点（Thesis）
+# ============================================
+thesis:
+  # Thesis 候选（AI 生成，人工选择）
+  candidates:
+    - "Dicloak 以更低的价格提供与 Multilogin 相当的指纹隔离能力，适合中小团队多账号运营"
+    - "对于跨境电商和联盟营销团队，Dicloak 在性价比和功能完整性上优于 AdsPower"
+    - "Dicloak 通过深度指纹隔离技术，帮助多账号运营团队降低 80% 的账号封禁风险"
+
+  # 最终选定（需要人工确认）
+  final: "Dicloak 以更低的价格提供与 Multilogin 相当的指纹隔离能力，适合中小团队多账号运营"
+
+# ============================================
+# 目标和受众
+# ============================================
+goal:
+  primary: "转化"
+  secondary: "SEO"
+
+audience:
+  primary: "跨境电商卖家、联盟营销人员"
+  secondary: "广告投放团队、社媒运营人员"
+  pain_points:
+    - "账号因指纹关联导致封禁，损失惨重"
+    - "Multilogin 价格太贵，中小团队负担不起"
+    - "AdsPower 指纹隔离不够深，仍有封号风险"
+    - "不知道如何选择合适的防关联浏览器"
+
+# ============================================
+# 发布平台
+# ============================================
+target_platforms:
+  - platform: "官网博客"
+    priority: "P0"
+    auto_publish: true
+
+  - platform: "知乎"
+    priority: "P0"
+    publish_date: "D+1"
+    notes: "标题改为：「防关联浏览器怎么选？Dicloak/Multilogin/AdsPower 深度对比」"
+
+  - platform: "掘金"
+    priority: "P1"
+    publish_date: "D+2"
+    notes: "技术向，强调指纹隔离原理"
+
+# ============================================
+# 语言和翻译
+# ============================================
+languages:
+  primary: "zh"
+  translations:
+    - language: "en"
+      method: "ai"
+      priority: "P1"
+
+# ============================================
+# SEO 配置
+# ============================================
+seo:
+  keywords:
+    - keyword: "防关联浏览器"
+      search_volume: 8000
+      difficulty: 35
+      priority: "P0"
+
+    - keyword: "Dicloak vs Multilogin"
+      search_volume: 2000
+      difficulty: 25
+      priority: "P0"
+
+    - keyword: "antidetect browser 对比"
+      search_volume: 3000
+      difficulty: 30
+      priority: "P1"
+
+  meta:
+    title: "2026年最佳防关联浏览器对比：Dicloak vs Multilogin vs AdsPower | 完整评测"
+    description: "深度对比 Dicloak、Multilogin、AdsPower 三大防关联浏览器的价格、功能、指纹隔离能力。实测数据显示 Dicloak 性价比最高，适合中小团队。"
+
+  internal_links:
+    - text: "Dicloak 快速入门指南"
+      url: "/blog/dicloak-quick-start"
+    - text: "如何避免账号关联封禁"
+      url: "/blog/avoid-account-ban"
+
+# ============================================
+# 内容要求
+# ============================================
+requirements:
+  must_have:
+    - "三款浏览器的详细对比表（价格、功能、性能）"
+    - "实测数据：指纹隔离效果、响应速度、稳定性"
+    - "使用场景推荐：什么情况下选哪款"
+    - "迁移指南：从其他浏览器迁移到 Dicloak"
+
+  nice_to_have:
+    - "用户案例：某跨境电商团队使用 Dicloak 后的效果"
+    - "视频演示：Dicloak 指纹隔离效果"
+
+  images:
+    - type: "封面图"
+      description: "三款浏览器 logo 对比，1200x630"
+      status: "pending"
+
+    - type: "对比表"
+      description: "价格、功能、性能对比表格"
+      status: "pending"
+
+    - type: "截图"
+      description: "Dicloak 界面截图 3 张"
+      status: "pending"
+
+# ============================================
+# 数据点（Data Points）
+# ============================================
+data_points:
+  - fact: "Dicloak 价格比 Multilogin 低 40-50%"
+    source: "官网价格页对比"
+    source_url: "https://dicloak.com/pricing"
+    verified: false
+    date: "2026-03-02"
+    notes: "需要验证最新价格"
+
+  - fact: "使用 Dicloak 后账号封禁率降低 80%"
+    source: "行业平均数据推测"
+    verified: false
+    date: "2026-03-02"
+    notes: "需要用户案例支撑"
+
+  - fact: "Multilogin 月费 $99 起，Dicloak 月费 $XX 起"
+    source: "官网价格"
+    verified: false
+    date: "2026-03-02"
+    notes: "需要补充 Dicloak 具体价格"
+
+  - fact: "AdsPower 指纹隔离深度有限，部分平台仍可检测"
+    source: "用户反馈 + 技术测试"
+    verified: false
+    date: "2026-03-02"
+    notes: "需要技术测试数据支撑"
+
+# ============================================
+# 竞品对比
+# ============================================
+competitor_comparison:
+  competitors:
+    - name: "Multilogin"
+      compare_on:
+        - "价格：$99/月起 vs Dicloak $XX/月"
+        - "指纹隔离：深度隔离，行业标杆"
+        - "稳定性：99.9% uptime"
+        - "学习曲线：较陡峭"
+      data_source: "官网 + 用户评价"
+
+    - name: "AdsPower"
+      compare_on:
+        - "价格：免费版 + 付费版"
+        - "指纹隔离：中等深度"
+        - "多账号管理：功能完善"
+        - "适用场景：电商、社媒"
+      data_source: "官网 + 实测"
+
+    - name: "Dicloak"
+      compare_on:
+        - "价格：性价比高"
+        - "指纹隔离：深度隔离"
+        - "易用性：简单上手"
+        - "客户支持：响应快"
+      data_source: "官网 + 内部数据"
+
+# ============================================
+# 文章结构（Sections）
+# ============================================
+sections:
+  - title: "开篇：为什么需要防关联浏览器"
+    key_point: "多账号运营面临账号关联封禁的严重风险，防关联浏览器是刚需"
+    evidence:
+      - "跨境电商卖家因账号关联损失数万美元（案例）"
+      - "平台检测技术升级，普通浏览器隐私模式已无效"
+    word_count: 300
+    markers:
+      - HOOK
+      - PAIN_POINT
+
+  - title: "三款主流防关联浏览器对比"
+    key_point: "Dicloak、Multilogin、AdsPower 各有优劣，适合不同场景"
+    evidence:
+      - "价格对比表"
+      - "功能对比表"
+      - "性能测试数据"
+    word_count: 800
+    markers:
+      - DATA
+      - TABLE
+
+  - title: "实测：指纹隔离效果对比"
+    key_point: "Dicloak 的指纹隔离能力与 Multilogin 相当，优于 AdsPower"
+    evidence:
+      - "指纹检测工具测试结果"
+      - "实际使用中的封号率数据"
+    word_count: 500
+    markers:
+      - DATA
+      - EVIDENCE
+
+  - title: "价格分析：性价比之王"
+    key_point: "Dicloak 以 Multilogin 40-50% 的价格提供相似功能"
+    evidence:
+      - "详细价格对比"
+      - "ROI 计算"
+    word_count: 400
+    markers:
+      - DATA
+      - KEY_POINT
+
+  - title: "使用场景推荐"
+    key_point: "根据团队规模和预算选择合适的工具"
+    evidence:
+      - "小团队（<5人）：Dicloak"
+      - "大企业（>20人）：Multilogin"
+      - "预算有限：AdsPower 免费版 + Dicloak"
+    word_count: 300
+    markers:
+      - RECOMMENDATION
+
+  - title: "如何从其他浏览器迁移到 Dicloak"
+    key_point: "迁移过程简单，只需 3 步"
+    evidence:
+      - "迁移步骤详解"
+      - "数据导入指南"
+    word_count: 400
+    markers:
+      - TUTORIAL
+      - CTA
+
+# ============================================
+# CTA（Call-to-Action）
+# ============================================
+cta:
+  text: "立即试用 Dicloak，新用户免费体验 7 天"
+  url: "https://dicloak.com/trial"
+  placement: "文末 + 价格对比章节后"
+
+# ============================================
+# 预估和跟踪
+# ============================================
+estimates:
+  word_count: 2700
+  writing_time: "5 hours"
+  review_time: "1.5 hours"
+
+tracking:
+  actual_word_count: 0
+  actual_writing_time: ""
+  review_rounds: 0
+  quality_score: 0
+
+# ============================================
+# 协作和审阅
+# ============================================
+collaboration:
+  writer: "AI + 人工"
+  reviewer: "产品负责人"
+  approver: "市场负责人"
+
+  comments: []
+
+# ============================================
+# 相关资源
+# ============================================
+resources:
+  research:
+    - "Dicloak 官网：https://dicloak.com"
+    - "Multilogin 官网：https://multilogin.com"
+    - "AdsPower 官网：https://adspower.com"
+
+  references:
+    - "样例文章：https://dicloak.com/blog-detail/10-best-antidetect-browsers-for-lead-generation-in-2026-scale-outreach-without-bans"
+
+  assets:
+    - "Dicloak 产品截图（待补充）"
+    - "价格对比表（待制作）"
