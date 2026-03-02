@@ -23,3 +23,8 @@ Thumbs.db
 # Test outputs
 test-*.yaml
 *-test.yaml
+
+# Project configs (keep local only)
+*-project-config.yaml
+project-config.yaml
+dicloack-project-config.yaml
