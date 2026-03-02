@@ -1,0 +1,263 @@
+# SEOMaster 项目配置模板
+# 复制此文件到你的项目根目录，重命名为 project-config.yaml 并填写
+
+# ============================================
+# 项目基本信息
+# ============================================
+project:
+  name: "YourProduct"                    # 产品名称
+  tagline: "一句话产品定位"               # 例如："AI API 聚合平台"
+  website: "https://yourproduct.com"     # 官网地址
+  industry: "SaaS"                       # SaaS | Developer Tools | AI | E-commerce | FinTech
+  founded: "2024"                        # 成立年份
+
+# ============================================
+# 品牌声音（Brand Voice）
+# ============================================
+voice:
+  tone: "技术老手的实话实说"              # 定义你的内容语气
+  style: "数据驱动，不吹不黑"             # 写作风格
+
+  # 核心原则（3-5 条）
+  principles:
+    - "用数据说话，每个判断都有证据支撑"
+    - "用开发者能理解的语言，避免营销腔"
+    - "以「读者会不会觉得这是广告」为标尺"
+    - "承认产品限制，不做完美承诺"
+
+  # 禁止使用的词汇（可自定义）
+  forbidden_phrases:
+    - "颠覆性的"
+    - "革命性的"
+    - "一站式解决方案"
+    - "赋能"
+    - "无缝对接"
+
+# ============================================
+# 核心价值主张（Value Proposition）
+# ============================================
+value_proposition:
+  # 模板：{产品} 让 {目标用户} {核心动作}，{量化结果}
+  template: "{product} 让 {audience} {action}，{result}"
+
+  # 填写示例
+  product: "YourProduct"
+  audience: "独立开发者"
+  action: "用一个 API 访问 300+ AI 模型"
+  result: "省 40% API 费用"
+
+  # 生成的完整 Thesis
+  full: "YourProduct 让独立开发者用一个 API 访问 300+ AI 模型，省 40% API 费用"
+
+# ============================================
+# 目标读者画像
+# ============================================
+audience:
+  primary:
+    title: "独立开发者"
+    description: "正在构建 AI 应用的个人开发者"
+    pain_points:
+      - "API 价格高，成本难控制"
+      - "多平台配置繁琐，浪费时间"
+      - "模型切换麻烦，影响开发效率"
+    goals:
+      - "降低 API 成本"
+      - "简化开发流程"
+      - "快速测试多个模型"
+
+  secondary:
+    title: "AI 创业团队"
+    description: "早期 AI 创业公司的技术团队"
+    pain_points:
+      - "预算有限，需要性价比高的方案"
+      - "需要快速迭代，不想被单一供应商锁定"
+    goals:
+      - "控制成本"
+      - "保持灵活性"
+
+# ============================================
+# 竞品信息
+# ============================================
+competitors:
+  - name: "Competitor A"
+    website: "https://competitor-a.com"
+    strengths:
+      - "市场知名度高"
+      - "文档完善"
+    weaknesses:
+      - "价格比官方 API 贵 20%"
+      - "不支持某些新模型"
+    pricing: "$X/月起"
+
+  - name: "Competitor B"
+    website: "https://competitor-b.com"
+    strengths:
+      - "免费额度大"
+    weaknesses:
+      - "速度慢"
+      - "稳定性差"
+    pricing: "免费 + $Y/月"
+
+# ============================================
+# 核心数据点（Key Metrics）
+# ============================================
+# 所有数据必须可验证，标注来源和日期
+key_metrics:
+  - metric: "支持模型数量"
+    value: "300+"
+    source: "官网模型列表"
+    source_url: "https://yourproduct.com/models"
+    verified: true
+    date: "2026-03-02"
+
+  - metric: "价格优势"
+    value: "比官方低 30-50%"
+    source: "价格对比页"
+    source_url: "https://yourproduct.com/pricing"
+    verified: true
+    date: "2026-03-02"
+
+  - metric: "用户增长"
+    value: "+150% MoM"
+    source: "内部数据"
+    verified: true
+    date: "2026-02"
+
+# ============================================
+# 发布渠道配置
+# ============================================
+channels:
+  # 官网博客
+  blog:
+    enabled: true
+    auto_publish: true
+    base_url: "https://yourproduct.com/blog"
+
+  # 中文平台
+  chinese:
+    - platform: "知乎"
+      enabled: true
+      content_type: "问答、技术文"
+      account: "@your-account"
+    - platform: "掘金"
+      enabled: true
+      content_type: "技术教程"
+    - platform: "CSDN"
+      enabled: false
+      content_type: "技术博客"
+
+  # 英文平台
+  english:
+    - platform: "dev.to"
+      enabled: true
+      content_type: "技术博客"
+    - platform: "Hashnode"
+      enabled: true
+      content_type: "技术博客"
+    - platform: "Reddit"
+      enabled: true
+      subreddits:
+        - "r/programming"
+        - "r/webdev"
+
+  # 社交媒体
+  social:
+    - platform: "Twitter/X"
+      enabled: true
+      account: "@yourproduct"
+    - platform: "小红书"
+      enabled: false
+      note: "需要配图"
+
+# ============================================
+# SEO 关键词库
+# ============================================
+seo_keywords:
+  # 核心关键词（2-3 个）
+  primary:
+    - keyword: "your product category"
+      search_volume: 10000
+      difficulty: 45
+      priority: "P0"
+    - keyword: "alternative to competitor"
+      search_volume: 5000
+      difficulty: 30
+      priority: "P0"
+
+  # 次级关键词（5-10 个）
+  secondary:
+    - keyword: "how to use your product"
+      search_volume: 2000
+      difficulty: 25
+      priority: "P1"
+    - keyword: "your product tutorial"
+      search_volume: 1500
+      difficulty: 20
+      priority: "P1"
+
+  # 长尾关键词（10+ 个）
+  long_tail:
+    - keyword: "your product vs competitor comparison"
+      search_volume: 500
+      difficulty: 15
+      priority: "P2"
+
+# ============================================
+# CTA（Call-to-Action）模板
+# ============================================
+cta:
+  # 默认 CTA
+  default:
+    text: "立即注册 {product}，新用户赠送 {offer}"
+    url: "https://yourproduct.com/signup"
+
+  # 不同场景的 CTA
+  scenarios:
+    trial:
+      text: "免费试用 {product}，无需信用卡"
+      url: "https://yourproduct.com/trial"
+
+    comparison:
+      text: "查看完整对比，选择最适合你的方案"
+      url: "https://yourproduct.com/compare"
+
+    tutorial:
+      text: "跟随教程，5 分钟完成部署"
+      url: "https://yourproduct.com/docs"
+
+# ============================================
+# 内容生产配置
+# ============================================
+content_production:
+  # 月度内容计划
+  monthly_plan:
+    week1: "技术教程"
+    week2: "竞品对比/价格更新"
+    week3: "用户案例/使用技巧"
+    week4: "产品更新/新功能"
+
+  # 发布节奏（单篇内容）
+  publishing_schedule:
+    day0: "官网博客上线"
+    day1: "中文社区（知乎/掘金）"
+    day2: "Twitter Thread"
+    day3: "小红书（配图版）"
+    day7: "英文社区（dev.to/Reddit）"
+
+# ============================================
+# API 配置（用于 AI 生成）
+# ============================================
+api:
+  # 文本生成 API
+  text_generation:
+    provider: "openai"  # openai | anthropic | custom
+    api_key_env: "OPENAI_API_KEY"
+    base_url: "https://api.openai.com/v1"
+    model: "gpt-4o"
+
+  # 图片生成 API
+  image_generation:
+    provider: "dalle"  # dalle | midjourney | stable-diffusion
+    api_key_env: "IMAGE_API_KEY"
+    base_url: "https://api.openai.com/v1"
+    model: "dall-e-3"

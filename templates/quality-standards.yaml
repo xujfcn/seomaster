@@ -1,0 +1,327 @@
+# 写作质量标准配置
+# 定义文章质量的硬指标和软指标
+
+# ============================================
+# 硬指标（Hard Metrics）
+# ============================================
+# 可量化检查的指标，超标必须修复
+
+hard_metrics:
+  # 标点符号限制
+  punctuation:
+    em_dash:
+      limit: 3
+      description: "破折号 —— 最多 3 个/篇"
+      fix: "替换为冒号/逗号/句号"
+
+    bold:
+      limit: 3
+      description: "加粗 ** 最多 3 个/篇"
+      fix: "仅保留核心卖点句"
+
+    exclamation:
+      limit: 2
+      description: "感叹号 ! 最多 2 个/篇"
+      fix: "改为陈述句"
+
+  # 代词使用
+  pronouns:
+    first_person:
+      allowed: ["我们", "we"]
+      limit: 5
+      context: "技术文允许适度使用，社交帖可用，博客控制"
+
+    second_person:
+      allowed: ["你", "你的", "you", "your"]
+      limit: 10
+      context: "教程类可用，对比文少用"
+
+  # 禁用词汇
+  forbidden_words:
+    # 路标词（Signpost Words）
+    signpost:
+      words:
+        - "首先"
+        - "其次"
+        - "最后"
+        - "first"
+        - "second"
+        - "finally"
+      fix: "用叙事递进替代，不需要明确标号"
+
+    # 揭示类（Revealing）
+    revealing:
+      words:
+        - "揭示了"
+        - "佐证了"
+        - "印证了"
+        - "昭示了"
+        - "reveals"
+        - "demonstrates"
+      fix: "直接陈述结论"
+
+    # 元叙事（Meta-narrative）
+    meta_narrative:
+      words:
+        - "让我们来看"
+        - "本文讨论"
+        - "接下来分析"
+        - "下面介绍"
+        - "let's explore"
+        - "this article discusses"
+      fix: "删除，直接进入内容"
+
+    # 过渡类（Transition）
+    transition:
+      words:
+        - "值得注意的是"
+        - "不难发现"
+        - "综上所述"
+        - "不言而喻"
+        - "此外"
+        - "it's worth noting"
+        - "in conclusion"
+      fix: "删除或重组句式"
+
+    # 营销腔（Marketing Speak）
+    marketing:
+      words:
+        - "颠覆性的"
+        - "革命性的"
+        - "前所未有的"
+        - "一站式"
+        - "赋能"
+        - "无缝对接"
+        - "极致体验"
+        - "game-changing"
+        - "revolutionary"
+        - "seamless"
+      fix: "用具体功能替代"
+
+    # 空洞承诺（Empty Promises）
+    empty_promise:
+      words:
+        - "最好的"
+        - "最强的"
+        - "完美的"
+        - "终极"
+        - "best ever"
+        - "perfect"
+        - "ultimate"
+      fix: "用数据支撑，或删除"
+
+    # 模糊表达（Vague Expressions）
+    vague:
+      words:
+        - "很多"
+        - "大量"
+        - "显著"
+        - "明显"
+        - "many"
+        - "significant"
+        - "substantial"
+      fix: "用具体数字替代"
+
+  # AI 句式禁令
+  ai_patterns:
+    - pattern: "这不是X，这是Y"
+      description: "AI 反转句式"
+      fix: "直接陈述 Y"
+
+    - pattern: "在当今...时代"
+      description: "AI 开篇套路"
+      fix: "直接切入主题"
+
+    - pattern: "随着...的发展"
+      description: "AI 过渡句"
+      fix: "用具体事件替代"
+
+    - pattern: "不仅...而且..."
+      description: "排比堆砌"
+      fix: "拆分为独立论点"
+
+# ============================================
+# 开篇规范（Opening Rules）
+# ============================================
+opening:
+  # 允许的开篇方式
+  allowed:
+    - type: "数据冲击"
+      example: "OpenAI API 价格上涨 50%，开发者成本激增"
+      when: "有震撼数据时"
+
+    - type: "痛点切入"
+      example: "又被 API rate limit 卡住了？"
+      when: "目标读者有明确痛点"
+
+    - type: "反直觉发现"
+      example: "最贵的 API 不一定最好用"
+      when: "有颠覆认知的观点"
+
+    - type: "真实案例"
+      example: "某创业公司用 LemonData 省了 $5000/月"
+      when: "有可核实的用户案例"
+
+  # 禁止的开篇方式
+  forbidden:
+    - pattern: "在当今...时代"
+      reason: "AI 套话，无实际信息"
+
+    - pattern: "随着...的发展"
+      reason: "陈词滥调"
+
+    - pattern: "你是否遇到过..."
+      reason: "反问开篇，读者会跳过"
+
+    - pattern: "本文将介绍..."
+      reason: "元叙事，直接进入内容"
+
+  # 开篇检查清单
+  checklist:
+    - "前 2 句话是否包含具体信息（数据/案例/问题）？"
+    - "读者看完第一段是否知道文章对他有什么价值？"
+    - "是否避免了所有禁止句式？"
+
+# ============================================
+# 结尾规范（Closing Rules）
+# ============================================
+closing:
+  # 禁止的结尾方式
+  forbidden:
+    - "综上所述"
+    - "希望本文对你有帮助"
+    - "欢迎关注/转发"
+    - "三点总结式收尾"
+    - "in conclusion"
+    - "to sum up"
+
+  # 有效的结尾形式
+  allowed:
+    - type: "CTA"
+      example: "立即注册，新用户赠送 $1 体验额度"
+      when: "转化导向的文章"
+
+    - type: "未回答的问题"
+      example: "你会选择哪个方案？在评论区告诉我"
+      when: "引发讨论"
+
+    - type: "下一步行动"
+      example: "复制上面的代码，5 分钟完成部署"
+      when: "教程类文章"
+
+# ============================================
+# 核心写作原则
+# ============================================
+principles:
+  # 原则一：不均匀性
+  unevenness:
+    description: "AI 味的本质是统计均匀性，人类写作的特征是不均匀"
+    dimensions:
+      sentence_length:
+        bad: "全文集中在 25-40 字"
+        good: "8 字短句和 60 字长句共存"
+
+      paragraph_length:
+        bad: "每段 3-5 句，长度相近"
+        good: "1 句段和 8 句段交替"
+
+      information_density:
+        bad: "每段信息量相当"
+        good: "高密度数据 + 低密度留白"
+
+      transition:
+        bad: "「此外」「与此同时」"
+        good: "逻辑自然衔接，不需要过渡词"
+
+  # 原则二：证据驱动
+  evidence_driven:
+    description: "每个核心判断需要数据支撑"
+    rules:
+      - "案例必须可核实（「某公司」不是案例，「Cursor 团队 2025Q4」才是）"
+      - "价格对比必须标注日期和来源"
+      - "性能数据标注测试条件（模型、参数、时间、地区）"
+      - "禁止模糊来源（「据统计」必须具名 + 日期）"
+
+    examples:
+      bad:
+        - "价格更便宜"
+        - "支持很多模型"
+        - "速度很快"
+      good:
+        - "GPT-4o 输入价格 $2.5/M，比官方低 40%（截至 2026-03-02）"
+        - "支持 300+ 模型，覆盖 OpenAI/Anthropic/Google 等 15 家"
+        - "首 token 延迟 < 200ms（新加坡节点，2026-03-01 测试）"
+
+  # 原则三：开发者视角
+  developer_perspective:
+    description: "写给开发者看的内容，用开发者的语言"
+    priorities:
+      - "代码示例 > 文字描述"
+      - "具体数字 > 模糊修饰"
+      - "实际场景 > 抽象概念"
+      - "已知限制 > 完美承诺"
+
+# ============================================
+# 质量检查清单
+# ============================================
+checklist:
+  # 发布前必检（所有内容类型）
+  mandatory:
+    - item: "Thesis 清晰"
+      check: "一句话说清核心价值"
+
+    - item: "数据准确"
+      check: "价格/模型数/性能数据已验证，标注日期"
+
+    - item: "无 AI 套话"
+      check: "通过硬指标检查，无禁用词"
+
+    - item: "有 CTA"
+      check: "读者知道下一步做什么"
+
+    - item: "代码可运行"
+      check: "示例代码已测试，可直接复制执行"
+
+  # 技术博客额外检查
+  technical_blog:
+    - "API 示例使用正确的 BaseURL"
+    - "模型名称与平台一致"
+    - "价格数据标注日期"
+    - "竞品数据公平呈现"
+
+  # 社交帖子额外检查
+  social_post:
+    - "符合平台字数限制"
+    - "有吸引力的开篇（前 2 行决定是否展开）"
+    - "适当的 hashtag/话题标签"
+
+# ============================================
+# 评分标准（0-100 分）
+# ============================================
+scoring:
+  # 硬指标（40 分）
+  hard_metrics:
+    weight: 40
+    items:
+      - name: "无禁用词"
+        points: 15
+      - name: "标点符号合规"
+        points: 10
+      - name: "数据准确性"
+        points: 15
+
+  # 软指标（60 分）
+  soft_metrics:
+    weight: 60
+    items:
+      - name: "Thesis 清晰度"
+        points: 15
+      - name: "证据充分性"
+        points: 15
+      - name: "可读性"
+        points: 15
+      - name: "行动号召有效性"
+        points: 15
+
+  # 及格线
+  passing_score: 80

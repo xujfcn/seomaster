@@ -1,0 +1,235 @@
+# 内容类型配置
+# 定义不同类型文章的规范和要求
+
+# ============================================
+# 技术博客（Technical Blog）
+# ============================================
+technical_blog:
+  description: "深度技术文章，面向开发者"
+  word_count:
+    min: 1500
+    max: 3000
+    optimal: 2000
+
+  required_sections:
+    - name: "开篇钩子"
+      description: "数据冲击 / 痛点切入 / 反直觉发现"
+      examples:
+        - "OpenAI API 价格上涨 50%，开发者如何应对？"
+        - "为什么 90% 的 AI 应用都在亏钱？"
+    - name: "核心卖点"
+      description: "一句话说清产品价值"
+    - name: "技术实现"
+      description: "详细的技术方案和架构"
+    - name: "代码示例"
+      description: "可运行的代码，带注释"
+    - name: "性能/价格对比"
+      description: "数据表格，标注来源"
+    - name: "CTA"
+      description: "行动号召"
+
+  required_markers:
+    - HOOK
+    - KEY_POINT
+    - CODE
+    - DATA
+    - CTA
+
+  seo_requirements:
+    title_length: [40, 60]  # 字符数
+    meta_description_length: [120, 160]
+    h2_count: [3, 6]
+    internal_links: 2
+    external_links: 3
+
+# ============================================
+# 平台对比文（Comparison）
+# ============================================
+comparison:
+  description: "产品对比，转化导向"
+  word_count:
+    min: 1000
+    max: 2000
+    optimal: 1500
+
+  required_sections:
+    - name: "对比维度说明"
+      description: "为什么选这些维度对比"
+    - name: "功能对比表"
+      description: "表格形式，至少 5 个维度"
+    - name: "价格对比"
+      description: "标注日期和来源"
+    - name: "使用场景推荐"
+      description: "什么情况选哪个"
+    - name: "迁移指南"
+      description: "如何从竞品迁移过来"
+    - name: "CTA"
+      description: "注册/试用链接"
+
+  required_markers:
+    - DATA
+    - KEY_POINT
+    - CTA
+
+  comparison_dimensions:
+    - "价格"
+    - "支持的模型/功能"
+    - "性能（速度/稳定性）"
+    - "文档质量"
+    - "社区支持"
+    - "API 兼容性"
+
+# ============================================
+# 教程（Tutorial）
+# ============================================
+tutorial:
+  description: "手把手教学，操作导向"
+  word_count:
+    min: 800
+    max: 1500
+    optimal: 1200
+
+  required_sections:
+    - name: "准备工作"
+      description: "需要的工具、账号、环境"
+    - name: "步骤说明"
+      description: "分步骤，每步有标题"
+    - name: "代码示例"
+      description: "完整可运行的代码"
+    - name: "验证结果"
+      description: "如何确认成功"
+    - name: "常见问题"
+      description: "FAQ，至少 3 个"
+    - name: "进阶配置"
+      description: "可选的高级功能"
+
+  required_markers:
+    - CODE
+    - SCREENSHOT
+    - CTA
+
+  structure:
+    step_format: "### 步骤 {n}: {action}"
+    code_format: "```language\n# 注释\ncode\n```"
+    screenshot_format: "<!-- SCREENSHOT: 描述 -->"
+
+# ============================================
+# 迁移指南（Migration Guide）
+# ============================================
+migration_guide:
+  description: "从竞品迁移到本产品"
+  word_count:
+    min: 800
+    max: 1500
+    optimal: 1000
+
+  required_sections:
+    - name: "为什么迁移"
+      description: "竞品的痛点 + 本产品的优势"
+    - name: "迁移前准备"
+      description: "备份数据、获取 API Key"
+    - name: "代码改动"
+      description: "需要改哪些代码，diff 对比"
+    - name: "测试验证"
+      description: "如何确认迁移成功"
+    - name: "回滚方案"
+      description: "如果出问题如何回退"
+
+  required_markers:
+    - CODE
+    - DATA
+    - CTA
+
+# ============================================
+# 社交帖子（Social Post）
+# ============================================
+social_post:
+  description: "短内容，传播导向"
+  word_count:
+    min: 100
+    max: 500
+    optimal: 300
+
+  platforms:
+    zhihu:
+      max_length: 5000
+      format: "问答形式，先回答问题，最后引出产品"
+    xiaohongshu:
+      max_length: 1000
+      format: "配图 + 短文，标题党"
+      image_required: true
+    twitter:
+      max_length: 280
+      format: "Thread 形式，每条 1 个要点"
+    reddit:
+      max_length: 10000
+      format: "详细回答，最后一段提产品"
+
+  required_markers:
+    - HOOK
+    - KEY_POINT
+
+# ============================================
+# 产品更新（Changelog）
+# ============================================
+changelog:
+  description: "产品更新日志"
+  word_count:
+    min: 300
+    max: 800
+    optimal: 500
+
+  required_sections:
+    - name: "新功能"
+      description: "Added - 新增的功能"
+    - name: "改进"
+      description: "Improved - 优化的功能"
+    - name: "修复"
+      description: "Fixed - 修复的 Bug"
+    - name: "影响"
+      description: "对用户的影响"
+
+  format: |
+    # {version} - {date}
+
+    ## Added
+    - 新功能 1
+    - 新功能 2
+
+    ## Improved
+    - 优化 1
+
+    ## Fixed
+    - 修复 1
+
+# ============================================
+# 用户案例（Case Study）
+# ============================================
+case_study:
+  description: "真实用户的使用案例"
+  word_count:
+    min: 1000
+    max: 2000
+    optimal: 1500
+
+  required_sections:
+    - name: "用户背景"
+      description: "公司/个人介绍，业务场景"
+    - name: "遇到的问题"
+      description: "使用前的痛点"
+    - name: "解决方案"
+      description: "如何使用本产品"
+    - name: "量化结果"
+      description: "成本降低 X%，效率提升 Y%"
+    - name: "用户评价"
+      description: "引用用户原话"
+
+  required_markers:
+    - DATA
+    - QUOTE
+    - CTA
+
+  data_requirements:
+    - "至少 2 个量化指标（成本/时间/效率）"
+    - "用户真实姓名或公司名（可匿名但需说明）"
+    - "使用时长（X 个月）"

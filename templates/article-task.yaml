@@ -1,0 +1,255 @@
+# 文章任务配置模板
+# 每篇文章的具体任务配置
+
+# ============================================
+# 基本信息
+# ============================================
+article:
+  id: "blog-001"                          # 唯一标识
+  title: "文章标题（待定）"                # 可以在 Concept 阶段确定
+  slug: "article-slug"                    # URL slug
+  type: "technical_blog"                  # 内容类型，参考 content-types.yaml
+
+  # 状态
+  status: "planning"                      # planning | writing | review | published
+  created_date: "2026-03-02"
+  target_publish_date: "2026-03-10"
+
+# ============================================
+# 核心论点（Thesis）
+# ============================================
+thesis:
+  # 一句话核心价值（必填）
+  statement: "用 {产品} {动作}，{结果}"
+
+  # Thesis 候选（AI 生成 2-3 个，人工选择）
+  candidates:
+    - "候选 1"
+    - "候选 2"
+    - "候选 3"
+
+  # 最终选定
+  final: ""
+
+# ============================================
+# 目标和受众
+# ============================================
+goal:
+  primary: "转化"                         # 转化 | 教育 | 获客 | 品牌建设
+  secondary: "SEO"                        # SEO | 社交传播 | 用户留存
+
+audience:
+  primary: "独立开发者"
+  secondary: "AI 创业团队"
+  pain_points:
+    - "痛点 1"
+    - "痛点 2"
+
+# ============================================
+# 发布平台
+# ============================================
+target_platforms:
+  - platform: "官网博客"
+    priority: "P0"
+    auto_publish: true
+
+  - platform: "知乎"
+    priority: "P0"
+    publish_date: "D+1"
+    notes: "需要调整开篇，更口语化"
+
+  - platform: "dev.to"
+    priority: "P1"
+    publish_date: "D+7"
+    notes: "英文版"
+
+# ============================================
+# 语言和翻译
+# ============================================
+languages:
+  primary: "zh"                           # zh | en
+  translations:
+    - language: "en"
+      method: "ai"                        # ai | human | hybrid
+      priority: "P0"
+
+# ============================================
+# SEO 配置
+# ============================================
+seo:
+  # 关键词（2-3 个核心词）
+  keywords:
+    - keyword: "主关键词"
+      search_volume: 10000
+      difficulty: 45
+      priority: "P0"
+
+    - keyword: "次关键词"
+      search_volume: 5000
+      difficulty: 30
+      priority: "P1"
+
+  # Meta 信息
+  meta:
+    title: "SEO 标题（50-60 字符）"
+    description: "SEO 描述（120-160 字符）"
+
+  # 内部链接
+  internal_links:
+    - text: "相关文章 1"
+      url: "/blog/related-1"
+    - text: "相关文章 2"
+      url: "/blog/related-2"
+
+# ============================================
+# 内容要求
+# ============================================
+requirements:
+  # 必须包含的元素
+  must_have:
+    - "代码示例（至少 2 个）"
+    - "价格对比表"
+    - "性能数据（标注测试条件）"
+
+  # 可选元素
+  nice_to_have:
+    - "用户案例"
+    - "视频演示"
+
+  # 配图需求
+  images:
+    - type: "封面图"
+      description: "1200x630，OG image"
+      status: "pending"
+
+    - type: "截图"
+      description: "产品界面截图 3 张"
+      status: "pending"
+
+    - type: "图表"
+      description: "价格对比柱状图"
+      status: "pending"
+
+# ============================================
+# 数据点（Data Points）
+# ============================================
+data_points:
+  - fact: "具体数据（含数字、时间、主体）"
+    source: "来源机构和时间"
+    source_url: "https://source.com"
+    verified: false                       # 是否已验证
+    date: "2026-03-02"                    # 数据获取日期
+    notes: "需要更新到最新数据"
+
+  - fact: "另一个数据点"
+    source: "内部数据"
+    verified: true
+    date: "2026-03-01"
+
+# ============================================
+# 竞品对比
+# ============================================
+competitor_comparison:
+  competitors:
+    - name: "Competitor A"
+      compare_on:
+        - "价格"
+        - "功能"
+        - "性能"
+      data_source: "官网 + 实测"
+
+    - name: "Competitor B"
+      compare_on:
+        - "价格"
+        - "易用性"
+      data_source: "官网"
+
+# ============================================
+# 文章结构（Sections）
+# ============================================
+sections:
+  - title: "第一节标题"
+    key_point: "本节要证明什么（判断句，不是描述句）"
+    evidence:
+      - "支撑数据 1（含来源）"
+      - "支撑数据 2（含来源）"
+    word_count: 300
+    markers:
+      - HOOK
+      - KEY_POINT
+
+  - title: "第二节标题"
+    key_point: "本节判断"
+    evidence:
+      - "支撑数据"
+    code_example: true                    # 是否需要代码示例
+    word_count: 400
+    markers:
+      - CODE
+      - DATA
+
+# ============================================
+# CTA（Call-to-Action）
+# ============================================
+cta:
+  text: "立即注册 {产品}，新用户赠送 {优惠}"
+  url: "https://yourproduct.com/signup"
+  placement: "文末 + 每个主要章节后"
+
+# ============================================
+# 预估和跟踪
+# ============================================
+estimates:
+  word_count: 2000                        # 预估字数
+  writing_time: "4 hours"                 # 预估写作时间
+  review_time: "1 hour"                   # 预估审阅时间
+
+tracking:
+  actual_word_count: 0
+  actual_writing_time: ""
+  review_rounds: 0
+  quality_score: 0
+
+# ============================================
+# 协作和审阅
+# ============================================
+collaboration:
+  writer: "AI + 人工"
+  reviewer: "人工"
+  approver: "产品负责人"
+
+  comments:
+    - author: "Reviewer"
+      date: "2026-03-03"
+      content: "需要补充竞品 B 的数据"
+      status: "open"                      # open | resolved
+
+# ============================================
+# 发布后跟踪
+# ============================================
+post_publish:
+  analytics:
+    views: 0
+    engagement_rate: 0
+    conversion_rate: 0
+
+  feedback:
+    - source: "知乎评论"
+      content: "用户反馈内容"
+      action: "需要补充 FAQ"
+
+# ============================================
+# 相关资源
+# ============================================
+resources:
+  research:
+    - "竞品分析文档 URL"
+    - "用户调研结果 URL"
+
+  references:
+    - "参考文章 1 URL"
+    - "参考文章 2 URL"
+
+  assets:
+    - "封面图 Figma 链接"
+    - "数据表格 Google Sheets"
