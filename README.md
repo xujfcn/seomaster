@@ -28,16 +28,37 @@ Research → Thesis确认 → Concept → Write → Review → Rewrite → Publi
 
 ## 快速开始
 
-### 1. 初始化项目
+### 方式 A：从原始文档自动生成配置（推荐）
+
+如果你有项目介绍、对话记录等原始文档，可以自动生成配置：
 
 ```bash
-# 复制 SEOMaster 到你的项目
+# 1. 准备原始文档文件夹
+mkdir raw-docs
+# 将项目介绍、对话记录等文档放入 raw-docs/
+
+# 2. 配置 API Key（可选）
+export OPENAI_API_KEY=sk-xxxxx
+
+# 3. 自动生成配置
+node scripts/init-project.js ./raw-docs
+
+# 4. 检查并完善生成的 project-config.yaml
+vim project-config.yaml
+```
+
+详细说明：[项目初始化工作流](docs/init-workflow.md)
+
+### 方式 B：手动填写配置模板
+
+```bash
+# 1. 复制 SEOMaster 到你的项目
 cp -r seomaster /path/to/your-project/
 
-# 进入项目目录
+# 2. 进入项目目录
 cd /path/to/your-project/seomaster
 
-# 复制配置模板
+# 3. 复制配置模板
 cp templates/project-config.yaml ../project-config.yaml
 ```
 
