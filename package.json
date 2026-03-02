@@ -1,0 +1,24 @@
+{
+  "name": "seomaster",
+  "version": "1.0.0",
+  "description": "AI-driven content production workflow system for technical product SEO content marketing",
+  "main": "index.js",
+  "scripts": {
+    "init": "node scripts/init-project.js",
+    "concept": "node scripts/generate-concept.js",
+    "draft": "node scripts/generate-draft.js",
+    "check": "node scripts/quality-check.js"
+  },
+  "keywords": [
+    "seo",
+    "content",
+    "marketing",
+    "ai",
+    "workflow"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
