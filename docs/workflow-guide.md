@@ -108,31 +108,32 @@ thesis:
 ### 执行者
 🟡 AI 建议 + 人工快速确认
 
-### AI 生成 Concept
+### 使用脚本自动生成 Concept
 
-AI 根据 Thesis 和内容类型生成 `article-concept.yaml`：
+```bash
+# 基本用法（英文关键词，美国市场）
+node scripts/generate-concept.js --keyword "openrouter alternative"
 
-```yaml
-title: "LemonData + OpenClaw: 5分钟部署自托管AI助手"
-type: "tutorial"
+# 中文关键词
+node scripts/generate-concept.js --keyword "AI API 聚合平台" --lang zh --market cn
 
-thesis: "用 LemonData 一个 API Key 让 OpenClaw 接入 300+ 模型，5 分钟完成部署"
-
-sections:
-  - title: "为什么选择 OpenClaw"
-    keyPoint: "OpenClaw 解决隐私、成本、多模型切换三大痛点"
-    evidence:
-      - "GitHub +3,050% 增长"
-      - "支持 300+ 模型"
-    word_count: 300
-
-  - title: "5 分钟快速部署"
-    keyPoint: "Docker Compose 一键启动，无需复杂配置"
-    evidence:
-      - "docker-compose.yml 配置示例"
-    code_example: true
-    word_count: 500
+# 自定义输出目录
+node scripts/generate-concept.js --keyword "llm proxy" --out articles/blog
 ```
+
+脚本自动完成以下工作：
+1. 搜索 Google 前 10 条结果（Apify API）
+2. 并发抓取每篇文章 H1-H4 大纲（cheerio）
+3. AI 分析竞品大纲 → 生成本文大纲（「是什么→为什么→怎么做」逻辑）
+4. H1-H4 每层包含关键词的不同角度/变体
+5. 标注 1-2 处配图位置（`image_needed: true`）
+6. 输出 `{slug}-concept.yaml` 和 `{slug}-research.json`
+
+脚本生成后，人工需要确认：
+- [ ] `thesis.final` 是否清晰？（一句话读完后记住什么）
+- [ ] `competitor_analysis.gap_opportunities` 是否可作为差异化亮点？
+- [ ] 配图位置是否合理？图片描述是否清晰？
+- [ ] 各 section 的 `evidence` 字段是否补充了真实数据？
 
 ### 人工确认要点
 
