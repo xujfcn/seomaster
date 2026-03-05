@@ -23,7 +23,7 @@ async function searchGoogle(keyword, options = {}) {
       body: JSON.stringify({
         queries: keyword,
         languageCode: lang,
-        countryCode: market.toUpperCase(),
+        countryCode: market.toLowerCase(),
         maxPagesPerQuery: 1,
         resultsPerPage: maxResults,
         saveHtml: false,
