@@ -141,6 +141,12 @@ ${forbiddenWords.map((w) => `- "${w}"`).join('\n')}
 FORBIDDEN AI patterns (never use these sentence structures):
 ${aiPatterns.map((p) => `- ${p}`).join('\n')}
 
+STRICT FORMATTING RULES:
+- Use **bold** MAXIMUM 3 times in the entire article. Reserve it only for the single most critical insight.
+- Use em dash (——) MAXIMUM 3 times total.
+- Use exclamation mark (!) MAXIMUM 2 times total.
+- Do NOT bold product names, section labels, or list items. Plain text only.
+
 Writing principles:
 - Vary sentence length: mix short (under 10 words) and long (40+ words) sentences
 - Use specific numbers instead of vague terms ("300+ models" not "many models")
@@ -178,4 +184,15 @@ function getTail(text, chars = CONTEXT_TAIL_CHARS) {
   return text.slice(-chars);
 }
 
-module.exports = { generateIntro, generateSection, generateFAQ, generateCTA, getTail };
+/**
+ * Strip excess bold markers, keeping at most maxBold occurrences
+ */
+function stripExcessBold(text, maxBold = 3) {
+  let count = 0;
+  return text.replace(/\*\*(.+?)\*\*/g, (match, inner) => {
+    count++;
+    return count <= maxBold ? match : inner;
+  });
+}
+
+module.exports = { generateIntro, generateSection, generateFAQ, generateCTA, getTail, stripExcessBold };

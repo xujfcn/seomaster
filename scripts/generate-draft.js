@@ -14,7 +14,7 @@
 const path = require('path');
 const fs = require('fs');
 const { loadDraftConfig } = require('./lib/draft-config');
-const { generateIntro, generateSection, generateFAQ, generateCTA, getTail } = require('./lib/draft-generator');
+const { generateIntro, generateSection, generateFAQ, generateCTA, getTail, stripExcessBold } = require('./lib/draft-generator');
 
 function parseArgs(argv) {
   const args = {};
@@ -30,8 +30,8 @@ function parseArgs(argv) {
 
 function resolvePath(p) {
   if (path.isAbsolute(p)) return p;
-  // 相对于 seomaster 的父目录（即 lemondata-content）
-  return path.resolve(__dirname, '../../', p);
+  // 相对于当前工作目录解析（从哪里运行就相对于哪里）
+  return path.resolve(process.cwd(), p);
 }
 
 async function main() {
@@ -105,8 +105,8 @@ async function main() {
   fullText += '\n\n' + cta;
   console.log(`  ✓ CTA\n`);
 
-  // 组装输出
-  const draft = parts.join('\n\n');
+  // 组装输出，去除超限 bold
+  const draft = stripExcessBold(parts.join('\n\n'));
   const totalWords = countWords(draft);
   const draftPath = path.join(outputDir, `${slug}-draft.md`);
   fs.writeFileSync(draftPath, draft, 'utf-8');
