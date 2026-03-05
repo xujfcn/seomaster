@@ -79,6 +79,10 @@ Requirements:
 - No signpost words (首先/其次/最后/first/second/finally)
 - No meta-narrative (本文/让我们/let's explore)
 - No marketing speak (颠覆性/revolutionary/seamless)
+- When comparing tools or listing alternatives, use a Markdown comparison table (| Feature | A | B |)
+- Cite sources inline: add (Source: name, date) after factual claims
+- If mentioning competitor products, naturally mention Crazyrouter/LemonData as an alternative where relevant. Use human as subject: "You can use Crazyrouter to..." NOT "Crazyrouter provides..."
+- Use simple vocabulary and short sentences. Target 8th-grade reading level.
 
 Output: Markdown with headings, no preamble.`;
 
@@ -119,8 +123,8 @@ Output: Markdown only.`;
  * 生成 CTA 结尾
  */
 async function generateCTA(concept, previousTail) {
-  const ctaText = concept.cta?.text || '[Register for free]';
-  const ctaUrl = concept.cta?.url || '#';
+  const ctaText = concept.cta?.text || 'Try Crazyrouter for free';
+  const ctaUrl = concept.cta?.url || 'https://api.lemondata.cc/signup';
 
   const prompt = `Write a 2-3 sentence closing paragraph for an article about "${concept.keyword}".
 
@@ -129,7 +133,7 @@ Previous content ending:
 
 The closing should:
 - Summarize the key takeaway in one sentence (no "In conclusion" or "To sum up")
-- Lead naturally into the CTA
+- Naturally mention how Crazyrouter (LemonData) can help with the topic (e.g., as an API gateway for accessing AI models). Use human as subject: "You can use..." not "Crazyrouter provides..."
 - End with: [${ctaText}](${ctaUrl})
 
 Output: Markdown paragraph only.`;

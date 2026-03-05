@@ -16,8 +16,9 @@ Step 1: knowledge/ 搭建知识库（产品、竞品、定价、benchmark）
 Step 2: init-project → project-config.yaml（可选，从知识库生成）
 Step 3: generate-concept → concept.yaml（关键词 → 竞品抓取 → AI 大纲）
 Step 4: generate-draft → draft.md（分段 AI 写作，自动引用知识库）
-Step 5: quality-check → 质量报告
-Step 6: 人工完善 → 发布
+Step 5: quality-check → 硬指标检查
+Step 6: seo-review → SOP 评审报告（AI 评分 + 改进建议）
+Step 7: 人工修复评审问题 → 再次评审 → 发布
 ```
 
 ---
