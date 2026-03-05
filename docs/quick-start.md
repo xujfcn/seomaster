@@ -1,152 +1,142 @@
 # SEOMaster 快速开始指南
 
-5 分钟上手 SEOMaster，开始你的第一篇文章。
+5 分钟上手 SEOMaster，开始你的第一篇 SEO 文章。
 
 ## 前置要求
 
 - Node.js 16+
-- 文本编辑器
-- OpenAI API Key（或其他兼容 API）
+- AI API Key（OpenAI 兼容格式）
+- Apify API Token（用于 Google 搜索）
 
-## 步骤 1: 复制模板（1 分钟）
+## 完整流程
+
+```
+知识库 → init-project → project-config.yaml
+                              ↓
+关键词 → generate-concept → concept.yaml → generate-draft → draft.md → quality-check
+```
+
+---
+
+## 步骤 1: 配置 API 密钥
+
+在 `seomaster/.env` 中配置：
+
+```env
+AI_API_KEY=sk-your-api-key
+AI_API_BASE_URL=https://api.openai.com/v1
+AI_MODEL=gpt-4o
+APIFY_API_TOKEN=apify_api_your-token
+```
+
+---
+
+## 步骤 2: 初始化项目（知识库 → 项目配置）
+
+准备一个知识库文件夹，放入产品文档、竞品分析、功能说明等原始资料：
+
+```
+raw-docs/
+├── product-intro.md        # 产品介绍
+├── pricing.md              # 价格信息
+├── competitor-analysis.md  # 竞品分析
+└── features.yaml           # 功能列表
+```
+
+运行初始化：
 
 ```bash
-# 假设你已经有了 seomaster 文件夹
-cd your-project/
-
-# 复制项目配置模板
-cp seomaster/templates/project-config.yaml project-config.yaml
+cd seomaster
+node scripts/init-project.js --input ../raw-docs
 ```
 
-## 步骤 2: 填写最小配置（2 分钟）
+输出 `project-config.yaml`，包含产品信息、受众画像、竞品、关键词等。检查并完善其中的 TODO 项。
 
-编辑 `project-config.yaml`，只填写必填项：
+---
 
-```yaml
-project:
-  name: "YourProduct"                    # 你的产品名
-  tagline: "一句话产品定位"               # 例如："AI API 聚合平台"
-  website: "https://yourproduct.com"
+## 步骤 3: 生成文章大纲（关键词 → Concept）
 
-value_proposition:
-  full: "YourProduct 让独立开发者用一个 API 访问 300+ AI 模型，省 40% API 费用"
-
-audience:
-  primary:
-    title: "独立开发者"
-    pain_points:
-      - "API 价格高"
-      - "多平台配置繁琐"
-
-key_metrics:
-  - metric: "支持模型数量"
-    value: "300+"
-    source: "官网"
-    verified: true
-    date: "2026-03-02"
-
-competitors:
-  - name: "Competitor A"
-    weaknesses:
-      - "价格贵"
-
-channels:
-  blog:
-    enabled: true
-  chinese:
-    - platform: "知乎"
-      enabled: true
-```
-
-## 步骤 3: 创建第一篇文章（2 分钟）
+给定一个目标关键词，自动抓取 Google 前 10 篇竞品文章的大纲，AI 分析后生成文章结构：
 
 ```bash
-# 复制文章任务模板
-cp seomaster/templates/article-task.yaml articles/my-first-article.yaml
+node scripts/generate-concept.js \
+  --keyword "openrouter alternative" \
+  --slug openrouter-alternative \
+  --out ../articles/blog/
 ```
 
-编辑 `articles/my-first-article.yaml`，填写核心信息：
+输出：
+- `{slug}-concept.yaml` — 文章大纲（sections、FAQ、keyword variants）
+- `{slug}-research.json` — 竞品研究数据
 
-```yaml
-article:
-  id: "blog-001"
-  type: "technical_blog"
+检查 concept.yaml，确认结构合理后进入下一步。
 
-thesis:
-  statement: "用 YourProduct 替代 Competitor，每月省 40% 费用"
+---
 
-goal:
-  primary: "转化"
+## 步骤 4: 生成初稿（Concept → Draft）
 
-target_platforms:
-  - platform: "官网博客"
-```
-
-## 步骤 4: 开始写作
-
-### 方式 A: 手动写作（推荐新手）
+基于 concept.yaml 分段调用 AI 生成完整文章：
 
 ```bash
-# 复制 Concept 模板
-cp seomaster/templates/article-concept.yaml articles/my-first-article-concept.yaml
-
-# 填写 Concept
-vim articles/my-first-article-concept.yaml
-
-# 根据 Concept 手动写作
-vim articles/my-first-article-draft.md
+node scripts/generate-draft.js --concept ../articles/blog/openrouter-alternative-concept.yaml
 ```
 
-### 方式 B: AI 辅助（需要 API Key）
+输出 `{slug}-draft.md`，自动后处理：
+- 去除禁用词（首先/其次/本文/至关重要 等）
+- 限制 bold 最多 3 处
+- 插入 `[DATA: ...]` 占位符标记需要补充的数据
+- 插入 `<!-- IMAGE: ... -->` 标记配图位置
 
-```bash
-# 配置 API Key
-echo "OPENAI_API_KEY=sk-xxxxx" > .env
-
-# AI 生成 Concept
-node seomaster/scripts/generate-concept.js articles/my-first-article.yaml
-
-# AI 生成初稿
-node seomaster/scripts/generate-draft.js articles/my-first-article-concept.yaml
-```
+---
 
 ## 步骤 5: 质量检查
 
 ```bash
-# 运行质量检查
-node seomaster/scripts/quality-check.js articles/my-first-article-draft.md
-
-# 查看评分和修改建议
+node scripts/quality-check.js ../articles/blog/openrouter-alternative-draft.md
 ```
 
-## 步骤 6: 发布
-
-```bash
-# 手动发布到各平台
-# 或使用发布脚本（需要配置平台 API）
-node seomaster/scripts/publish.js articles/my-first-article-final.md
-```
+检查硬指标：禁用词、bold ≤3、em dash ≤3、感叹号 ≤2。
 
 ---
 
-## 最小配置清单
+## 步骤 6: 人工完善
 
-只需填写这 5 项就能开始：
+通过质量检查后，人工完成：
 
-1. ✅ 产品名称和定位
-2. ✅ 目标读者和痛点
-3. ✅ 3 个核心数据点
-4. ✅ 1-2 个主要竞品
-5. ✅ 发布平台列表
-
----
-
-## 下一步
-
-- 📖 阅读 [工作流详细指南](docs/workflow-guide.md)
-- 📝 查看 [LemonData 示例](examples/lemondata/)
-- 🎯 学习 [写作原则](docs/writing-principles.md)
+1. 替换所有 `[DATA: ...]` 占位符为真实数据（价格、性能、用户案例）
+2. 在 `<!-- IMAGE: ... -->` 位置配图
+3. 确认 thesis 和 CTA
+4. 再跑一次 quality-check 确认
 
 ---
 
-**遇到问题？** 查看 [常见问题](README.md#常见问题) 或提交 Issue。
+## 命令速查
+
+| 步骤 | 命令 | 输入 | 输出 |
+|------|------|------|------|
+| 初始化项目 | `node scripts/init-project.js --input <docs-folder>` | 知识库文件夹 | project-config.yaml |
+| 生成大纲 | `node scripts/generate-concept.js --keyword <kw> --slug <slug>` | 关键词 | concept.yaml + research.json |
+| 生成初稿 | `node scripts/generate-draft.js --concept <path>` | concept.yaml | draft.md |
+| 质量检查 | `node scripts/quality-check.js <path>` | draft.md | 检查报告 |
+
+---
+
+## 可选参数
+
+### generate-concept.js
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `--keyword` | 必填 | 目标关键词 |
+| `--slug` | 必填 | URL slug |
+| `--lang` | en | 搜索语言 |
+| `--market` | us | 目标市场 |
+| `--results` | 10 | 抓取竞品数量 |
+| `--out` | 当前目录 | 输出目录 |
+
+### generate-draft.js
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `--concept` | 必填 | concept.yaml 路径 |
+| `--out` | concept 同目录 | 输出目录 |
