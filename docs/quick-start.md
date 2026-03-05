@@ -11,9 +11,13 @@
 ## 完整流程
 
 ```
-知识库 → init-project → project-config.yaml
-                              ↓
-关键词 → generate-concept → concept.yaml → generate-draft → draft.md → quality-check
+Step 0: .env 配置 API 密钥
+Step 1: knowledge/ 搭建知识库（产品、竞品、定价、benchmark）
+Step 2: init-project → project-config.yaml（可选，从知识库生成）
+Step 3: generate-concept → concept.yaml（关键词 → 竞品抓取 → AI 大纲）
+Step 4: generate-draft → draft.md（分段 AI 写作，自动引用知识库）
+Step 5: quality-check → 质量报告
+Step 6: 人工完善 → 发布
 ```
 
 ---
@@ -31,7 +35,31 @@ APIFY_API_TOKEN=apify_api_your-token
 
 ---
 
-## 步骤 2: 初始化项目（知识库 → 项目配置）
+## 步骤 2: 搭建知识库
+
+知识库是所有文章的数据源，放在 `seomaster/knowledge/` 下，generate-concept 和 generate-draft 会自动读取。
+
+### 知识库结构
+
+```
+knowledge/
+├── product.md              # 产品功能、定价、技术规格、目标用户
+├── competitors.md          # 竞品功能对比、SEO 竞争格局
+├── models_pricing.md       # 主流模型定价表（旗舰/中端/高性价比）
+├── benchmarks.md           # 模型 benchmark 数据（编程/推理/数学）
+├── published_articles.md   # 已发布文章索引（避免重复选题）
+└── target_keywords.md      # 目标关键词库（搜索量/KD/状态）
+```
+
+### 维护原则
+- 所有数据标注 **来源 + 日期**
+- 价格数据变动时及时更新
+- 新文章发布后更新 `published_articles.md`
+- 新竞品出现时更新 `competitors.md`
+
+---
+
+## 步骤 3: 初始化项目（可选）
 
 准备一个知识库文件夹，放入产品文档、竞品分析、功能说明等原始资料：
 
