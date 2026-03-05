@@ -56,7 +56,9 @@ async function main() {
   const lang = args.lang || 'en';
   const market = args.market || 'us';
   const maxResults = Math.min(parseInt(args.results) || 10, 10);
-  const outputDir = path.resolve(__dirname, '../../', args.out || 'articles/blog');
+  const outputDir = args.out
+    ? path.resolve(process.cwd(), args.out)
+    : path.resolve(process.cwd(), 'articles/blog');
 
   // 确保输出目录存在
   fs.mkdirSync(outputDir, { recursive: true });

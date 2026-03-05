@@ -67,8 +67,15 @@ hard_metrics:
         - "本文讨论"
         - "接下来分析"
         - "下面介绍"
+        - "深入探讨"
+        - "本文将"
+        - "接下来"
+        - "本文"
+        - "至关重要"
         - "let's explore"
         - "this article discusses"
+        - "let's dive into"
+        - "in this article"
       fix: "删除，直接进入内容"
 
     # 过渡类（Transition）

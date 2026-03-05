@@ -210,10 +210,12 @@ function postProcessDraft(text, forbiddenWords) {
   const replacements = {
     '本文': '',
     '本文讨论': '',
+    '本文将': '',
     '接下来分析': '',
     '接下来': '',
     '下面介绍': '',
     '让我们来看': '',
+    '深入探讨': '',
     '至关重要': '很关键',
     '值得注意的是': '',
     '不难发现': '',
@@ -224,7 +226,9 @@ function postProcessDraft(text, forbiddenWords) {
     '其次': '',
     '最后': '',
     "let's explore": '',
+    "let's dive into": '',
     'this article discusses': '',
+    'in this article': '',
     "it's worth noting": '',
     'in conclusion': '',
   };
