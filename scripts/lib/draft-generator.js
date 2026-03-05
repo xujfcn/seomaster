@@ -17,6 +17,8 @@ Article title: "${concept.title}"
 Keyword: "${concept.keyword}"
 Thesis: "${concept.thesis?.final || concept.thesis?.statement || ''}"
 
+IMPORTANT: The article subject is "${concept.keyword}". If this is NOT our product (Crazyrouter/LemonData), do NOT attribute our product's features/data to it. Only mention our product where it naturally fits as a related tool or alternative.
+
 Opening style options (pick the most suitable):
 - Data shock: lead with a surprising statistic
 - Pain point: start with a specific developer frustration
@@ -54,6 +56,8 @@ async function generateSection(section, concept, forbiddenWords, aiPatterns, voi
 Article title: "${concept.title}"
 Keyword: "${concept.keyword}"
 Keyword variants: ${(concept.keyword_variants || []).join(', ')}
+
+IMPORTANT: The article subject is "${concept.keyword}". If this is NOT our product (Crazyrouter/LemonData), do NOT attribute our product's features/data to it. Only mention our product where it naturally fits as a related tool or alternative.
 
 ${previousTail ? `## Previous content (last part, for continuity):\n...${previousTail}\n` : ''}
 
@@ -137,7 +141,7 @@ function buildSystemPrompt(forbiddenWords, aiPatterns, voice) {
   // 加载知识库上下文
   const knowledge = loadDraftKnowledge();
   const knowledgeSection = knowledge
-    ? `\nREFERENCE DATA (use real numbers from here instead of [DATA: ...] when available):\n${knowledge}\n`
+    ? `\nREFERENCE DATA — This is OUR product (Crazyrouter/LemonData) and industry data. Use it for accuracy when relevant, but do NOT confuse our product data with the article's subject. If the article is about a different product, clearly distinguish between them:\n${knowledge}\n`
     : '';
 
   return `You are a technical content writer. Voice: "${voice.tone}". Style: "${voice.style}".
