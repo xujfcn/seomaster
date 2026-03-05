@@ -49,9 +49,10 @@ async function main() {
     process.exit(1);
   }
 
+  const SEOMASTER_ROOT = path.join(__dirname, '..');
   const outputDir = args.out
     ? resolvePath(args.out)
-    : path.dirname(conceptPath);
+    : path.join(SEOMASTER_ROOT, 'output');
 
   fs.mkdirSync(outputDir, { recursive: true });
 

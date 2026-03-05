@@ -1,0 +1,176 @@
+title: What is OpenClaw? A Comprehensive Guide to Your Personal AI Assistant
+slug: openclaw-guide
+type: technical_blog
+keyword: openclaw
+keyword_variants:
+  - OpenClaw AI
+  - OpenClaw personal assistant
+  - self-hosted OpenClaw
+meta_description: >-
+  Learn everything about OpenClaw: what it is, why it matters, how to use it, and what to watch out for with OpenClaw’s
+  self-hosted personal AI assistant.
+competitor_analysis:
+  sources:
+    - position: 1
+      title: OpenClaw — Personal AI Assistant
+      url: https://openclaw.ai/
+    - position: 2
+      title: OpenClaw — Personal AI Assistant
+      url: https://github.com/openclaw/openclaw
+    - position: 3
+      title: I feel left behind. What is special about OpenClaw?
+      url: https://www.reddit.com/r/LocalLLaMA/comments/1r9gve8/i_feel_left_behind_what_is_special_about_openclaw/
+    - position: 4
+      title: OpenClaw
+      url: https://en.wikipedia.org/wiki/OpenClaw
+    - position: 7
+      title: OpenClaw, OpenAI and the future
+      url: https://steipete.me/posts/2026/openclaw
+    - position: 8
+      title: Introducing OpenClaw on Amazon Lightsail to run your ...
+      url: >-
+        https://aws.amazon.com/blogs/aws/introducing-openclaw-on-amazon-lightsail-to-run-your-autonomous-private-ai-agents/
+    - position: 9
+      title: "Running OpenClaw safely: identity, isolation, and runtime risk"
+      url: >-
+        https://www.microsoft.com/en-us/security/blog/2026/02/19/running-openclaw-safely-identity-isolation-runtime-risk/
+  common_topics:
+    - What is OpenClaw?
+    - OpenClaw setup guide
+    - Security and privacy features of OpenClaw
+  gap_opportunities:
+    - Comparing OpenClaw to other AI assistants
+    - Detailed troubleshooting guide for self-hosted OpenClaw
+thesis:
+  statement: "[待确认：用一句话说清读者读完后记住什么]"
+  candidates: []
+  final: ""
+sections:
+  - title: What is OpenClaw?
+    key_point: >-
+      OpenClaw is a self-hosted personal AI assistant with full control over data, built for privacy-conscious users and
+      developers.
+    evidence:
+      - "[待填写：发布前补充支撑数据]"
+    word_count: 800
+    subsections:
+      - title: Overview of OpenClaw
+        points:
+          - What makes OpenClaw different from other AI assistants?
+          - The importance of self-hosting
+        word_count: 400
+        image_needed: false
+        image_description: ""
+      - title: How OpenClaw Works
+        points:
+          - Runs on local machines or cloud infrastructure
+          - Supports multiple communication platforms
+        word_count: 400
+        image_needed: true
+        image_description: Diagram showing the architecture and components of OpenClaw's system
+  - title: "Why OpenClaw Matters: Benefits and Use Cases"
+    key_point: OpenClaw provides users with enhanced security, privacy, and autonomy over their AI interactions.
+    evidence:
+      - "[待填写：发布前补充支撑数据]"
+    word_count: 1000
+    subsections:
+      - title: Privacy and Security Features
+        points:
+          - End-to-end encryption
+          - No data storage on third-party servers
+        word_count: 500
+        image_needed: false
+        image_description: ""
+      - title: Use Cases for Developers and End Users
+        points:
+          - Integrating OpenClaw into custom applications
+          - Using OpenClaw for personal tasks and automation
+        word_count: 500
+        image_needed: false
+        image_description: ""
+  - title: "How to Use OpenClaw: A Step-by-Step Guide"
+    key_point: This section offers a practical guide to installing, configuring, and optimizing OpenClaw for your needs.
+    evidence:
+      - "[待填写：发布前补充支撑数据]"
+    word_count: 1200
+    subsections:
+      - title: Setting Up OpenClaw on Your Machine
+        points:
+          - System requirements and dependencies
+          - Installation from source vs. pre-packaged solutions
+        word_count: 400
+        image_needed: false
+        image_description: ""
+      - title: Configuring OpenClaw for Your Use Case
+        points:
+          - How to integrate communication platforms (WhatsApp, Slack, etc.)
+          - Configuring persistent memory and AI skills
+        word_count: 400
+        image_needed: false
+        image_description: ""
+      - title: Advanced OpenClaw Setup Options
+        points:
+          - Running OpenClaw with Docker
+          - Using OpenClaw as a service
+        word_count: 400
+        image_needed: false
+        image_description: ""
+  - title: "What to Watch Out for: Limitations and Alternatives"
+    key_point: >-
+      While OpenClaw offers powerful features, there are certain limitations and alternative solutions you should
+      consider.
+    evidence:
+      - "[待填写：发布前补充支撑数据]"
+    word_count: 1200
+    subsections:
+      - title: Limitations of OpenClaw
+        points:
+          - Dependency on local hardware
+          - Complexity for beginners
+        word_count: 400
+        image_needed: false
+        image_description: ""
+      - title: OpenClaw Alternatives
+        points:
+          - OpenRouter
+          - Together AI
+          - Self-hosted alternatives
+        word_count: 400
+        image_needed: false
+        image_description: ""
+      - title: "FAQ: Common Issues with OpenClaw"
+        points:
+          - How to fix installation errors
+          - Troubleshooting platform integrations
+        word_count: 400
+        image_needed: false
+        image_description: ""
+faq:
+  - question: What is OpenClaw?
+    answer_hint: OpenClaw is a self-hosted AI assistant that offers users full control over their data.
+  - question: How do I install OpenClaw?
+    answer_hint: Install OpenClaw using either source code or a pre-packaged solution depending on your setup.
+  - question: What are the security features of OpenClaw?
+    answer_hint: OpenClaw provides end-to-end encryption and runs entirely on local infrastructure, ensuring data privacy.
+  - question: What are the best alternatives to OpenClaw?
+    answer_hint: Some alternatives include OpenRouter and Together AI, each with its own set of features and pricing.
+cta:
+  text: "[待填写]"
+  url: "[待填写]"
+  placement: after section 2 and at end
+images_needed:
+  - section: What is OpenClaw?
+    subsection: How OpenClaw Works
+    description: Diagram showing the architecture and components of OpenClaw's system
+    status: pending
+word_count:
+  target: 3000
+  max: 15000
+review_checkpoints:
+  - Thesis 是否清晰？一句话能说清吗？
+  - 每个 section 的 key_point 是否服务于 Thesis？
+  - 所有数据是否已验证？是否标注来源和日期？
+  - 配图位置是否合理？图片描述是否清晰？
+  - 是否避免了所有 AI 套话和营销腔？
+generated_at: "2026-03-05"
+status: concept

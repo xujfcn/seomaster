@@ -1,0 +1,636 @@
+{
+  "keyword": "openclaw",
+  "generated_at": "2026-03-05T06:11:52.258Z",
+  "search_results": [
+    {
+      "position": 1,
+      "title": "OpenClaw — Personal AI Assistant",
+      "url": "https://openclaw.ai/",
+      "description": "OpenClaw. The AI that actually does things. Clears your inbox, sends emails, manages your calendar, checks you in for flights. All from WhatsApp, Telegram, ...Read more"
+    },
+    {
+      "position": 2,
+      "title": "OpenClaw — Personal AI Assistant",
+      "url": "https://github.com/openclaw/openclaw",
+      "description": "It can speak and listen on macOS/iOS/Android, and can render a live Canvas you control. The Gateway is just the control plane — the product is the assistant.Read more"
+    },
+    {
+      "position": 3,
+      "title": "I feel left behind. What is special about OpenClaw?",
+      "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r9gve8/i_feel_left_behind_what_is_special_about_openclaw/",
+      "description": "OpenClaw is bad software. It is intrinsically unsecure, and prone to prompt injection attacks. Giving it access to your desktop or accounts is ...Read more"
+    },
+    {
+      "position": 4,
+      "title": "OpenClaw",
+      "url": "https://en.wikipedia.org/wiki/OpenClaw",
+      "description": "OpenClaw (formerly Clawdbot and Moltbot) is a free and open-source autonomous artificial intelligence (AI) agent developed by Peter Steinberger.Read more"
+    },
+    {
+      "position": 5,
+      "title": "Don't use OpenClaw",
+      "url": "https://medium.com/data-science-in-your-pocket/dont-use-openclaw-a6ea8645cfd4",
+      "description": "In theory, OpenClaw can plan tasks, chain tools, and execute steps independently. In practice, autonomy often becomes over-autonomy. You ask it ...Read more"
+    },
+    {
+      "position": 6,
+      "title": "The wild rise of OpenClaw...",
+      "url": "https://www.youtube.com/watch?v=ssYt09bCgUY",
+      "description": "A free and open-source project that's not just another lame chatbot but a tool that takes action in the real world 24 hours a day 7 days per week."
+    },
+    {
+      "position": 7,
+      "title": "OpenClaw, OpenAI and the future",
+      "url": "https://steipete.me/posts/2026/openclaw",
+      "description": "I'm joining OpenAI to work on bringing agents to everyone. OpenClaw will move to a foundation and stay open and independent."
+    },
+    {
+      "position": 8,
+      "title": "Introducing OpenClaw on Amazon Lightsail to run your ...",
+      "url": "https://aws.amazon.com/blogs/aws/introducing-openclaw-on-amazon-lightsail-to-run-your-autonomous-private-ai-agents/",
+      "description": "OpenClaw is an open-source self-hosted autonomous private AI agent that acts as a personal digital assistant by running directly on your ...Read more"
+    },
+    {
+      "position": 9,
+      "title": "Running OpenClaw safely: identity, isolation, and runtime risk",
+      "url": "https://www.microsoft.com/en-us/security/blog/2026/02/19/running-openclaw-safely-identity-isolation-runtime-risk/",
+      "description": "OpenClaw (runtime): A self-hosted agent runtime that runs on a workstation, VM, or container. It can load skills and interact with local and ...Read more"
+    }
+  ],
+  "scraped_outlines": [
+    {
+      "position": 1,
+      "title": "OpenClaw — Personal AI Assistant",
+      "url": "https://openclaw.ai/",
+      "outline": [
+        {
+          "level": 2,
+          "text": "⟩ What People Say"
+        },
+        {
+          "level": 2,
+          "text": "⟩ Quick Start"
+        },
+        {
+          "level": 2,
+          "text": "⟩ What It Does"
+        },
+        {
+          "level": 3,
+          "text": "Runs on Your Machine"
+        },
+        {
+          "level": 3,
+          "text": "Any Chat App"
+        },
+        {
+          "level": 3,
+          "text": "Persistent Memory"
+        },
+        {
+          "level": 3,
+          "text": "Browser Control"
+        },
+        {
+          "level": 3,
+          "text": "Full System Access"
+        },
+        {
+          "level": 3,
+          "text": "Skills & Plugins"
+        },
+        {
+          "level": 2,
+          "text": "⟩ Works With Everything"
+        },
+        {
+          "level": 2,
+          "text": "⟩ Featured In"
+        },
+        {
+          "level": 2,
+          "text": "⟩ Stay in the Loop"
+        },
+        {
+          "level": 2,
+          "text": "⟩ Sponsors"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 2,
+      "title": "OpenClaw — Personal AI Assistant",
+      "url": "https://github.com/openclaw/openclaw",
+      "outline": [
+        {
+          "level": 3,
+          "text": "Uh oh!"
+        },
+        {
+          "level": 2,
+          "text": "Folders and files"
+        },
+        {
+          "level": 2,
+          "text": "Latest commit"
+        },
+        {
+          "level": 2,
+          "text": "History"
+        },
+        {
+          "level": 2,
+          "text": "Repository files navigation"
+        },
+        {
+          "level": 1,
+          "text": "🦞 OpenClaw — Personal AI Assistant"
+        },
+        {
+          "level": 2,
+          "text": "Sponsors"
+        },
+        {
+          "level": 2,
+          "text": "Models (selection + auth)"
+        },
+        {
+          "level": 2,
+          "text": "Install (recommended)"
+        },
+        {
+          "level": 2,
+          "text": "Quick start (TL;DR)"
+        },
+        {
+          "level": 2,
+          "text": "Development channels"
+        },
+        {
+          "level": 2,
+          "text": "From source (development)"
+        },
+        {
+          "level": 2,
+          "text": "Security defaults (DM access)"
+        },
+        {
+          "level": 2,
+          "text": "Highlights"
+        },
+        {
+          "level": 2,
+          "text": "Star History"
+        },
+        {
+          "level": 2,
+          "text": "Everything we built so far"
+        },
+        {
+          "level": 3,
+          "text": "Core platform"
+        },
+        {
+          "level": 3,
+          "text": "Channels"
+        },
+        {
+          "level": 3,
+          "text": "Apps + nodes"
+        },
+        {
+          "level": 3,
+          "text": "Tools + automation"
+        },
+        {
+          "level": 3,
+          "text": "Runtime + safety"
+        },
+        {
+          "level": 3,
+          "text": "Ops + packaging"
+        },
+        {
+          "level": 2,
+          "text": "How it works (short)"
+        },
+        {
+          "level": 2,
+          "text": "Key subsystems"
+        },
+        {
+          "level": 2,
+          "text": "Tailscale access (Gateway dashboard)"
+        },
+        {
+          "level": 2,
+          "text": "Remote Gateway (Linux is great)"
+        },
+        {
+          "level": 2,
+          "text": "macOS permissions via the Gateway protocol"
+        },
+        {
+          "level": 2,
+          "text": "Agent to Agent (sessions_* tools)"
+        },
+        {
+          "level": 2,
+          "text": "Skills registry (ClawHub)"
+        },
+        {
+          "level": 2,
+          "text": "Chat commands"
+        },
+        {
+          "level": 2,
+          "text": "Apps (optional)"
+        },
+        {
+          "level": 3,
+          "text": "macOS (OpenClaw.app) (optional)"
+        },
+        {
+          "level": 3,
+          "text": "iOS node (optional)"
+        },
+        {
+          "level": 3,
+          "text": "Android node (optional)"
+        },
+        {
+          "level": 2,
+          "text": "Agent workspace + skills"
+        },
+        {
+          "level": 2,
+          "text": "Configuration"
+        },
+        {
+          "level": 2,
+          "text": "Security model (important)"
+        },
+        {
+          "level": 3,
+          "text": "WhatsApp"
+        },
+        {
+          "level": 3,
+          "text": "Telegram"
+        },
+        {
+          "level": 3,
+          "text": "Slack"
+        },
+        {
+          "level": 3,
+          "text": "Discord"
+        },
+        {
+          "level": 3,
+          "text": "Signal"
+        },
+        {
+          "level": 3,
+          "text": "BlueBubbles (iMessage)"
+        },
+        {
+          "level": 3,
+          "text": "iMessage (legacy)"
+        },
+        {
+          "level": 3,
+          "text": "Microsoft Teams"
+        },
+        {
+          "level": 3,
+          "text": "WebChat"
+        },
+        {
+          "level": 2,
+          "text": "Docs"
+        },
+        {
+          "level": 2,
+          "text": "Advanced docs (discovery + control)"
+        },
+        {
+          "level": 2,
+          "text": "Operations & troubleshooting"
+        },
+        {
+          "level": 2,
+          "text": "Deep dives"
+        },
+        {
+          "level": 2,
+          "text": "Workspace & skills"
+        },
+        {
+          "level": 2,
+          "text": "Platform internals"
+        },
+        {
+          "level": 2,
+          "text": "Email hooks (Gmail)"
+        },
+        {
+          "level": 2,
+          "text": "Molty"
+        },
+        {
+          "level": 2,
+          "text": "Community"
+        },
+        {
+          "level": 2,
+          "text": "About"
+        },
+        {
+          "level": 3,
+          "text": "Topics"
+        },
+        {
+          "level": 3,
+          "text": "Resources"
+        },
+        {
+          "level": 3,
+          "text": "License"
+        },
+        {
+          "level": 3,
+          "text": "Contributing"
+        },
+        {
+          "level": 3,
+          "text": "Security policy"
+        },
+        {
+          "level": 3,
+          "text": "Uh oh!"
+        },
+        {
+          "level": 3,
+          "text": "Stars"
+        },
+        {
+          "level": 3,
+          "text": "Watchers"
+        },
+        {
+          "level": 3,
+          "text": "Forks"
+        },
+        {
+          "level": 2,
+          "text": "Releases 59"
+        },
+        {
+          "level": 2,
+          "text": "Sponsor this project"
+        },
+        {
+          "level": 3,
+          "text": "Uh oh!"
+        },
+        {
+          "level": 2,
+          "text": "Packages 0"
+        },
+        {
+          "level": 3,
+          "text": "Uh oh!"
+        },
+        {
+          "level": 3,
+          "text": "Uh oh!"
+        },
+        {
+          "level": 2,
+          "text": "Contributors 1,065"
+        },
+        {
+          "level": 2,
+          "text": "Languages"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 3,
+      "title": "I feel left behind. What is special about OpenClaw?",
+      "url": "https://www.reddit.com/r/LocalLLaMA/comments/1r9gve8/i_feel_left_behind_what_is_special_about_openclaw/",
+      "outline": [
+        {
+          "level": 1,
+          "text": "I feel left behind. What is special about OpenClaw?"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 4,
+      "title": "OpenClaw",
+      "url": "https://en.wikipedia.org/wiki/OpenClaw",
+      "outline": [
+        {
+          "level": 2,
+          "text": "History"
+        },
+        {
+          "level": 2,
+          "text": "Functionality"
+        },
+        {
+          "level": 2,
+          "text": "Security and privacy"
+        },
+        {
+          "level": 3,
+          "text": "MoltMatch dating-profile incident"
+        },
+        {
+          "level": 2,
+          "text": "Reception"
+        },
+        {
+          "level": 2,
+          "text": "See also"
+        },
+        {
+          "level": 2,
+          "text": "References"
+        },
+        {
+          "level": 2,
+          "text": "External links"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 5,
+      "title": "Don't use OpenClaw",
+      "url": "https://medium.com/data-science-in-your-pocket/dont-use-openclaw-a6ea8645cfd4",
+      "outline": [],
+      "error": "HTTP 403"
+    },
+    {
+      "position": 6,
+      "title": "The wild rise of OpenClaw...",
+      "url": "https://www.youtube.com/watch?v=ssYt09bCgUY",
+      "outline": [],
+      "error": null
+    },
+    {
+      "position": 7,
+      "title": "OpenClaw, OpenAI and the future",
+      "url": "https://steipete.me/posts/2026/openclaw",
+      "outline": [
+        {
+          "level": 1,
+          "text": "OpenClaw, OpenAI and the future"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 8,
+      "title": "Introducing OpenClaw on Amazon Lightsail to run your ...",
+      "url": "https://aws.amazon.com/blogs/aws/introducing-openclaw-on-amazon-lightsail-to-run-your-autonomous-private-ai-agents/",
+      "outline": [
+        {
+          "level": 2,
+          "text": "AWS News Blog"
+        },
+        {
+          "level": 1,
+          "text": "Introducing OpenClaw on Amazon Lightsail to run your autonomous private AI agents"
+        },
+        {
+          "level": 3,
+          "text": "Resources"
+        },
+        {
+          "level": 3,
+          "text": "Follow"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 9,
+      "title": "Running OpenClaw safely: identity, isolation, and runtime risk",
+      "url": "https://www.microsoft.com/en-us/security/blog/2026/02/19/running-openclaw-safely-identity-isolation-runtime-risk/",
+      "outline": [
+        {
+          "level": 2,
+          "text": "Share"
+        },
+        {
+          "level": 2,
+          "text": "Content types"
+        },
+        {
+          "level": 2,
+          "text": "Products and services"
+        },
+        {
+          "level": 2,
+          "text": "Topics"
+        },
+        {
+          "level": 2,
+          "text": "Clarifying the landscape: runtime vs platform"
+        },
+        {
+          "level": 2,
+          "text": "How agents shift the security boundary"
+        },
+        {
+          "level": 3,
+          "text": "Managed platforms Vs. self-hosted runtimes"
+        },
+        {
+          "level": 3,
+          "text": "End-to-end attack scenario: The poisoned skill"
+        },
+        {
+          "level": 3,
+          "text": "Step 1: Distribution"
+        },
+        {
+          "level": 3,
+          "text": "Step 2: Installation"
+        },
+        {
+          "level": 3,
+          "text": "Step 3: State access (tokens and durable instructions)"
+        },
+        {
+          "level": 3,
+          "text": "Step 4: Privilege reuse through legitimate APIs"
+        },
+        {
+          "level": 3,
+          "text": "Step 5: Persistence through configuration"
+        },
+        {
+          "level": 2,
+          "text": "Variant: indirect prompt injection through shared feeds"
+        },
+        {
+          "level": 2,
+          "text": "Microsoft Defender and Microsoft Security controls for self-hosted agents"
+        },
+        {
+          "level": 3,
+          "text": "Minimum safe operating posture (if you choose to run OpenClaw)"
+        },
+        {
+          "level": 2,
+          "text": "Hunting queries and triage guidance (Microsoft Defender XDR)"
+        },
+        {
+          "level": 2,
+          "text": "Security implications for self-hosted agents"
+        },
+        {
+          "level": 2,
+          "text": "References"
+        },
+        {
+          "level": 2,
+          "text": "Learn more"
+        },
+        {
+          "level": 2,
+          "text": "Microsoft Defender Security Research Team"
+        },
+        {
+          "level": 2,
+          "text": "Related posts"
+        },
+        {
+          "level": 3,
+          "text": "Inside Tycoon2FA: How a leading AiTM phishing kit operated at scale"
+        },
+        {
+          "level": 3,
+          "text": "Signed malware impersonating workplace apps deploys RMM backdoors"
+        },
+        {
+          "level": 3,
+          "text": "OAuth redirection abuse enables phishing and malware delivery"
+        },
+        {
+          "level": 2,
+          "text": "Get started with Microsoft Security"
+        }
+      ],
+      "error": null
+    }
+  ]
+}

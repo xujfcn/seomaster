@@ -1,0 +1,410 @@
+{
+  "keyword": "openrouter alternative",
+  "generated_at": "2026-03-05T02:43:49.375Z",
+  "search_results": [
+    {
+      "position": 1,
+      "title": "Other OpenRouter-like API providers? : r/RooCode",
+      "url": "https://www.reddit.com/r/RooCode/comments/1ka7yok/other_openrouterlike_api_providers/",
+      "description": "Are there any API providers who have a similar service with OpenRouter where for the price of $10 you can have a thousand requests per day on their free LLM's?Read more"
+    },
+    {
+      "position": 2,
+      "title": "Best OpenRouter Alternatives for Production AI Systems",
+      "url": "https://www.truefoundry.com/blog/openrouter-alternatives",
+      "description": "Top 5 OpenRouter Alternatives · 1. TrueFoundry · 2. Portkey · 3. LiteLLM · 4. Helicone · 5. Kong AI Gateway. ‍. Kong is the industry standard ...Read more"
+    },
+    {
+      "position": 3,
+      "title": "7 Best OpenRouter Alternatives 2026",
+      "url": "https://shareai.now/blog/alternatives/openrouter-alternatives/",
+      "description": "OpenRouter alternatives: ShareAI (BYOI, 70% to GPU owners), Portkey, Kong, Unify, LiteLLM & more—find cheaper, faster, or self-hosted options."
+    },
+    {
+      "position": 4,
+      "title": "OpenRouter Alternatives in 2025",
+      "url": "https://www.helicone.ai/blog/openrouter-alternatives",
+      "description": "1. Helicone AI Gateway. Production-grade routing with health monitoring. · 2. Portkey. Enterprise-focused with advanced guardrails, compliance ...Read more"
+    },
+    {
+      "position": 5,
+      "title": "Supercharge OpenWebUI with Requesty (An Alternative to ...",
+      "url": "https://www.requesty.ai/blog/supercharge-openwebui-with-requesty-(an-alternative-to-openrouter)",
+      "description": "If you've been using OpenRouter or looking for a reliable alternative that supports lots of models and multiple providers, Requesty is the ...Read more"
+    }
+  ],
+  "scraped_outlines": [
+    {
+      "position": 1,
+      "title": "Other OpenRouter-like API providers? : r/RooCode",
+      "url": "https://www.reddit.com/r/RooCode/comments/1ka7yok/other_openrouterlike_api_providers/",
+      "outline": [
+        {
+          "level": 1,
+          "text": "Other OpenRouter-like API providers?"
+        },
+        {
+          "level": 2,
+          "text": "Top Posts"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 2,
+      "title": "Best OpenRouter Alternatives for Production AI Systems",
+      "url": "https://www.truefoundry.com/blog/openrouter-alternatives",
+      "outline": [
+        {
+          "level": 1,
+          "text": "Best OpenRouter Alternatives for Production AI Systems"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "What is OpenRouter?"
+        },
+        {
+          "level": 2,
+          "text": "How does OpenRouter work?"
+        },
+        {
+          "level": 2,
+          "text": "Why Explore OpenRouter Alternatives?"
+        },
+        {
+          "level": 2,
+          "text": "Top 5 OpenRouter Alternatives"
+        },
+        {
+          "level": 3,
+          "text": "1. TrueFoundry"
+        },
+        {
+          "level": 3,
+          "text": "2. Portkey"
+        },
+        {
+          "level": 3,
+          "text": "3. LiteLLM"
+        },
+        {
+          "level": 3,
+          "text": "4. Helicone"
+        },
+        {
+          "level": 3,
+          "text": "5. Kong AI Gateway"
+        },
+        {
+          "level": 2,
+          "text": "Conclusion"
+        },
+        {
+          "level": 3,
+          "text": "Built for Speed: ~10ms Latency, Even Under Load"
+        },
+        {
+          "level": 2,
+          "text": "Discover More"
+        },
+        {
+          "level": 3,
+          "text": "Amazon SageMaker Review: Features, Pricing, Pros and Cons (+ Better Alternative)"
+        },
+        {
+          "level": 3,
+          "text": "Vercel AI Alternatives: 8 Top Picks You Can Try in 2026"
+        },
+        {
+          "level": 3,
+          "text": "Top 8 Amazon Bedrock Alternative and Competitors for 2026 [Detailed Review]"
+        },
+        {
+          "level": 3,
+          "text": "Top 5 LiteLLM Alternatives for Enterprises in 2026"
+        },
+        {
+          "level": 4,
+          "text": "Subscribe to our newsletter"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 3,
+      "title": "7 Best OpenRouter Alternatives 2026",
+      "url": "https://shareai.now/blog/alternatives/openrouter-alternatives/",
+      "outline": [
+        {
+          "level": 1,
+          "text": "Best OpenRouter Alternatives 2026"
+        },
+        {
+          "level": 2,
+          "text": "Table of contents"
+        },
+        {
+          "level": 2,
+          "text": "What OpenRouter does well (and where it may not fit)"
+        },
+        {
+          "level": 2,
+          "text": "How to choose an OpenRouter alternative"
+        },
+        {
+          "level": 2,
+          "text": "Best OpenRouter alternatives (quick picks)"
+        },
+        {
+          "level": 2,
+          "text": "Deep dives: top alternatives"
+        },
+        {
+          "level": 3,
+          "text": "ShareAI"
+        },
+        {
+          "level": 3,
+          "text": "Eden AI"
+        },
+        {
+          "level": 3,
+          "text": "Portkey"
+        },
+        {
+          "level": 3,
+          "text": "Kong AI Gateway"
+        },
+        {
+          "level": 3,
+          "text": "Orq.ai"
+        },
+        {
+          "level": 3,
+          "text": "Unify"
+        },
+        {
+          "level": 3,
+          "text": "LiteLLM"
+        },
+        {
+          "level": 2,
+          "text": "Quickstart: call a model in minutes"
+        },
+        {
+          "level": 2,
+          "text": "Comparison at a glance"
+        },
+        {
+          "level": 2,
+          "text": "FAQs"
+        },
+        {
+          "level": 2,
+          "text": "ShareAI vs OpenRouter: which is cheaper for my workload?"
+        },
+        {
+          "level": 2,
+          "text": "Can I force traffic to my own infra first with ShareAI?"
+        },
+        {
+          "level": 2,
+          "text": "Does ShareAI lock me in?"
+        },
+        {
+          "level": 2,
+          "text": "How do payouts work if I share idle capacity?"
+        },
+        {
+          "level": 2,
+          "text": "OpenRouter vs ShareAI for latency and reliability?"
+        },
+        {
+          "level": 2,
+          "text": "Can I stack a gateway with an aggregator?"
+        },
+        {
+          "level": 2,
+          "text": "Does OpenRouter support prompt caching?"
+        },
+        {
+          "level": 2,
+          "text": "Build with ShareAI"
+        },
+        {
+          "level": 2,
+          "text": "Related Posts"
+        },
+        {
+          "level": 2,
+          "text": "Why OpenAI-Compatible APIs Are the New Standard (and How ShareAI Adds BYOI)"
+        },
+        {
+          "level": 2,
+          "text": "ShareAI Automatic Failover: Same-Model Routing + BYOI for Zero-Downtime AI"
+        },
+        {
+          "level": 2,
+          "text": "Leave a Reply Cancel reply"
+        },
+        {
+          "level": 2,
+          "text": "Build with ShareAI"
+        },
+        {
+          "level": 4,
+          "text": "Table of Contents"
+        },
+        {
+          "level": 2,
+          "text": "Start Your AI Journey Today"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 4,
+      "title": "OpenRouter Alternatives in 2025",
+      "url": "https://www.helicone.ai/blog/openrouter-alternatives",
+      "outline": [
+        {
+          "level": 3,
+          "text": "Join Helicone"
+        },
+        {
+          "level": 1,
+          "text": "OpenRouter Alternatives in 2025"
+        },
+        {
+          "level": 2,
+          "text": "Quick Comparison"
+        },
+        {
+          "level": 2,
+          "text": "Why switch from OpenRouter?"
+        },
+        {
+          "level": 2,
+          "text": "What To Look For When Switching"
+        },
+        {
+          "level": 2,
+          "text": "Detailed Breakdown"
+        },
+        {
+          "level": 3,
+          "text": "1. Helicone AI Gateway"
+        },
+        {
+          "level": 3,
+          "text": "2. Portkey"
+        },
+        {
+          "level": 3,
+          "text": "3. LiteLLM"
+        },
+        {
+          "level": 3,
+          "text": "4. Cloudflare AI Gateway"
+        },
+        {
+          "level": 3,
+          "text": "5. Vercel AI Gateway"
+        },
+        {
+          "level": 2,
+          "text": "Which One Should You Choose?"
+        },
+        {
+          "level": 2,
+          "text": "Cost Math"
+        },
+        {
+          "level": 2,
+          "text": "Bottom Line"
+        },
+        {
+          "level": 2,
+          "text": "Frequently Asked Questions"
+        },
+        {
+          "level": 3,
+          "text": "Why switch from OpenRouter?"
+        },
+        {
+          "level": 3,
+          "text": "Which AI gateway is the easiest to switch to if I'm already using OpenRouter?"
+        },
+        {
+          "level": 3,
+          "text": "Which gateway is best for self-hosting?"
+        },
+        {
+          "level": 3,
+          "text": "Which AI gateway offers the best observability?"
+        },
+        {
+          "level": 3,
+          "text": "Which AI gateway is the best for regulated industries?"
+        },
+        {
+          "level": 3,
+          "text": "Questions or feedback?"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 5,
+      "title": "Supercharge OpenWebUI with Requesty (An Alternative to ...",
+      "url": "https://www.requesty.ai/blog/supercharge-openwebui-with-requesty-(an-alternative-to-openrouter)",
+      "outline": [
+        {
+          "level": 1,
+          "text": "Supercharge OpenWebUI with Requesty (An Alternative to OpenRouter)"
+        },
+        {
+          "level": 2,
+          "text": "Table of Contents"
+        },
+        {
+          "level": 2,
+          "text": "1. Why Integrate Requesty with OpenWebUI?"
+        },
+        {
+          "level": 2,
+          "text": "2. Sign Up for Requesty"
+        },
+        {
+          "level": 2,
+          "text": "3. Configuring OpenWebUI"
+        },
+        {
+          "level": 2,
+          "text": "4. Creating & Using Your API Key"
+        },
+        {
+          "level": 2,
+          "text": "5. Verifying the Integration"
+        },
+        {
+          "level": 2,
+          "text": "6. Monitoring Usage & Costs"
+        },
+        {
+          "level": 2,
+          "text": "7. Wrap-Up"
+        },
+        {
+          "level": 3,
+          "text": "Ready to get started?"
+        }
+      ],
+      "error": null
+    }
+  ]
+}

@@ -56,9 +56,10 @@ async function main() {
   const lang = args.lang || 'en';
   const market = args.market || 'us';
   const maxResults = Math.min(parseInt(args.results) || 10, 10);
+  const SEOMASTER_ROOT = path.join(__dirname, '..');
   const outputDir = args.out
     ? path.resolve(process.cwd(), args.out)
-    : path.resolve(process.cwd(), 'articles/blog');
+    : path.join(SEOMASTER_ROOT, 'output');
 
   // 确保输出目录存在
   fs.mkdirSync(outputDir, { recursive: true });
