@@ -12,6 +12,9 @@ const yaml = require('js-yaml');
  * @param {string} outputDir - 输出目录
  */
 function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
+  if (!outline.sections || !Array.isArray(outline.sections)) {
+    throw new Error('AI outline missing sections array. Raw response may be malformed.');
+  }
   // 转换 sections 格式
   const sections = outline.sections.map((s) => {
     const allH3 = s.h3_items || [];

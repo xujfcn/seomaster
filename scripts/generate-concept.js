@@ -50,7 +50,7 @@ async function main() {
     process.exit(1);
   }
 
-  const keyword = args.keyword;
+  const keyword = args.keyword.trim();
   const slug = args.slug || keywordToSlug(keyword);
   const lang = args.lang || 'en';
   const market = args.market || 'us';
@@ -76,6 +76,13 @@ async function main() {
   const outlineData = await scrapeOutlines(searchResults);
   const successCount = outlineData.filter((o) => !o.error).length;
   console.log(`  Scraped ${successCount}/${searchResults.length} articles successfully\n`);
+
+  if (successCount === 0) {
+    throw new Error('Failed to scrape any articles. All URLs may be behind a paywall or blocking scraping.');
+  }
+  if (successCount < 3) {
+    console.warn(`  ⚠️  Warning: Only ${successCount} articles scraped successfully. AI outline quality may be reduced.\n`);
+  }
 
   // 保存原始数据
   const researchPath = writeResearchJson(slug, keyword, searchResults, outlineData, outputDir);

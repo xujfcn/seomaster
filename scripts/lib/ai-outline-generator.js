@@ -35,6 +35,9 @@ async function generateOutline(keyword, competitorData, options = {}) {
   }
 
   const data = await res.json();
+  if (!data.choices || data.choices.length === 0) {
+    throw new Error(`AI API returned no choices. Response: ${JSON.stringify(data).slice(0, 200)}`);
+  }
   const content = data.choices[0].message.content;
 
   try {
