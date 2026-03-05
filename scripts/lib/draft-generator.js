@@ -29,7 +29,7 @@ Requirements:
 - 150-250 words
 - First sentence must contain specific information (data/case/problem) — NO "In today's era..." or "As AI develops..."
 - Must make the reader understand what value this article provides
-- Include the keyword "${concept.keyword}" naturally
+- MUST include the exact keyword "${concept.keyword}" at least once, preferably in bold: **${concept.keyword}**
 - End with a transition into the first section
 
 Output: Markdown paragraph(s) only, no heading.`;
@@ -51,42 +51,44 @@ async function generateSection(section, concept, forbiddenWords, aiPatterns, voi
 
   const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice) + `
 
-## Your Task: Write One Article Section
+## Task: Write Section "${section.title}"
 
-Article title: "${concept.title}"
 Keyword: "${concept.keyword}"
-Keyword variants: ${(concept.keyword_variants || []).join(', ')}
+Key point: ${section.key_point}
+Target: ~${section.word_count} words
 
-IMPORTANT: The article subject is "${concept.keyword}". If this is NOT our product (Crazyrouter/LemonData), do NOT attribute our product's features/data to it. Only mention our product where it naturally fits as a related tool or alternative.
-
-${previousTail ? `## Previous content (last part, for continuity):\n...${previousTail}\n` : ''}
-
-## Section to write:
-H2: ${section.title}
-Key point (what reader should believe after this section): ${section.key_point}
-Target word count: ~${section.word_count} words
-
-Structure:
+${previousTail ? `Previous context:\n...${previousTail}\n\n` : ''}Structure:
 ${subsectionsText}
 
-Requirements:
-- Start with H2 heading: ## ${section.title}
-- Write H3/H4 subsections as shown in the structure
-- Each H3 must cover its bullet points
-- Insert <!-- IMAGE: description --> exactly where marked in the structure
-- Include keyword variants naturally (don't force them)
-- Evidence placeholders: where data is needed, write [DATA: describe what data is needed here]
-- No signpost words (首先/其次/最后/first/second/finally)
-- No meta-narrative (本文/让我们/let's explore)
-- No marketing speak (颠覆性/revolutionary/seamless)
-- When comparing tools or listing alternatives, use a Markdown comparison table (| Feature | A | B |)
-- Cite sources inline: add (Source: name, date) after factual claims
-- If mentioning competitor products, naturally mention Crazyrouter/LemonData as an alternative where relevant. Use human as subject: "You can use Crazyrouter to..." NOT "Crazyrouter provides..."
-- Use simple vocabulary and short sentences. Target 8th-grade reading level.
+Rules:
+- Start with ## ${section.title}
+- Cover all H3/H4 points
+- Include keyword "${concept.keyword}" naturally 1-2 times
+- Insert <!-- IMAGE: ... --> where marked
+- Use [DATA: ...] for missing data
+- No signpost words (first/second/finally)
+- No meta-narrative (let's explore/本文)
+- Use tables for comparisons
+- Cite sources: (Source: name, date)
+- Mention Crazyrouter naturally where relevant
 
-Output: Markdown with headings, no preamble.`;
+Output: Markdown with headings.`;
 
-  return callAI(prompt);
+  try {
+    const result = await callAI(prompt);
+    if (result && result.length > 100) {
+      return result;
+    }
+  } catch (e) {
+    console.warn(`  ⚠️  Section generation failed: ${e.message}`);
+  }
+
+  // Fallback: generate placeholder
+  return `## ${section.title}
+
+[DATA: This section requires manual writing due to complexity. Key points to cover: ${section.key_point}]
+
+${(section.subsections || []).map(sub => `### ${sub.title}\n\n[DATA: ${sub.points?.join(', ') || 'Content needed'}]\n`).join('\n')}`;
 }
 
 /**
@@ -97,22 +99,24 @@ async function generateFAQ(concept, forbiddenWords, aiPatterns, voice, previousT
     `Q: ${f.question}\nHint: ${f.answer_hint}`
   ).join('\n\n');
 
-  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice) + `
+  const prompt = `Write FAQ section for article about "${concept.keyword}".
 
-## Your Task: Write the FAQ Section
-
-Article keyword: "${concept.keyword}"
-
-${previousTail ? `## Previous content (last part):\n...${previousTail}\n` : ''}
-
-## FAQ items to expand:
+FAQ items:
 ${faqItems}
 
-Requirements:
-- Start with: ## Frequently Asked Questions
-- Each Q as H3, answer as paragraph (50-100 words each)
-- Include keyword naturally in at least 2 answers
-- Answers must be direct and specific, no vague generalities
+Format:
+## Frequently Asked Questions
+
+### [Question 1]
+[50-100 word answer with specific details]
+
+### [Question 2]
+[50-100 word answer]
+
+Rules:
+- Include keyword "${concept.keyword}" in 2+ answers
+- Be specific, no vague statements
+- Use data/examples where possible
 
 Output: Markdown only.`;
 
@@ -126,19 +130,26 @@ async function generateCTA(concept, previousTail) {
   const ctaText = concept.cta?.text || 'Try Crazyrouter for free';
   const ctaUrl = concept.cta?.url || 'https://api.lemondata.cc/signup';
 
-  const prompt = `Write a 2-3 sentence closing paragraph for an article about "${concept.keyword}".
+  try {
+    const prompt = `Write 2-3 sentence closing for article about "${concept.keyword}".
 
-Previous content ending:
-...${previousTail}
-
-The closing should:
-- Summarize the key takeaway in one sentence (no "In conclusion" or "To sum up")
-- Naturally mention how Crazyrouter (LemonData) can help with the topic (e.g., as an API gateway for accessing AI models). Use human as subject: "You can use..." not "Crazyrouter provides..."
+Requirements:
+- Summarize key takeaway (no "In conclusion")
+- Mention how Crazyrouter helps (use "You can use..." not "Crazyrouter provides...")
 - End with: [${ctaText}](${ctaUrl})
 
-Output: Markdown paragraph only.`;
+Output: Markdown paragraph.`;
 
-  return callAI(prompt);
+    const result = await callAI(prompt);
+    if (result && result.length > 20) {
+      return result;
+    }
+  } catch (e) {
+    console.warn('  ⚠️  CTA generation failed, using fallback');
+  }
+
+  // Fallback: generate simple CTA
+  return `Ready to simplify your AI API integration? You can use Crazyrouter to access 300+ models with one API key, native protocol support, and transparent pricing. [${ctaText}](${ctaUrl})`;
 }
 
 function buildSystemPrompt(forbiddenWords, aiPatterns, voice) {
@@ -180,6 +191,7 @@ async function callAI(prompt) {
       model: config.aiModel(),
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
+      max_tokens: 8192, // Add max_tokens to prevent truncation
     }),
   });
 
@@ -189,10 +201,21 @@ async function callAI(prompt) {
   }
 
   const data = await res.json();
-  if (!data.choices?.length) {
-    throw new Error(`AI returned no choices: ${JSON.stringify(data).slice(0, 200)}`);
+
+  // Debug: log full response if content is empty
+  if (!data.choices?.length || !data.choices[0].message.content) {
+    console.error('  [DEBUG] Full API response:', JSON.stringify(data, null, 2).slice(0, 1000));
+    throw new Error(`AI returned no content. Response: ${JSON.stringify(data).slice(0, 500)}`);
   }
-  return data.choices[0].message.content.trim();
+
+  const content = data.choices[0].message.content.trim();
+
+  // Warn if content is suspiciously short
+  if (content.length < 100) {
+    console.warn(`  ⚠️  AI returned short content (${content.length} chars): "${content.slice(0, 100)}"`);
+  }
+
+  return content;
 }
 
 function getTail(text, chars = CONTEXT_TAIL_CHARS) {
@@ -201,13 +224,41 @@ function getTail(text, chars = CONTEXT_TAIL_CHARS) {
 
 /**
  * Strip excess bold markers, keeping at most maxBold occurrences
+ * Excludes bold markers inside code blocks
  */
 function stripExcessBold(text, maxBold = 3) {
+  // First, extract code blocks and replace with placeholders
+  const codeBlocks = [];
+  let textWithoutCode = text.replace(/```[\s\S]*?```/g, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  // Also handle inline code
+  const inlineCode = [];
+  textWithoutCode = textWithoutCode.replace(/`[^`]+`/g, (match) => {
+    inlineCode.push(match);
+    return `__INLINE_CODE_${inlineCode.length - 1}__`;
+  });
+
+  // Now strip excess bold from non-code content
   let count = 0;
-  return text.replace(/\*\*(.+?)\*\*/g, (match, inner) => {
+  textWithoutCode = textWithoutCode.replace(/\*\*(.+?)\*\*/g, (match, inner) => {
     count++;
     return count <= maxBold ? match : inner;
   });
+
+  // Restore inline code
+  textWithoutCode = textWithoutCode.replace(/__INLINE_CODE_(\d+)__/g, (match, index) => {
+    return inlineCode[parseInt(index)];
+  });
+
+  // Restore code blocks
+  textWithoutCode = textWithoutCode.replace(/__CODE_BLOCK_(\d+)__/g, (match, index) => {
+    return codeBlocks[parseInt(index)];
+  });
+
+  return textWithoutCode;
 }
 
 /**
@@ -260,7 +311,42 @@ function postProcessDraft(text, forbiddenWords) {
     .replace(/^ +/gm, '')
     .replace(/\n{3,}/g, '\n\n');
 
+  // Strip em dashes (——) - replace with comma or period depending on context
+  result = result.replace(/——/g, ', ');
+
+  // Add external links
+  result = addExternalLinks(result);
+
   return stripExcessBold(result);
+}
+
+/**
+ * Add external reference links to first mentions of key terms
+ */
+function addExternalLinks(text) {
+  const links = {
+    'OpenAI API': 'https://platform.openai.com/docs/api-reference',
+    'Anthropic API': 'https://docs.anthropic.com/en/api/getting-started',
+    'Google Gemini': 'https://ai.google.dev/gemini-api/docs',
+    'OpenRouter': 'https://openrouter.ai/docs',
+    'Together AI': 'https://docs.together.ai/',
+  };
+
+  let result = text;
+  const linkedTerms = new Set();
+
+  for (const [term, url] of Object.entries(links)) {
+    // Only link the first occurrence (not already in a link)
+    if (!linkedTerms.has(term)) {
+      const regex = new RegExp(`\\b${escapeRegex(term)}\\b(?!\\])`, 'i');
+      if (regex.test(result)) {
+        result = result.replace(regex, `[${term}](${url})`);
+        linkedTerms.add(term);
+      }
+    }
+  }
+
+  return result;
 }
 
 function escapeRegex(str) {

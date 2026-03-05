@@ -26,7 +26,7 @@ async function generateOutline(keyword, competitorData, options = {}) {
       model: config.aiModel(),
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
-      response_format: { type: 'json_object' },
+      max_tokens: 4096,
     }),
   });
 
@@ -36,15 +36,29 @@ async function generateOutline(keyword, competitorData, options = {}) {
   }
 
   const data = await res.json();
+
   if (!data.choices || data.choices.length === 0) {
-    throw new Error(`AI API returned no choices. Response: ${JSON.stringify(data).slice(0, 200)}`);
+    throw new Error(`AI API returned no choices. Response: ${JSON.stringify(data).slice(0, 500)}`);
   }
   const content = data.choices[0].message.content;
 
+  // Debug: 保存完整响应到文件
+  const fs = require('fs');
+  const debugPath = require('path').join(process.cwd(), 'output', 'debug-ai-response.txt');
+  fs.writeFileSync(debugPath, content, 'utf8');
+  console.log(`\n[DEBUG] Full AI response saved to: ${debugPath}`);
+  console.log(`[DEBUG] Content length: ${content.length}`);
+
   try {
-    return JSON.parse(content);
+    // 剥离 markdown 代码块包裹（```json ... ``` 或 ``` ... ```），支持前后空行
+    let cleaned = content.trim();
+    // 移除开头的 ```json 或 ```
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '');
+    // 移除结尾的 ```
+    cleaned = cleaned.replace(/\s*```\s*$/, '');
+    return JSON.parse(cleaned.trim());
   } catch (e) {
-    throw new Error(`AI returned invalid JSON: ${content.slice(0, 200)}`);
+    throw new Error(`AI returned invalid JSON: ${content.slice(0, 300)}`);
   }
 }
 

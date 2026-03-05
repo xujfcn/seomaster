@@ -130,10 +130,11 @@ function checkHardMetrics(draft, concept) {
     detail: `${emDash} 处`,
   });
 
-  // 4. 标题结构
-  const h1 = (draft.match(/^# [^#]/mg) || []).length;
-  const h2 = (draft.match(/^## /mg) || []).length;
-  const h3 = (draft.match(/^### /mg) || []).length;
+  // 4. 标题结构 (exclude code blocks)
+  const draftWithoutCode = draft.replace(/```[\s\S]*?```/g, ''); // Remove code blocks
+  const h1 = (draftWithoutCode.match(/^# [^#]/mg) || []).length;
+  const h2 = (draftWithoutCode.match(/^## /mg) || []).length;
+  const h3 = (draftWithoutCode.match(/^### /mg) || []).length;
   results.push({
     name: '标题结构',
     pass: h1 === 1 && h2 >= 3,

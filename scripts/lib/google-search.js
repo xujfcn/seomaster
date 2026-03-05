@@ -14,6 +14,10 @@ async function searchGoogle(keyword, options = {}) {
   const { lang = 'en', market = 'us', maxResults = 10 } = options;
   const token = require('./config').apifyToken();
 
+  // Apify 需要完整的语言代码（zh-CN 而不是 zh）
+  const langMap = { zh: 'zh-CN', 'zh-tw': 'zh-TW', pt: 'pt-BR' };
+  const languageCode = langMap[lang.toLowerCase()] || lang;
+
   // 启动 Actor run
   const runRes = await fetch(
     `${APIFY_BASE}/acts/${ACTOR_ID}/runs?token=${token}`,
@@ -22,7 +26,7 @@ async function searchGoogle(keyword, options = {}) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         queries: keyword,
-        languageCode: lang,
+        languageCode: languageCode,
         countryCode: market.toLowerCase(),
         maxPagesPerQuery: 1,
         resultsPerPage: maxResults,
