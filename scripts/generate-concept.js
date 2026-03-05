@@ -21,6 +21,7 @@ const { searchGoogle } = require('./lib/google-search');
 const { scrapeOutlines } = require('./lib/outline-scraper');
 const { generateOutline } = require('./lib/ai-outline-generator');
 const { writeConceptYaml, writeResearchJson } = require('./lib/concept-writer');
+const { listKnowledgeFiles } = require('./lib/knowledge');
 
 // 解析命令行参数
 function parseArgs(argv) {
@@ -64,7 +65,16 @@ async function main() {
   console.log(`  slug:    ${slug}`);
   console.log(`  lang:    ${lang}`);
   console.log(`  market:  ${market}`);
-  console.log(`  output:  ${outputDir}\n`);
+  console.log(`  output:  ${outputDir}`);
+
+  // 显示知识库状态
+  const knowledgeFiles = listKnowledgeFiles();
+  if (knowledgeFiles.length > 0) {
+    console.log(`  📚 knowledge: ${knowledgeFiles.length} files (${knowledgeFiles.join(', ')})`);
+  } else {
+    console.log(`  ⚠️  knowledge: empty (run init-project.js or add files to knowledge/)`);
+  }
+  console.log('');
 
   // Step 1: Google Search
   console.log(`[1/4] Searching Google for top ${maxResults} results...`);

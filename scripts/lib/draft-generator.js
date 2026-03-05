@@ -1,6 +1,7 @@
 // seomaster/scripts/lib/draft-generator.js
 const fetch = require('node-fetch');
 const config = require('./config');
+const { loadDraftKnowledge } = require('./knowledge');
 
 const CONTEXT_TAIL_CHARS = 800; // 上一段末尾传入的字符数
 
@@ -133,8 +134,14 @@ Output: Markdown paragraph only.`;
 }
 
 function buildSystemPrompt(forbiddenWords, aiPatterns, voice) {
-  return `You are a technical content writer. Voice: "${voice.tone}". Style: "${voice.style}".
+  // 加载知识库上下文
+  const knowledge = loadDraftKnowledge();
+  const knowledgeSection = knowledge
+    ? `\nREFERENCE DATA (use real numbers from here instead of [DATA: ...] when available):\n${knowledge}\n`
+    : '';
 
+  return `You are a technical content writer. Voice: "${voice.tone}". Style: "${voice.style}".
+${knowledgeSection}
 FORBIDDEN words/phrases (never use these):
 ${forbiddenWords.map((w) => `- "${w}"`).join('\n')}
 

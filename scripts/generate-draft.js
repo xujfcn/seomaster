@@ -15,6 +15,7 @@ const path = require('path');
 const fs = require('fs');
 const { loadDraftConfig } = require('./lib/draft-config');
 const { generateIntro, generateSection, generateFAQ, generateCTA, getTail, postProcessDraft } = require('./lib/draft-generator');
+const { listKnowledgeFiles } = require('./lib/knowledge');
 
 function parseArgs(argv) {
   const args = {};
@@ -56,7 +57,16 @@ async function main() {
 
   console.log(`\n✍️  SEOMaster: Generating draft from concept\n`);
   console.log(`  concept: ${conceptPath}`);
-  console.log(`  output:  ${outputDir}\n`);
+  console.log(`  output:  ${outputDir}`);
+
+  // 显示知识库状态
+  const knowledgeFiles = listKnowledgeFiles();
+  if (knowledgeFiles.length > 0) {
+    console.log(`  📚 knowledge: ${knowledgeFiles.length} files (${knowledgeFiles.join(', ')})`);
+  } else {
+    console.log(`  ⚠️  knowledge: empty (add files to knowledge/ for better accuracy)`);
+  }
+  console.log('');
 
   // 加载配置
   const { concept, forbiddenWords, voice, aiPatterns } = loadDraftConfig(conceptPath);

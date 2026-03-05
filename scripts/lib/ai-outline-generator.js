@@ -1,6 +1,7 @@
 // seomaster/scripts/lib/ai-outline-generator.js
 const fetch = require('node-fetch');
 const config = require('./config');
+const { loadConceptKnowledge } = require('./knowledge');
 
 /**
  * 调用 AI API，根据竞品大纲生成本文大纲
@@ -65,8 +66,14 @@ function buildPrompt(keyword, competitorSummary, lang, maxWords) {
       ? '用中文输出大纲标题。'
       : 'Output outline titles in English.';
 
-  return `You are an expert SEO content strategist. Analyze the following competitor articles for the keyword "${keyword}", then generate an optimized article outline.
+  // 加载知识库上下文
+  const knowledge = loadConceptKnowledge();
+  const knowledgeSection = knowledge
+    ? `\n## Internal Knowledge Base (use this data for accuracy)\n${knowledge}\n`
+    : '';
 
+  return `You are an expert SEO content strategist. Analyze the following competitor articles for the keyword "${keyword}", then generate an optimized article outline.
+${knowledgeSection}
 ## Competitor Outlines
 ${competitorSummary}
 
