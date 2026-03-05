@@ -195,4 +195,57 @@ function stripExcessBold(text, maxBold = 3) {
   });
 }
 
-module.exports = { generateIntro, generateSection, generateFAQ, generateCTA, getTail, stripExcessBold };
+/**
+ * Post-process draft: strip forbidden words by replacing with alternatives or removing
+ */
+function postProcessDraft(text, forbiddenWords) {
+  // Replacement map for common forbidden words that need substitution
+  const replacements = {
+    '本文': '',
+    '本文讨论': '',
+    '接下来分析': '',
+    '接下来': '',
+    '下面介绍': '',
+    '让我们来看': '',
+    '至关重要': '很关键',
+    '值得注意的是': '',
+    '不难发现': '',
+    '综上所述': '',
+    '不言而喻': '',
+    '此外': '',
+    '首先': '',
+    '其次': '',
+    '最后': '',
+    "let's explore": '',
+    'this article discusses': '',
+    "it's worth noting": '',
+    'in conclusion': '',
+  };
+
+  let result = text;
+  for (const word of forbiddenWords) {
+    const lower = word.toLowerCase();
+    if (lower in replacements) {
+      // Case-insensitive replace
+      const regex = new RegExp(escapeRegex(word), 'gi');
+      const replacement = replacements[lower];
+      result = result.replace(regex, replacement);
+    }
+  }
+
+  // Clean up artifacts: double spaces, leading commas/periods after removal, empty lines
+  result = result
+    .replace(/，，/g, '，')
+    .replace(/。。/g, '。')
+    .replace(/  +/g, ' ')
+    .replace(/^ +/gm, '')
+    .replace(/\n{3,}/g, '\n\n');
+
+  return stripExcessBold(result);
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+module.exports = { generateIntro, generateSection, generateFAQ, generateCTA, getTail, postProcessDraft };

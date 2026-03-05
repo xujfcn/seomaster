@@ -14,7 +14,7 @@
 const path = require('path');
 const fs = require('fs');
 const { loadDraftConfig } = require('./lib/draft-config');
-const { generateIntro, generateSection, generateFAQ, generateCTA, getTail, stripExcessBold } = require('./lib/draft-generator');
+const { generateIntro, generateSection, generateFAQ, generateCTA, getTail, postProcessDraft } = require('./lib/draft-generator');
 
 function parseArgs(argv) {
   const args = {};
@@ -105,8 +105,8 @@ async function main() {
   fullText += '\n\n' + cta;
   console.log(`  ✓ CTA\n`);
 
-  // 组装输出，去除超限 bold
-  const draft = stripExcessBold(parts.join('\n\n'));
+  // 组装输出，后处理：去除禁用词 + 超限 bold
+  const draft = postProcessDraft(parts.join('\n\n'), forbiddenWords);
   const totalWords = countWords(draft);
   const draftPath = path.join(outputDir, `${slug}-draft.md`);
   fs.writeFileSync(draftPath, draft, 'utf-8');
