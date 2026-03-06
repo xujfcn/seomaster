@@ -9,7 +9,7 @@ const CONTEXT_TAIL_CHARS = 800; // 上一段末尾传入的字符数
  * 生成文章 intro 段落
  */
 async function generateIntro(concept, forbiddenWords, aiPatterns, voice) {
-  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice) + `
+  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword) + `
 
 ## Your Task: Write the Article Introduction
 
@@ -75,7 +75,7 @@ async function generateSection(section, concept, forbiddenWords, aiPatterns, voi
     return `  ### ${sub.title}\n${points}${imageMarker}`;
   }).join('\n\n');
 
-  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice) + `
+  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword) + `
 
 ## Task: Write Section "${section.title}"
 
@@ -243,9 +243,9 @@ Output: plain markdown paragraph only.`;
   return `Ready to simplify your AI API integration? You can use Crazyrouter to access 300+ models with one API key, native protocol support, and transparent pricing. [${ctaText}](${ctaUrl})`;
 }
 
-function buildSystemPrompt(forbiddenWords, aiPatterns, voice) {
-  // 加载知识库上下文
-  const knowledge = loadDraftKnowledge();
+function buildSystemPrompt(forbiddenWords, aiPatterns, voice, keyword = '') {
+  // 加载知识库上下文（传递关键词以匹配相关文件）
+  const knowledge = loadDraftKnowledge(keyword);
   const knowledgeSection = knowledge
     ? `\nREFERENCE DATA — This is OUR product (Crazyrouter/LemonData) and industry data. Use it for accuracy when relevant, but do NOT confuse our product data with the article's subject. If the article is about a different product, clearly distinguish between them:\n${knowledge}\n`
     : '';

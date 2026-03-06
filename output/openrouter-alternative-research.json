@@ -1,36 +1,60 @@
 {
   "keyword": "openrouter alternative",
-  "generated_at": "2026-03-05T02:43:49.375Z",
+  "generated_at": "2026-03-05T12:20:35.424Z",
   "search_results": [
     {
       "position": 1,
       "title": "Other OpenRouter-like API providers? : r/RooCode",
       "url": "https://www.reddit.com/r/RooCode/comments/1ka7yok/other_openrouterlike_api_providers/",
-      "description": "Are there any API providers who have a similar service with OpenRouter where for the price of $10 you can have a thousand requests per day on their free LLM's?Read more"
+      "description": "Apart from OpenRouter, I have tried Glama, Requesty and also the API keys directly from Anthropic, OpenAI and Google. I much prefer the Router ...Read more"
     },
     {
       "position": 2,
-      "title": "Best OpenRouter Alternatives for Production AI Systems",
-      "url": "https://www.truefoundry.com/blog/openrouter-alternatives",
-      "description": "Top 5 OpenRouter Alternatives · 1. TrueFoundry · 2. Portkey · 3. LiteLLM · 4. Helicone · 5. Kong AI Gateway. ‍. Kong is the industry standard ...Read more"
-    },
-    {
-      "position": 3,
       "title": "7 Best OpenRouter Alternatives 2026",
       "url": "https://shareai.now/blog/alternatives/openrouter-alternatives/",
       "description": "OpenRouter alternatives: ShareAI (BYOI, 70% to GPU owners), Portkey, Kong, Unify, LiteLLM & more—find cheaper, faster, or self-hosted options."
     },
     {
-      "position": 4,
+      "position": 3,
       "title": "OpenRouter Alternatives in 2025",
       "url": "https://www.helicone.ai/blog/openrouter-alternatives",
       "description": "1. Helicone AI Gateway. Production-grade routing with health monitoring. · 2. Portkey. Enterprise-focused with advanced guardrails, compliance ...Read more"
     },
     {
+      "position": 4,
+      "title": "Top 10 OpenRouter Alternatives & Competitors in 2026",
+      "url": "https://www.g2.com/products/openrouter/competitors/alternatives",
+      "description": "The best OpenRouter alternatives are Vertex AI, Botpress, and LaunchDarkly. Find top-ranking free & paid apps similar to OpenRouter for your Large Language ..."
+    },
+    {
       "position": 5,
+      "title": "Best OpenRouter Alternatives",
+      "url": "https://www.edenai.co/post/best-alternatives-to-openrouter",
+      "description": "Best Alternatives to OpenRouter for LLM API Access · 1. Eden AI · 2. Portkey · 3. Kong AI · 4. Orq.AI · 5. Unify · 6. LiteLLM.Read more"
+    },
+    {
+      "position": 6,
+      "title": "LiteLLM vs OpenRouter: Which is Best For You?",
+      "url": "https://www.truefoundry.com/blog/litellm-vs-openrouter",
+      "description": "TrueFoundry provides a superior alternative to LiteLLM vs OpenRouter by offering a private, VPC-integrated gateway built for enterprise ...Read more"
+    },
+    {
+      "position": 7,
       "title": "Supercharge OpenWebUI with Requesty (An Alternative to ...",
       "url": "https://www.requesty.ai/blog/supercharge-openwebui-with-requesty-(an-alternative-to-openrouter)",
       "description": "If you've been using OpenRouter or looking for a reliable alternative that supports lots of models and multiple providers, Requesty is the ...Read more"
+    },
+    {
+      "position": 8,
+      "title": "OpenRouter alternative for Videos | by DaWe",
+      "url": "https://medium.com/@willteam35/openrouter-alternative-for-videos-e7038bf890c4",
+      "description": "ImageRouter has a unified, OpenAI compatible API, so it's really easy to switch models. With the same API, you can access all models.Read more"
+    },
+    {
+      "position": 9,
+      "title": "OpenRouter Alternatives You Should Try: Cheaper, Faster, ...",
+      "url": "https://zenmux.ai/blog/openrouter-alternatives-you-should-try-cheaper-faster-and-more-flexible-options",
+      "description": "Discover the best alternatives to OpenRouter for integrating large language models (LLMs). This guide compares flexible, cost‑efficient, ..."
     }
   ],
   "scraped_outlines": [
@@ -38,104 +62,11 @@
       "position": 1,
       "title": "Other OpenRouter-like API providers? : r/RooCode",
       "url": "https://www.reddit.com/r/RooCode/comments/1ka7yok/other_openrouterlike_api_providers/",
-      "outline": [
-        {
-          "level": 1,
-          "text": "Other OpenRouter-like API providers?"
-        },
-        {
-          "level": 2,
-          "text": "Top Posts"
-        }
-      ],
-      "error": null
+      "outline": [],
+      "error": "HTTP 403"
     },
     {
       "position": 2,
-      "title": "Best OpenRouter Alternatives for Production AI Systems",
-      "url": "https://www.truefoundry.com/blog/openrouter-alternatives",
-      "outline": [
-        {
-          "level": 1,
-          "text": "Best OpenRouter Alternatives for Production AI Systems"
-        },
-        {
-          "level": 2,
-          "text": "Introduction"
-        },
-        {
-          "level": 2,
-          "text": "What is OpenRouter?"
-        },
-        {
-          "level": 2,
-          "text": "How does OpenRouter work?"
-        },
-        {
-          "level": 2,
-          "text": "Why Explore OpenRouter Alternatives?"
-        },
-        {
-          "level": 2,
-          "text": "Top 5 OpenRouter Alternatives"
-        },
-        {
-          "level": 3,
-          "text": "1. TrueFoundry"
-        },
-        {
-          "level": 3,
-          "text": "2. Portkey"
-        },
-        {
-          "level": 3,
-          "text": "3. LiteLLM"
-        },
-        {
-          "level": 3,
-          "text": "4. Helicone"
-        },
-        {
-          "level": 3,
-          "text": "5. Kong AI Gateway"
-        },
-        {
-          "level": 2,
-          "text": "Conclusion"
-        },
-        {
-          "level": 3,
-          "text": "Built for Speed: ~10ms Latency, Even Under Load"
-        },
-        {
-          "level": 2,
-          "text": "Discover More"
-        },
-        {
-          "level": 3,
-          "text": "Amazon SageMaker Review: Features, Pricing, Pros and Cons (+ Better Alternative)"
-        },
-        {
-          "level": 3,
-          "text": "Vercel AI Alternatives: 8 Top Picks You Can Try in 2026"
-        },
-        {
-          "level": 3,
-          "text": "Top 8 Amazon Bedrock Alternative and Competitors for 2026 [Detailed Review]"
-        },
-        {
-          "level": 3,
-          "text": "Top 5 LiteLLM Alternatives for Enterprises in 2026"
-        },
-        {
-          "level": 4,
-          "text": "Subscribe to our newsletter"
-        }
-      ],
-      "error": null
-    },
-    {
-      "position": 3,
       "title": "7 Best OpenRouter Alternatives 2026",
       "url": "https://shareai.now/blog/alternatives/openrouter-alternatives/",
       "outline": [
@@ -267,7 +198,7 @@
       "error": null
     },
     {
-      "position": 4,
+      "position": 3,
       "title": "OpenRouter Alternatives in 2025",
       "url": "https://www.helicone.ai/blog/openrouter-alternatives",
       "outline": [
@@ -359,7 +290,190 @@
       "error": null
     },
     {
+      "position": 4,
+      "title": "Top 10 OpenRouter Alternatives & Competitors in 2026",
+      "url": "https://www.g2.com/products/openrouter/competitors/alternatives",
+      "outline": [],
+      "error": "HTTP 403"
+    },
+    {
       "position": 5,
+      "title": "Best OpenRouter Alternatives",
+      "url": "https://www.edenai.co/post/best-alternatives-to-openrouter",
+      "outline": [
+        {
+          "level": 1,
+          "text": "Best OpenRouter Alternatives"
+        },
+        {
+          "level": 2,
+          "text": "Understanding OpenRouter and LLMs"
+        },
+        {
+          "level": 2,
+          "text": "Best Alternatives to OpenRouter for LLM API Access"
+        },
+        {
+          "level": 3,
+          "text": "1. Eden AI"
+        },
+        {
+          "level": 3,
+          "text": "2. Portkey"
+        },
+        {
+          "level": 3,
+          "text": "3. Kong AI"
+        },
+        {
+          "level": 3,
+          "text": "4. Orq.AI"
+        },
+        {
+          "level": 3,
+          "text": "5. Unify"
+        },
+        {
+          "level": 3,
+          "text": "6. LiteLLM"
+        },
+        {
+          "level": 2,
+          "text": "Conclusion"
+        },
+        {
+          "level": 2,
+          "text": "Start Your AI Journey Today"
+        },
+        {
+          "level": 2,
+          "text": "Related Posts"
+        },
+        {
+          "level": 3,
+          "text": "What is an AI Engineer?"
+        },
+        {
+          "level": 3,
+          "text": "How to Automate AI Model Selection in Production: A Practical Guide"
+        },
+        {
+          "level": 3,
+          "text": "OpenAI, Anthropic, Mistral: Which AI Model Performs Best for Your Use Case?"
+        },
+        {
+          "level": 2,
+          "text": "Try Eden AI now."
+        },
+        {
+          "level": 3,
+          "text": "Start Your AI Journey Today"
+        },
+        {
+          "level": 3,
+          "text": "Start Your AI Journey Today"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 6,
+      "title": "LiteLLM vs OpenRouter: Which is Best For You?",
+      "url": "https://www.truefoundry.com/blog/litellm-vs-openrouter",
+      "outline": [
+        {
+          "level": 1,
+          "text": "LiteLLM vs OpenRouter: Which is Right For You?"
+        },
+        {
+          "level": 2,
+          "text": "What Is OpenRouter?"
+        },
+        {
+          "level": 2,
+          "text": "What Is LiteLLM?"
+        },
+        {
+          "level": 2,
+          "text": "LiteLLM vs OpenRouter"
+        },
+        {
+          "level": 2,
+          "text": "When to Use OpenRouter?"
+        },
+        {
+          "level": 2,
+          "text": "When to Use LiteLLM"
+        },
+        {
+          "level": 2,
+          "text": "Open router Vs Lite LLM - Which is best?"
+        },
+        {
+          "level": 2,
+          "text": "TrueFoundry - Best AI Gateway"
+        },
+        {
+          "level": 2,
+          "text": "Conclusion"
+        },
+        {
+          "level": 2,
+          "text": "Frequently Asked Questions"
+        },
+        {
+          "level": 3,
+          "text": "What is the difference between OpenRouter and LiteLLM?"
+        },
+        {
+          "level": 3,
+          "text": "Is LiteLLM like OpenRouter?"
+        },
+        {
+          "level": 3,
+          "text": "What makes TrueFoundry better than LiteLLM vs Openrouter?"
+        },
+        {
+          "level": 3,
+          "text": "How does TrueFoundry improve LiteLLM vs OpenRouter workflows?"
+        },
+        {
+          "level": 3,
+          "text": "Does LiteLLM or OpenRouter offer rate limiting?"
+        },
+        {
+          "level": 3,
+          "text": "Built for Speed: ~10ms Latency, Even Under Load"
+        },
+        {
+          "level": 2,
+          "text": "Discover More"
+        },
+        {
+          "level": 3,
+          "text": "What is LLM Observability ? Complete Guide"
+        },
+        {
+          "level": 3,
+          "text": "Amazon SageMaker Review: Features, Pricing, Pros and Cons (+ Better Alternative)"
+        },
+        {
+          "level": 3,
+          "text": "Top 8 Amazon Bedrock Alternative and Competitors for 2026 [Detailed Review]"
+        },
+        {
+          "level": 3,
+          "text": "Vercel AI Alternatives: 8 Top Picks You Can Try in 2026"
+        },
+        {
+          "level": 4,
+          "text": "Subscribe to our newsletter"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 7,
       "title": "Supercharge OpenWebUI with Requesty (An Alternative to ...",
       "url": "https://www.requesty.ai/blog/supercharge-openwebui-with-requesty-(an-alternative-to-openrouter)",
       "outline": [
@@ -402,6 +516,69 @@
         {
           "level": 3,
           "text": "Ready to get started?"
+        }
+      ],
+      "error": null
+    },
+    {
+      "position": 8,
+      "title": "OpenRouter alternative for Videos | by DaWe",
+      "url": "https://medium.com/@willteam35/openrouter-alternative-for-videos-e7038bf890c4",
+      "outline": [],
+      "error": "HTTP 403"
+    },
+    {
+      "position": 9,
+      "title": "OpenRouter Alternatives You Should Try: Cheaper, Faster, ...",
+      "url": "https://zenmux.ai/blog/openrouter-alternatives-you-should-try-cheaper-faster-and-more-flexible-options",
+      "outline": [
+        {
+          "level": 1,
+          "text": "OpenRouter Alternatives You Should Try: Cheaper, Faster, and More Flexible Options"
+        },
+        {
+          "level": 2,
+          "text": "Why Look for OpenRouter Alternatives?"
+        },
+        {
+          "level": 2,
+          "text": "1. ZenMux — The Best OpenRouter Alternative for Enterprise Reliability"
+        },
+        {
+          "level": 2,
+          "text": "2. Eden AI — Flexible, Multi‑Service Aggregation Made Easy"
+        },
+        {
+          "level": 2,
+          "text": "3. Portkey — Smart Routing and API Cost Optimization"
+        },
+        {
+          "level": 2,
+          "text": "4. Kong AI — Open‑Source Gateway with Full Customization"
+        },
+        {
+          "level": 2,
+          "text": "5. Orq.AI — Collaborative AI Development Workspace"
+        },
+        {
+          "level": 2,
+          "text": "6. Unify AI — Benchmark‑Driven Dynamic Routing"
+        },
+        {
+          "level": 2,
+          "text": "7. LiteLLM — Open‑Source Alternative for Complete Control"
+        },
+        {
+          "level": 2,
+          "text": "How to Choose the Right OpenRouter Alternative"
+        },
+        {
+          "level": 2,
+          "text": "The Future of LLM Aggregators: Intelligent Routing and Guaranteed Quality"
+        },
+        {
+          "level": 2,
+          "text": "Final Thought"
         }
       ],
       "error": null

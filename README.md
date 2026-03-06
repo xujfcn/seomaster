@@ -1,499 +1,316 @@
-# SEOMaster - 通用内容写作工作流
+# SEOMaster
 
-> 一个可复用的、AI 驱动的内容生产工作流系统，专为技术产品的 SEO 内容营销设计。
+AI 驱动的 SEO 内容生成工具，支持多项目管理和智能知识库。
 
-## 🚀 新手入门
+## 快速启动
 
-**第一次使用？** 请阅读 [新手入门指南 (GETTING-STARTED.md)](GETTING-STARTED.md)
+```bash
+# 1. 进入目录
+cd D:\lemondata-free\lemondata-content\seomaster
 
-从 git clone 到生成第一篇文章，只需 5 分钟。
+# 2. 查看项目
+seomaster project:list
 
-## 核心特点
+# 3. 生成文章
+seomaster new "your keyword"
+```
 
-- ✅ **Thesis 优先** - 动笔前必须明确核心论点
-- ✅ **数据驱动** - 每个判断都有可验证的证据
-- ✅ **质量把控** - 硬指标检查，杜绝 AI 套话
-- ✅ **多渠道分发** - 一份源文件，多形态输出
-- ✅ **AI + 人工** - 明确决策分层，效率与质量兼顾
+## 核心特性
+
+- ✅ **AI 驱动** - 使用 Claude/GPT 生成高质量 SEO 文章
+- ✅ **多项目支持** - 为不同产品维护独立知识库
+- ✅ **智能知识库** - 基于关键词自动加载相关知识（Obsidian 集成）
+- ✅ **完整工作流** - Concept → Draft → Images → Quality Check
+- ✅ **交互式模式** - 预览和确认每个步骤
+- ✅ **自动配图** - AI 生成文章配图
+
+## 使用示例
+
+### 基本用法
+
+```bash
+# 生成英文文章
+seomaster new "ai api pricing"
+
+# 生成中文文章
+seomaster new "AI API 定价" --lang zh
+
+# 交互式模式（推荐新手）
+seomaster new "keyword" -i
+
+# 自定义参数
+seomaster new "keyword" --words 3000 --results 5
+```
+
+### 多项目管理
+
+```bash
+# 列出所有项目
+seomaster project:list
+
+# 添加新项目
+seomaster project:add
+
+# 切换项目
+seomaster project
+
+# 为指定项目生成文章
+seomaster new "keyword" --project myproduct
+```
+
+## 命令参考
+
+### 项目管理
+
+```bash
+seomaster project:list    # 列出所有项目
+seomaster project:add     # 添加新项目
+seomaster project         # 切换项目
+```
+
+### 文章生成
+
+```bash
+seomaster new "keyword"           # 完整流程（推荐）
+seomaster concept "keyword"       # 只生成 concept
+seomaster draft concept.yaml      # 只生成 draft
+seomaster images draft.md         # 只生成图片
+```
+
+### 查看和检查
+
+```bash
+seomaster preview concept.yaml    # 预览 concept
+seomaster check draft.md          # 质量检查
+seomaster list                    # 列出所有文章
+```
+
+## 命令参数
+
+```bash
+-p, --project <name>      指定项目
+-l, --lang <en|zh>        语言（默认: en）
+-w, --words <number>      字数（默认: 2500）
+-r, --results <number>    搜索结果数（默认: 5）
+-i, --interactive         交互式模式
+--skip-images             跳过图片生成
+```
+
+## 输出文件
+
+```
+output/
+├── keyword-concept.yaml      # 文章大纲和结构
+├── keyword-draft.md          # 完整文章（Markdown）
+├── keyword-research.json     # 竞品研究数据
+├── keyword-1.png             # 配图 1
+├── keyword-2.png             # 配图 2
+└── keyword-3.png             # 配图 3
+```
+
+## 项目配置
+
+配置文件：`projects.json`
+
+```json
+{
+  "projects": {
+    "crazyrouter": {
+      "name": "Crazyrouter (LemonData)",
+      "vault_path": "D:/crazyrouter",
+      "description": "Multi-protocol AI API gateway",
+      "output_dir": "output",
+      "default_lang": "en",
+      "default_words": 2500,
+      "default_results": 5
+    }
+  },
+  "current_project": "crazyrouter"
+}
+```
+
+## 知识库管理
+
+### Obsidian 集成
+
+1. 打开 Obsidian
+2. Open folder as vault
+3. 选择项目的 `vault_path`（如 `D:/crazyrouter`）
+
+### 知识库结构
+
+```
+D:/crazyrouter/
+├── Core/           # 核心知识（总是加载）
+│   └── Product.md
+├── Domain/         # 领域知识（按关键词匹配）
+│   ├── Pricing.md
+│   └── API.md
+├── Competitors/    # 竞品分析
+├── Cases/          # 使用案例
+└── Templates/      # 文档模板
+```
+
+### 测试知识库
+
+```bash
+node test-knowledge.js
+```
 
 ## 工作流程
 
-```
-Research → Thesis确认 → Concept → Write → Review → Rewrite → Publish
-```
-
-| 阶段 | 核心问题 | 输出 | 决策者 |
-|------|----------|------|--------|
-| Research | 有哪些可验证的数据？竞品怎么说？ | 研究笔记 | AI |
-| Thesis确认 | 这篇文章的核心卖点是什么？ | 一句话 thesis | 🔴 人工 |
-| Concept | 结构是什么？每个部分服务于 thesis 吗？ | article-concept.yaml | 🟡 AI + 人工 |
-| Write | 执行 brief，生成初稿 | 初稿 | AI |
-| Review | 硬指标 + 质量对照 | 评分 + 修改清单 | AI |
-| Rewrite | 修复所有未通过项 | 正式稿 | AI |
-| Publish | 多渠道分发 | 各平台发布 | 🔴 人工 |
-
-## 快速开始
-
-### 方式 A：从原始文档自动生成配置（推荐）
-
-如果你有项目介绍、对话记录等原始文档，可以自动生成配置：
+### 推荐流程（交互式）
 
 ```bash
-# 1. 准备原始文档文件夹
-mkdir raw-docs
-# 将项目介绍、对话记录等文档放入 raw-docs/
-
-# 2. 配置 API Key（可选）
-export OPENAI_API_KEY=sk-xxxxx
-
-# 3. 自动生成配置
-node scripts/init-project.js ./raw-docs
-
-# 4. 检查并完善生成的 project-config.yaml
-vim project-config.yaml
+seomaster new "keyword" -i
 ```
 
-详细说明：[项目初始化工作流](docs/init-workflow.md)
+1. 生成 concept
+2. 预览 concept
+3. 选择：继续/重新生成/编辑/取消
+4. 生成 draft
+5. 生成图片
+6. 质量检查
 
-### 方式 B：手动填写配置模板
+### 快速流程（自动）
 
 ```bash
-# 1. 复制 SEOMaster 到你的项目
-cp -r seomaster /path/to/your-project/
-
-# 2. 进入项目目录
-cd /path/to/your-project/seomaster
-
-# 3. 复制配置模板
-cp templates/project-config.yaml ../project-config.yaml
+seomaster new "keyword"
 ```
 
-### 2. 填写项目配置
+自动完成所有步骤。
 
-编辑 `project-config.yaml`，填写你的产品信息：
-
-```yaml
-project:
-  name: "YourProduct"
-  tagline: "一句话产品定位"
-  website: "https://yourproduct.com"
-
-value_proposition:
-  full: "YourProduct 让独立开发者用一个 API 访问 300+ AI 模型，省 40% API 费用"
-
-audience:
-  primary:
-    title: "独立开发者"
-    pain_points:
-      - "API 价格高"
-      - "多平台配置繁琐"
-
-key_metrics:
-  - metric: "支持模型数量"
-    value: "300+"
-    source: "官网模型列表"
-    verified: true
-    date: "2026-03-02"
-```
-
-**最小配置清单：**
-- ✅ 产品名称和定位
-- ✅ 目标读者和痛点
-- ✅ 3-5 个核心数据点
-- ✅ 2-3 个主要竞品
-- ✅ 发布平台列表
-
-### 3. 创建第一篇文章
+### 分步流程（高级）
 
 ```bash
-# 复制文章任务模板
-cp templates/article-task.yaml articles/my-first-article.yaml
+# 步骤 1: 生成 concept
+seomaster concept "keyword"
 
-# 编辑文章任务
-vim articles/my-first-article.yaml
+# 步骤 2: 预览
+seomaster preview output/keyword-concept.yaml
+
+# 步骤 3: 生成 draft
+seomaster draft output/keyword-concept.yaml
+
+# 步骤 4: 生成图片
+seomaster images output/keyword-draft.md
+
+# 步骤 5: 质量检查
+seomaster check output/keyword-draft.md
 ```
-
-填写关键信息：
-
-```yaml
-article:
-  id: "blog-001"
-  type: "technical_blog"
-
-thesis:
-  statement: "用 YourProduct 替代 Competitor，每月省 40% 费用"
-
-goal:
-  primary: "转化"
-
-target_platforms:
-  - platform: "官网博客"
-  - platform: "知乎"
-```
-
-### 4. 生成 Concept
-
-```bash
-# 使用 AI 生成 Concept（需要配置 API Key）
-node scripts/generate-concept.js articles/my-first-article.yaml
-
-# 或手动填写
-cp templates/article-concept.yaml articles/my-first-article-concept.yaml
-vim articles/my-first-article-concept.yaml
-```
-
-### 5. 生成初稿
-
-```bash
-# AI 生成初稿
-node scripts/generate-draft.js articles/my-first-article-concept.yaml
-
-# 输出：articles/my-first-article-draft.md
-```
-
-### 6. 质量检查
-
-```bash
-# 运行质量检查脚本
-node scripts/quality-check.js articles/my-first-article-draft.md
-
-# 输出：
-# ✅ 硬指标通过
-# ❌ 发现 2 处「本文」，需要修复
-# ✅ 字数 2,150（目标 2,000）
-# 总分：85/100
-```
-
-### 7. 人工审阅和修改
-
-根据质量检查报告，修改文章：
-- 修复所有硬指标问题
-- 验证数据准确性
-- 确认 Thesis 清晰
-- 检查 CTA 有效性
-
-### 8. 发布
-
-## CLI 工具（推荐）
-
-SEOMaster 提供了便捷的 CLI 工具，简化工作流程。
-
-### 安装
-
-```bash
-cd seomaster
-npm install -g .
-```
-
-### 快速使用
-
-#### 1. 交互式工作流（推荐新手）
-
-```bash
-seomaster new "your keyword" -i
-```
-
-生成大纲后会显示预览并等待确认：
-- ✓ 继续生成 draft
-- ↻ 重新生成 concept
-- ✎ 手动编辑 concept 文件
-- ✕ 取消流程
-
-#### 2. 自动全流程（推荐熟练用户）
-
-```bash
-seomaster new "your keyword" --words 2500
-```
-
-自动执行：concept → draft → images → quality check
-
-#### 3. 分步执行（精细控制）
-
-```bash
-# Step 1: 生成大纲
-seomaster concept "your keyword"
-
-# Step 2: 预览大纲
-seomaster preview your-keyword
-
-# Step 3: 生成正文
-seomaster draft output/your-keyword-concept.yaml
-
-# Step 4: 生成配图（最多3张）
-seomaster images output/your-keyword-draft.md
-
-# Step 5: 质量检查
-seomaster check your-keyword
-```
-
-### 主要命令
-
-| 命令 | 说明 | 示例 |
-|------|------|------|
-| `new <keyword> -i` | 交互式全流程 | `seomaster new "api guide" -i` |
-| `new <keyword>` | 自动全流程 | `seomaster new "api guide"` |
-| `concept <keyword>` | 仅生成大纲 | `seomaster concept "api guide"` |
-| `preview <slug>` | 预览大纲 | `seomaster preview api-guide` |
-| `draft <concept-file>` | 生成正文 | `seomaster draft output/api-guide-concept.yaml` |
-| `images <draft-file>` | 生成配图 | `seomaster images output/api-guide-draft.md` |
-| `check <draft-file>` | 质量检查 | `seomaster check api-guide` |
-| `list` | 列出所有文章 | `seomaster list` |
-
-### 详细文档
-
-- [交互式工作流指南](INTERACTIVE_WORKFLOW.md) - 大纲确认、重试、编辑
-- [自动配图工作流](IMAGE_WORKFLOW.md) - DALL-E 3 配图、GitHub 图床
-
-### 8. 发布（原流程）
-
-```bash
-# 翻译（如果需要）
-node scripts/translate.js articles/my-first-article-final.md --to en
-
-# 发布到各平台（手动或自动）
-node scripts/publish.js articles/my-first-article-final.md
-```
-
-## 目录结构
-
-```
-seomaster/
-├── templates/              # 配置模板
-│   ├── project-config.yaml       # 项目配置
-│   ├── content-types.yaml        # 内容类型定义
-│   ├── quality-standards.yaml    # 质量标准
-│   ├── article-task.yaml         # 文章任务模板
-│   └── article-concept.yaml      # Concept 模板
-├── scripts/                # 自动化脚本
-│   ├── generate-concept.js       # 生成 Concept
-│   ├── generate-draft.js         # 生成初稿
-│   ├── quality-check.js          # 质量检查
-│   ├── translate.js              # 翻译
-│   └── publish.js                # 发布
-├── docs/                   # 文档
-│   ├── workflow-guide.md         # 工作流详细指南
-│   ├── writing-principles.md     # 写作原则
-│   └── quality-checklist.md      # 质量检查清单
-├── examples/               # 示例
-│   ├── lemondata/                # LemonData 完整示例
-│   └── saas-product/             # SaaS 产品示例
-└── README.md               # 本文件
-```
-
-## 配置文件说明
-
-### project-config.yaml
-项目级配置，包含：
-- 产品基本信息
-- 品牌声音
-- 目标读者
-- 竞品信息
-- 核心数据点
-- 发布渠道
-- SEO 关键词
-
-### content-types.yaml
-定义不同内容类型的规范：
-- 技术博客（1500-3000 字）
-- 平台对比（1000-2000 字）
-- 教程（800-1500 字）
-- 社交帖子（100-500 字）
-- 产品更新（300-800 字）
-
-### quality-standards.yaml
-质量标准配置：
-- 硬指标（标点、禁用词、AI 句式）
-- 开篇规范
-- 结尾规范
-- 核心写作原则
-- 质量检查清单
-
-### article-task.yaml
-单篇文章的任务配置：
-- 基本信息（ID、标题、类型）
-- Thesis
-- 目标和受众
-- 发布平台
-- SEO 配置
-- 数据点
-- 文章结构
-
-### article-concept.yaml
-文章立意（Concept）：
-- 核心论点
-- 文章结构
-- 数据支撑
-- 开篇方式
-- CTA
-
-## 决策分层
-
-### 🔴 必须人工决策
-- Thesis 方向（AI 提 2-3 个候选，人选）
-- 核心卖点的表述
-- 价格/数据的准确性确认
-- 发布决定
-
-### 🟡 AI 建议 + 人工快速确认
-- 文章结构骨架
-- 开篇切入角度
-- SEO 关键词选择
-- 竞品对比角度
-
-### 🟢 AI 自主执行
-- 硬指标修复（机械层）
-- AI 句式替换
-- 翻译（中↔英）
-- 格式规范化
-
-## 内容类型
-
-| 类型 | 篇幅 | 目标 | 示例 |
-|------|------|------|------|
-| 技术博客 | 1500-3000字 | SEO + 教育 | 「如何用一个 API Key 访问 300+ AI 模型」 |
-| 平台对比 | 1000-2000字 | 转化 | 「OpenRouter vs LemonData：价格、速度、模型数」 |
-| 迁移指南 | 800-1500字 | 转化 | 「从 OpenAI 官方 API 迁移到 LemonData 只需改一行」 |
-| 社交帖子 | 100-500字 | 传播 | 知乎回答、小红书、Twitter Thread |
-| 产品更新 | 300-800字 | 留存 | 「本周新增 15 个模型，含 Claude 4.5」 |
-
-## 质量标准
-
-### 硬指标速查
-
-| 指标 | 上限 | 超标处理 |
-|------|------|----------|
-| —— | ≤3/篇 | 替换为冒号/逗号/句号 |
-| ** | ≤3/篇 | 仅保留核心卖点句 |
-| 路标词 | 0 | 首先/其次/最后 → 删除 |
-| 揭示类 | 0 | 揭示了/佐证了 → 删除 |
-| 元叙事 | 0 | 让我们/本文 → 删除 |
-| 营销腔 | 0 | 颠覆性/赋能 → 具体功能 |
-
-### 核心原则
-
-1. **Thesis 优先** - 动笔前必须能用一句话回答：「读完后，读者会记住什么？」
-2. **证据驱动** - 每个核心判断需要数据支撑，案例必须可核实
-3. **开发者视角** - 代码示例 > 文字描述，具体数字 > 模糊修饰
-
-## 脚本使用
-
-### generate-concept.js
-根据 article-task.yaml 和 project-config.yaml 生成 Concept
-
-```bash
-node scripts/generate-concept.js articles/my-article.yaml
-```
-
-### generate-draft.js
-根据 Concept 生成初稿
-
-```bash
-node scripts/generate-draft.js articles/my-article-concept.yaml
-```
-
-### quality-check.js
-检查文章质量，输出评分和修改建议
-
-```bash
-node scripts/quality-check.js articles/my-article-draft.md
-
-# 输出示例：
-# ✅ 硬指标通过
-# ❌ 发现 2 处「本文」
-# ✅ 字数 2,150
-# 总分：85/100
-```
-
-### translate.js
-翻译文章
-
-```bash
-node scripts/translate.js articles/my-article.md --to en
-# 输出：articles/my-article.en.md
-```
-
-### publish.js
-发布到各平台
-
-```bash
-node scripts/publish.js articles/my-article.md --platforms blog,zhihu
-```
-
-## 示例项目
-
-### LemonData 示例
-完整的 LemonData 内容营销案例，包含：
-- 项目配置
-- 21 篇博客文章规划
-- 完整的 Concept 和初稿
-- 质量检查报告
-
-查看：`examples/lemondata/`
-
-### SaaS 产品示例
-通用 SaaS 产品的内容营销模板
-
-查看：`examples/saas-product/`
 
 ## 环境配置
 
-### API Keys
-
-在项目根目录创建 `.env` 文件：
+`.env` 文件：
 
 ```bash
-# 文本生成 API
-OPENAI_API_KEY=sk-xxxxx
-OPENAI_API_BASE=https://api.openai.com/v1
+# AI API
+AI_API_KEY=your-api-key
+AI_API_BASE_URL=https://crazyrouter.com/v1
+AI_MODEL=claude-sonnet-4-6
 
-# 图片生成 API（可选）
-IMAGE_API_KEY=sk-xxxxx
-IMAGE_API_BASE=https://api.openai.com/v1
+# Apify (for web scraping)
+APIFY_API_TOKEN=your-apify-token
+
+# GitHub (for image upload)
+GITHUB_TOKEN=your-github-token
+GITHUB_REPO=username/repo
+GITHUB_BRANCH=main
 ```
 
-### 依赖安装
+## 文档
+
+- **[GETTING-STARTED.md](GETTING-STARTED.md)** - 完整启动指南
+- **[MULTI-PROJECT-GUIDE.md](MULTI-PROJECT-GUIDE.md)** - 多项目使用指南
+- **[OBSIDIAN-QUICKSTART.md](OBSIDIAN-QUICKSTART.md)** - Obsidian 快速开始
+- **[CHANGELOG.md](CHANGELOG.md)** - 更新日志
+
+## 故障排除
+
+### 命令不存在
 
 ```bash
-npm install
-# 或
-yarn install
+npm link
 ```
 
-## 常见问题
+### 项目未找到
 
-### Q: 如何自定义质量标准？
-A: 编辑 `templates/quality-standards.yaml`，修改硬指标限制和禁用词列表。
+```bash
+seomaster project:list
+```
 
-### Q: 如何添加新的内容类型？
-A: 在 `templates/content-types.yaml` 中添加新类型的定义。
+### 知识库为空
 
-### Q: 如何集成到现有的 CMS？
-A: 修改 `scripts/publish.js`，添加你的 CMS API 调用。
+检查 `projects.json` 中的 `vault_path` 是否正确。
 
-### Q: 支持哪些语言？
-A: 默认支持中英文，可以通过修改翻译脚本支持更多语言。
+### API 错误
 
-### Q: 如何处理图片？
-A: 在 Concept 中标注需要的图片，使用 `<!-- SCREENSHOT: 描述 -->` 标记位置。
+检查 `.env` 中的 `AI_API_KEY` 是否正确。
 
-## 贡献
+## 性能优化
 
-欢迎提交 Issue 和 Pull Request！
+### 减少 Token 消耗
 
-## 许可证
+```bash
+# 减少搜索结果
+seomaster new "keyword" --results 3
 
-MIT License
+# 减少字数
+seomaster new "keyword" --words 1500
 
-## 致谢
+# 跳过图片
+seomaster new "keyword" --skip-images
+```
 
-本工作流改编自 Pentos 研究报告流水线，并结合了 LemonData 内容营销的实践经验。
+### 加快生成速度
+
+```bash
+# 快速测试
+seomaster new "keyword" --words 1000 --results 3 --skip-images
+```
+
+## 最佳实践
+
+### 关键词选择
+
+✅ 好的关键词：
+- "ai api pricing comparison"
+- "best ai tools for developers"
+- "how to use openai api"
+
+❌ 避免：
+- 太宽泛："ai"
+- 太长："how to use openai api to build..."
+
+### 字数设置
+
+- **短文章**（1000-1500 字）：快速生成
+- **中等文章**（2000-3000 字）：平衡深度和速度（推荐）
+- **长文章**（4000-5000 字）：深度内容
+
+### 搜索结果数
+
+- **3-5 个**：快速生成
+- **5-8 个**：平衡质量和速度（推荐）
+- **8-10 个**：最高质量
+
+## 技术栈
+
+- **Node.js** - 运行环境
+- **Commander.js** - CLI 框架
+- **Inquirer.js** - 交互式命令行
+- **Apify** - 网页抓取
+- **OpenAI/Anthropic API** - AI 生成
+- **Obsidian** - 知识库管理
+
+## 版本
+
+当前版本：1.0.0
+
+## 许可
+
+MIT
 
 ---
 
-**开始你的第一篇文章：**
-
-```bash
-cp templates/project-config.yaml ../project-config.yaml
-vim ../project-config.yaml
-# 填写你的产品信息，然后开始写作！
-```
+**开始使用**：`seomaster new "your keyword"`

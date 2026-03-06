@@ -1,266 +1,460 @@
-# SEOMaster 新手入门指南
+# SEOMaster 启动运行指南
 
-> 从零开始，5 分钟完成第一篇 AI 生成的 SEO 文章
+## 快速启动（3 步）
 
-## 前置要求
-
-- Node.js 16+ 
-- Git
-- AI API Key（支持 OpenAI 兼容接口）
-
-## 第一步：克隆项目
+### 1. 查看现有项目
 
 ```bash
-# 克隆 SEOMaster 项目
-git clone https://github.com/xujfcn/seomaster.git
-
-# 进入项目目录
-cd seomaster
+cd D:\lemondata-free\lemondata-content\seomaster
+seomaster project:list
 ```
 
-## 第二步：安装依赖
+输出示例：
+```
+📁 Projects:
 
-```bash
-# 安装 Node.js 依赖
-npm install
+● Crazyrouter (LemonData) (crazyrouter)
+  Multi-protocol AI API gateway
+  Vault: D:/crazyrouter
 ```
 
-## 第三步：配置环境变量
-
-创建 `.env` 文件（复制示例配置）：
+### 2. 生成文章
 
 ```bash
-cp .env.example .env
+seomaster new "your keyword"
 ```
 
-编辑 `.env` 文件，填写必需的 API Keys：
+系统会自动：
+- 显示当前项目信息
+- 加载对应知识库
+- 开始生成文章
+
+### 3. 查看结果
 
 ```bash
-# AI API 配置（必需）
-AI_API_KEY=sk-your-api-key-here
-AI_API_BASE_URL=https://api.openai.com/v1
-AI_MODEL=gpt-4
-
-# Apify API（用于搜索和抓取，必需）
-APIFY_API_TOKEN=apify_api_your-token-here
-
-# GitHub 图床配置（可选，用于自动生成图片）
-GITHUB_TOKEN=ghp_your-github-token-here
-GITHUB_REPO=your-username/images
-GITHUB_BRANCH=main
+ls output/
 ```
 
-### 如何获取 API Keys？
+生成的文件：
+- `keyword-concept.yaml` - 文章大纲
+- `keyword-draft.md` - 完整文章
+- `keyword-research.json` - 研究数据
+- `keyword-1.png`, `keyword-2.png` - 配图
 
-#### 1. AI API Key
+## 完整工作流
 
-**选项 A：使用 OpenAI 官方**
-- 访问 https://platform.openai.com/api-keys
-- 创建新的 API Key
-- 设置：
-  ```
-  AI_API_KEY=sk-xxxxx
-  AI_API_BASE_URL=https://api.openai.com/v1
-  AI_MODEL=gpt-4
-  ```
-
-**选项 B：使用第三方代理（推荐国内用户）**
-- 使用支持 OpenAI 兼容接口的服务（如 CrazyRouter、OpenRouter 等）
-- 设置：
-  ```
-  AI_API_KEY=sk-xxxxx
-  AI_API_BASE_URL=https://your-proxy.com/v1
-  AI_MODEL=claude-sonnet-4-6
-  ```
-
-#### 2. Apify API Token
-
-- 访问 https://console.apify.com/account/integrations
-- 注册账号（免费额度足够测试使用）
-- 复制 API Token
-
-#### 3. GitHub Token（可选）
-
-如果需要自动生成图片功能：
-- 访问 https://github.com/settings/tokens
-- 创建 Personal Access Token
-- 权限选择：`repo`（完整仓库访问）
-- 创建一个公开仓库用于存储图片（如 `your-username/images`）
-
-## 第四步：安装 CLI 工具
+### 方式 1: 一键生成（推荐）
 
 ```bash
-# 全局安装 CLI 工具
-npm install -g .
+# 生成完整文章（concept + draft + images）
+seomaster new "ai api pricing"
 
-# 验证安装
-seomaster --version
+# 交互式模式（可以预览和确认）
+seomaster new "ai api pricing" -i
+
+# 自定义参数
+seomaster new "ai api pricing" --words 3000 --results 5
 ```
 
-## 第五步：生成第一篇文章
-
-### 方式 A：交互式模式（推荐新手）
+### 方式 2: 分步生成
 
 ```bash
-seomaster new "your keyword" -i --words 2500
+# 步骤 1: 生成 concept
+seomaster concept "ai api pricing"
+
+# 步骤 2: 预览 concept
+seomaster preview output/ai-api-pricing-concept.yaml
+
+# 步骤 3: 生成 draft
+seomaster draft output/ai-api-pricing-concept.yaml
+
+# 步骤 4: 生成图片
+seomaster images output/ai-api-pricing-draft.md
+
+# 步骤 5: 质量检查
+seomaster check output/ai-api-pricing-draft.md
 ```
 
-例如：
+## 多项目管理
+
+### 添加新项目
+
 ```bash
-seomaster new "best ai api" -i --words 2500
+seomaster project:add
+```
+
+交互式问答：
+```
+? Project ID: myproduct
+? Project name: My Product
+? Description: My awesome product
+? Knowledge base path: D:/myproduct-kb
+? Output directory: output
+? Default language: en
+? Default word count: 2500
+```
+
+### 切换项目
+
+```bash
+seomaster project
+```
+
+选择项目：
+```
+? Select a project:
+  ● Crazyrouter (LemonData)
+  ○ My Product
+  + Add new project
+```
+
+### 指定项目生成
+
+```bash
+seomaster new "keyword" --project myproduct
+```
+
+## 命令参数说明
+
+### new 命令
+
+```bash
+seomaster new <keyword> [options]
+```
+
+**参数**:
+- `<keyword>` - 目标关键词（必填）
+- `-p, --project <name>` - 指定项目
+- `-l, --lang <lang>` - 语言（en/zh）
+- `-m, --market <market>` - 市场（us/cn）
+- `-r, --results <number>` - 搜索结果数
+- `-w, --words <number>` - 目标字数
+- `-i, --interactive` - 交互式模式
+- `--skip-images` - 跳过图片生成
+
+**示例**:
+```bash
+# 基本用法
+seomaster new "ai api pricing"
+
+# 中文文章
+seomaster new "AI API 定价" --lang zh --market cn
+
+# 长文章
+seomaster new "comprehensive guide" --words 5000
+
+# 交互式模式
+seomaster new "keyword" -i
+
+# 完整配置
+seomaster new "keyword" \
+  --project myproduct \
+  --lang en \
+  --words 3000 \
+  --results 5 \
+  --interactive
+```
+
+## 常见使用场景
+
+### 场景 1: 快速生成英文文章
+
+```bash
+seomaster new "best ai tools 2026" --words 2500
+```
+
+### 场景 2: 生成中文文章
+
+```bash
+seomaster new "最佳 AI 工具" --lang zh --market cn --words 3000
+```
+
+### 场景 3: 生成长文章
+
+```bash
+seomaster new "complete guide to ai apis" --words 5000 --results 10
+```
+
+### 场景 4: 交互式生成（可预览和修改）
+
+```bash
+seomaster new "ai api comparison" -i
 ```
 
 流程：
-1. 自动搜索 Google 前 10 个结果
-2. 抓取竞品文章大纲
-3. AI 生成优化的文章大纲（concept）
-4. **显示预览，等待你确认**
-5. 生成完整文章（draft）
-6. 自动生成配图（最多 3 张）
-7. 质量检查
+1. 生成 concept
+2. 预览 concept
+3. 选择：继续/重新生成/编辑/取消
+4. 生成 draft
+5. 生成图片
+6. 质量检查
 
-### 方式 B：自动全流程（推荐熟练用户）
+### 场景 5: 为不同项目生成文章
 
 ```bash
-seomaster new "your keyword" --words 2500
+# 为项目 A 生成
+seomaster new "keyword" --project product-a
+
+# 为项目 B 生成
+seomaster new "keyword" --project product-b
 ```
 
-跳过确认步骤，直接生成完整文章。
+## 输出文件说明
 
-### 方式 C：分步执行（推荐需要精细控制）
+生成的文件位于 `output/` 目录：
 
-```bash
-# 1. 只生成 concept
-seomaster concept "your keyword"
-
-# 2. 预览 concept
-seomaster preview your-keyword
-
-# 3. 生成 draft
-seomaster draft your-keyword-concept.yaml
-
-# 4. 生成图片
-seomaster images your-keyword-draft.md
-
-# 5. 质量检查
-seomaster check your-keyword-draft.md
+```
+output/
+├── ai-api-pricing-concept.yaml    # 文章大纲和结构
+├── ai-api-pricing-draft.md        # 完整文章（Markdown）
+├── ai-api-pricing-research.json   # 竞品研究数据
+├── ai-api-pricing-1.png           # 配图 1
+├── ai-api-pricing-2.png           # 配图 2
+└── ai-api-pricing-3.png           # 配图 3
 ```
 
-## 第六步：查看生成的文件
+### concept.yaml 结构
 
-所有生成的文件都在 `output/` 目录：
-
-```bash
-cd output
-ls -la
-
-# 你会看到：
-# your-keyword-research.json    # 搜索和抓取的原始数据
-# your-keyword-concept.yaml     # 文章大纲和结构
-# your-keyword-draft.md         # 生成的文章初稿
+```yaml
+keyword: "ai api pricing"
+slug: "ai-api-pricing"
+title: "AI API Pricing: A Practical Guide..."
+thesis:
+  statement: "..."
+  final: "..."
+sections:
+  - title: "Section 1"
+    word_count: 500
+    key_point: "..."
+    subsections: [...]
+faq:
+  - question: "..."
+    answer: "..."
 ```
 
-## 第七步：审阅和修改
+### draft.md 结构
 
-### 1. 查看质量检查报告
+```markdown
+# Title
 
-质量检查会自动运行，检查：
-- ✅ 字数是否符合目标
-- ✅ 是否有 AI 套话（如"本文"、"总之"等）
-- ✅ 是否有数据引用
-- ✅ 是否有表格
-- ✅ 是否有 FAQ 部分
+Introduction...
 
-### 2. 手动审阅要点
+## Section 1
 
-打开 `output/your-keyword-draft.md`，检查：
+Content...
 
-- **Thesis 是否清晰**：文章的核心观点是什么？
-- **数据是否准确**：所有 `[DATA: ...]` 占位符需要填充真实数据
-- **逻辑是否连贯**：段落之间的过渡是否自然
-- **CTA 是否有效**：行动号召是否明确
+![Image description](./ai-api-pricing-1.png)
 
-### 3. 修改文章
+## Section 2
 
-直接编辑 `output/your-keyword-draft.md` 文件，修改后重新运行质量检查：
+Content...
 
-```bash
-seomaster check your-keyword-draft.md
+## FAQ
+
+### Question 1?
+
+Answer...
+
+## Conclusion
+
+CTA...
 ```
 
-## 常见问题
+## 知识库管理
 
-### Q1: AI 返回空响应怎么办？
-
-如果遇到 "AI returned empty content" 错误，尝试减少搜索结果数：
+### 查看当前知识库
 
 ```bash
-seomaster new "your keyword" --results 3 --words 2500
+# 当前项目使用的知识库路径
+seomaster project:list
 ```
 
-### Q2: 如何修改文章语言和市场？
+### 编辑知识库
 
 ```bash
-# 中文文章，面向中国市场
-seomaster new "你的关键词" --lang zh --market cn
-
-# 英文文章，面向美国市场（默认）
-seomaster new "your keyword" --lang en --market us
+# 在 Obsidian 中打开
+# File → Open folder as vault → D:\crazyrouter
 ```
 
-### Q3: 如何跳过图片生成？
+### 测试知识库加载
 
 ```bash
-seomaster new "your keyword" --skip-images
+cd D:\lemondata-free\lemondata-content\seomaster
+node test-knowledge.js
 ```
 
-### Q4: 生成的文章字数总是超标怎么办？
+输出示例：
+```
+=== Test 1: Keyword "pricing" ===
+📚 knowledge: 2 files (Product.md, Pricing.md)
+Length: 1932 chars
+```
 
-这是已知问题，AI 通常会超出目标字数 20-30%。建议：
-- 设置更保守的目标字数（如目标 2000 字，设置 `--words 1500`）
-- 生成后手动删减冗余内容
+## 故障排除
 
-### Q5: 如何查看所有生成的文章？
+### 问题 1: 命令不存在
+
+```
+'seomaster' is not recognized as an internal or external command
+```
+
+**解决**:
+```bash
+cd D:\lemondata-free\lemondata-content\seomaster
+npm link
+```
+
+### 问题 2: 项目未找到
+
+```
+❌ Project not found: myproduct
+```
+
+**解决**:
+```bash
+# 查看可用项目
+seomaster project:list
+
+# 或添加新项目
+seomaster project:add
+```
+
+### 问题 3: 知识库为空
+
+```
+⚠️ knowledge: empty
+```
+
+**解决**:
+1. 检查项目配置中的 `vault_path`
+2. 确保知识库目录存在
+3. 确保知识库中有 .md 文件
+
+### 问题 4: API 错误
+
+```
+❌ AI API failed: 401
+```
+
+**解决**:
+检查 `.env` 文件中的 API 配置：
+```bash
+AI_API_KEY=your-api-key
+AI_API_BASE_URL=https://crazyrouter.com/v1
+AI_MODEL=claude-sonnet-4-6
+```
+
+### 问题 5: 图片上传失败
+
+```
+⚠️ Upload failed: 403
+```
+
+**解决**:
+图片已保存到本地 `output/` 目录，可以手动上传。
+检查 GitHub token 权限：
+```bash
+GITHUB_TOKEN=your-github-token
+```
+
+## 性能优化
+
+### 减少 Token 消耗
 
 ```bash
-seomaster list
+# 减少搜索结果数
+seomaster new "keyword" --results 3
+
+# 减少字数
+seomaster new "keyword" --words 1500
+
+# 跳过图片生成
+seomaster new "keyword" --skip-images
+```
+
+### 加快生成速度
+
+```bash
+# 使用更少的搜索结果
+seomaster new "keyword" --results 3
+
+# 生成更短的文章
+seomaster new "keyword" --words 1500
+```
+
+## 最佳实践
+
+### 1. 关键词选择
+
+✅ 好的关键词：
+- "ai api pricing comparison"
+- "best ai tools for developers"
+- "how to use openai api"
+
+❌ 避免：
+- 太宽泛："ai"
+- 太长："how to use openai api to build a chatbot application with python and deploy it to production"
+
+### 2. 字数设置
+
+- **短文章**（1000-1500 字）：快速生成，适合博客
+- **中等文章**（2000-3000 字）：平衡深度和速度
+- **长文章**（4000-5000 字）：深度内容，需要更多时间
+
+### 3. 搜索结果数
+
+- **3-5 个结果**：快速生成，适合测试
+- **5-8 个结果**：平衡质量和速度（推荐）
+- **8-10 个结果**：最高质量，但较慢
+
+### 4. 交互式模式
+
+使用 `-i` 参数可以：
+- 预览 concept 后再决定是否继续
+- 发现问题时重新生成
+- 手动编辑 concept 文件
+
+## 快速参考
+
+```bash
+# 项目管理
+seomaster project:list         # 列出项目
+seomaster project:add          # 添加项目
+seomaster project              # 切换项目
+
+# 文章生成
+seomaster new "keyword"        # 完整流程
+seomaster concept "keyword"    # 只生成 concept
+seomaster draft concept.yaml   # 只生成 draft
+seomaster images draft.md      # 只生成图片
+
+# 查看和检查
+seomaster preview concept.yaml # 预览 concept
+seomaster check draft.md       # 质量检查
+seomaster list                 # 列出所有文章
+
+# 帮助
+seomaster --help               # 查看帮助
+seomaster new --help           # 查看 new 命令帮助
 ```
 
 ## 下一步
 
-- 📖 阅读 [交互式工作流指南](INTERACTIVE_WORKFLOW.md)
-- 🎨 阅读 [自动图片生成指南](IMAGE_WORKFLOW.md)
-- 🔧 阅读 [故障排查指南](TROUBLESHOOTING.md)
-- 📋 阅读 [快速参考卡](QUICK_REFERENCE.md)
+1. **添加更多知识** - 在 Obsidian 中编辑知识库
+2. **生成测试文章** - 测试不同关键词和配置
+3. **优化配置** - 根据结果调整默认参数
+4. **添加新项目** - 为其他产品创建项目
 
-## 进阶配置
+## 获取帮助
 
-### 自定义知识库
-
-编辑 `knowledge/` 目录下的文件，添加你的产品信息：
-
-- `product.md` - 产品介绍
-- `competitors.md` - 竞品分析
-- `models_pricing.md` - 定价信息
-- `benchmarks.md` - 性能数据
-- `target_keywords.md` - 目标关键词
-- `published_articles.md` - 已发布文章
-
-这些信息会被 AI 用于生成更准确、更相关的内容。
-
-### 调整 AI 参数
-
-编辑 `scripts/lib/draft-config.js` 可以调整：
-- 温度（temperature）
-- 最大 token 数
-- 重试次数
-- 超时时间
-
-## 技术支持
-
-- 📝 提交 Issue: https://github.com/xujfcn/seomaster/issues
-- 📧 联系作者: [在 GitHub 上查看]
+- **文档**: 查看 `MULTI-PROJECT-GUIDE.md`
+- **示例**: 查看 `output/` 目录中的示例文章
+- **测试**: 运行 `node test-knowledge.js`
 
 ---
 
-**祝你使用愉快！🚀**
+**准备好了吗？开始生成你的第一篇文章：**
+
+```bash
+seomaster new "your keyword"
+```

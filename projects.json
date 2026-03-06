@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "crazyrouter": {
+      "name": "Crazyrouter (LemonData)",
+      "vault_path": "D:/crazyrouter",
+      "description": "Multi-protocol AI API gateway",
+      "output_dir": "output",
+      "default_lang": "en",
+      "default_market": "us",
+      "default_words": 2500,
+      "default_results": 5
+    }
+  },
+  "current_project": "crazyrouter"
+}

@@ -94,8 +94,8 @@ function buildPrompt(keyword, competitorSummary, lang, maxWords) {
       ? '用中文输出大纲标题。整篇大纲必须全部用中文，不得混入英文。'
       : 'Output ENTIRELY in English. Do NOT use any Chinese characters, even if the knowledge base below contains Chinese text.';
 
-  // 加载知识库上下文
-  const knowledge = loadConceptKnowledge();
+  // 加载知识库上下文（传递关键词以匹配相关文件）
+  const knowledge = loadConceptKnowledge(keyword);
   const knowledgeSection = knowledge
     ? `\n## Internal Knowledge Base (use this data for accuracy — reference only, do NOT copy its language)\n${knowledge}\n`
     : '';

@@ -7,6 +7,7 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 const inquirer = require('inquirer');
 const yaml = require('js-yaml');
+const { initWorkflow, getProjectDefaults } = require('./scripts/lib/cli-workflow');
 
 const VERSION = '1.0.0';
 
@@ -101,28 +102,41 @@ async function confirmConcept(conceptFile, keyword, options) {
 program
   .command('new <keyword>')
   .description('Generate concept + draft + images (full workflow)')
-  .option('-l, --lang <lang>', 'Language (en/zh)', 'en')
-  .option('-m, --market <market>', 'Market (us/cn)', 'us')
-  .option('-r, --results <number>', 'Search results', '10')
-  .option('-w, --words <number>', 'Target word count', '2500')
+  .option('-p, --project <name>', 'Project name (skip project selection)')
+  .option('-l, --lang <lang>', 'Language (en/zh)')
+  .option('-m, --market <market>', 'Market (us/cn)')
+  .option('-r, --results <number>', 'Search results')
+  .option('-w, --words <number>', 'Target word count')
   .option('-i, --interactive', 'Interactive mode with confirmations')
   .option('--skip-images', 'Skip image generation')
   .action(async (keyword, options) => {
-    console.log(chalk.cyan(`\n🚀 Generating article: "${keyword}"\n`));
+    // Initialize workflow with project selection
+    const project = await initWorkflow({ project: options.project });
+    const defaults = getProjectDefaults(project);
+
+    // Merge options with project defaults
+    const lang = options.lang || defaults.lang;
+    const market = options.market || defaults.market;
+    const results = options.results || defaults.results;
+    const words = options.words || defaults.words;
+    const outputDir = path.join(__dirname, defaults.outputDir);
+
+    console.log(chalk.cyan(`🚀 Generating article: "${keyword}"\n`));
 
     try {
       console.log(chalk.cyan('[1/4] Generating concept...\n'));
       await runScript('./scripts/generate-concept.js', [
         '--keyword', keyword,
-        '--lang', options.lang,
-        '--market', options.market,
-        '--results', options.results,
-        '--words', options.words
+        '--lang', lang,
+        '--market', market,
+        '--results', results.toString(),
+        '--words', words.toString(),
+        '--out', outputDir
       ]);
 
       const slug = keywordToSlug(keyword);
-      const conceptFile = path.join(__dirname, 'output', `${slug}-concept.yaml`);
-      const draftFile = path.join(__dirname, 'output', `${slug}-draft.md`);
+      const conceptFile = path.join(outputDir, `${slug}-concept.yaml`);
+      const draftFile = path.join(outputDir, `${slug}-draft.md`);
 
       // Interactive mode: confirm concept before continuing
       if (options.interactive) {
@@ -348,6 +362,40 @@ program
   .name('seomaster')
   .version(VERSION)
   .description('AI-driven SEO content workflow');
+
+// Project management commands
+program
+  .command('project')
+  .description('Manage projects')
+  .action(async () => {
+    const { selectProject } = require('./scripts/lib/project-manager');
+    await selectProject();
+    console.log(chalk.green('\n✅ Project selected\n'));
+  });
+
+program
+  .command('project:list')
+  .description('List all projects')
+  .action(() => {
+    const { listProjects } = require('./scripts/lib/project-manager');
+    const projects = listProjects();
+
+    console.log(chalk.cyan('\n📁 Projects:\n'));
+    projects.forEach(p => {
+      const marker = p.current ? chalk.green('●') : chalk.gray('○');
+      console.log(`${marker} ${chalk.white(p.name)} (${p.id})`);
+      console.log(chalk.gray(`  ${p.description}`));
+      console.log(chalk.gray(`  Vault: ${p.vault_path}\n`));
+    });
+  });
+
+program
+  .command('project:add')
+  .description('Add a new project')
+  .action(async () => {
+    const { createNewProject } = require('./scripts/lib/project-manager');
+    await createNewProject();
+  });
 
 program.parse(process.argv);
 
