@@ -287,3 +287,421 @@ async function retrieveKnowledge(keyword, topK = 5) {
 如果需要更好的用户体验，再考虑**方案 2（Obsidian）**。
 
 如果知识库超过 100MB，再考虑**方案 3（向量数据库）**。
+
+## Obsidian API 和自动化
+
+### Obsidian 的 API 支持
+
+Obsidian 本身**没有官方的 REST API**，但有多种自动化方案：
+
+#### 方案 A：直接文件系统操作（推荐）✅
+
+Obsidian vault 本质上就是一个文件夹，包含 Markdown 文件。我们可以直接读写：
+
+```javascript
+// 无需 Obsidian API，直接操作文件
+const vaultPath = '/path/to/vault';
+const filePath = path.join(vaultPath, 'Domain', 'Pricing.md');
+
+// 读取
+const content = fs.readFileSync(filePath, 'utf-8');
+
+// 写入
+fs.writeFileSync(filePath, newContent, 'utf-8');
+
+// Obsidian 会自动检测文件变化并刷新
+```
+
+**优点**：
+- ✅ 简单直接，无需额外依赖
+- ✅ Obsidian 会自动检测文件变化
+- ✅ 可以在 Obsidian 打开时操作
+
+**缺点**：
+- ❌ 需要处理文件锁（Obsidian 打开文件时）
+- ❌ 需要自己解析 Obsidian 链接语法
+
+#### 方案 B：Obsidian Local REST API 插件
+
+安装社区插件 "Local REST API"，提供 HTTP 接口：
+
+```bash
+# 安装插件后，启动 API 服务器（默认端口 27123）
+```
+
+```javascript
+// 通过 HTTP API 操作
+const fetch = require('node-fetch');
+
+// 读取文件
+const response = await fetch('http://localhost:27123/vault/Domain/Pricing.md', {
+  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+});
+const content = await response.text();
+
+// 写入文件
+await fetch('http://localhost:27123/vault/Domain/Pricing.md', {
+  method: 'PUT',
+  headers: { 
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'text/markdown'
+  },
+  body: newContent
+});
+
+// 搜索
+const searchResults = await fetch('http://localhost:27123/search/?query=pricing', {
+  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+});
+```
+
+**优点**：
+- ✅ 标准 REST API
+- ✅ 支持搜索、标签查询
+- ✅ 更安全（需要 API Key）
+
+**缺点**：
+- ❌ 需要安装插件
+- ❌ 需要 Obsidian 运行
+- ❌ 额外的配置
+
+#### 方案 C：Obsidian Git 插件（自动同步）
+
+使用 "Obsidian Git" 插件，自动提交和推送：
+
+```bash
+# 插件配置
+- 自动提交间隔：10 分钟
+- 自动推送：启用
+- 提交消息模板：vault backup: {{date}}
+```
+
+**优点**：
+- ✅ 自动版本控制
+- ✅ 团队协作友好
+- ✅ 可以回滚
+
+**缺点**：
+- ❌ 需要 Git 仓库
+- ❌ 可能有冲突
+
+### 推荐方案：直接文件系统 + Git
+
+```javascript
+// scripts/lib/obsidian-knowledge.js
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+class ObsidianKnowledge {
+  constructor(vaultPath) {
+    this.vaultPath = vaultPath;
+  }
+  
+  // 读取文件
+  read(relativePath) {
+    const fullPath = path.join(this.vaultPath, relativePath);
+    return fs.readFileSync(fullPath, 'utf-8');
+  }
+  
+  // 写入文件
+  write(relativePath, content) {
+    const fullPath = path.join(this.vaultPath, relativePath);
+    const dir = path.dirname(fullPath);
+    
+    // 确保目录存在
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    
+    fs.writeFileSync(fullPath, content, 'utf-8');
+    
+    // 自动提交（可选）
+    if (process.env.AUTO_COMMIT === 'true') {
+      this.gitCommit(relativePath);
+    }
+  }
+  
+  // 搜索文件
+  search(keyword) {
+    const files = this.listAllFiles();
+    const matches = [];
+    
+    for (const file of files) {
+      const content = this.read(file);
+      if (content.toLowerCase().includes(keyword.toLowerCase())) {
+        matches.push(file);
+      }
+    }
+    
+    return matches;
+  }
+  
+  // Git 提交
+  gitCommit(file) {
+    try {
+      execSync(`cd "${this.vaultPath}" && git add "${file}" && git commit -m "Update ${file}"`, {
+        stdio: 'ignore'
+      });
+    } catch (e) {
+      // 忽略错误（可能没有变化）
+    }
+  }
+  
+  // 列出所有文件
+  listAllFiles(dir = '') {
+    const fullDir = path.join(this.vaultPath, dir);
+    const files = [];
+    
+    for (const item of fs.readdirSync(fullDir)) {
+      if (item.startsWith('.')) continue;
+      
+      const fullPath = path.join(fullDir, item);
+      const relativePath = path.join(dir, item);
+      
+      if (fs.statSync(fullPath).isDirectory()) {
+        files.push(...this.listAllFiles(relativePath));
+      } else if (item.endsWith('.md')) {
+        files.push(relativePath);
+      }
+    }
+    
+    return files;
+  }
+}
+
+module.exports = ObsidianKnowledge;
+```
+
+### 使用示例
+
+```javascript
+const ObsidianKnowledge = require('./lib/obsidian-knowledge');
+
+const kb = new ObsidianKnowledge('/path/to/vault');
+
+// 读取
+const pricing = kb.read('Domain/Pricing.md');
+
+// 写入
+kb.write('Domain/NewTopic.md', `---
+tags: [new]
+---
+
+# New Topic
+
+Content...
+`);
+
+// 搜索
+const results = kb.search('pricing');
+console.log('Found in:', results);
+```
+
+## 2. 重置知识库的便利性
+
+### 不同方案的重置难度
+
+#### 方案 1：分层知识库
+
+**重置方式**：
+```bash
+# 完全重置
+rm -rf knowledge/
+mkdir -p knowledge/core knowledge/domain knowledge/competitors
+
+# 部分重置（只清空领域知识）
+rm -rf knowledge/domain/*
+
+# 恢复默认
+git checkout knowledge/
+```
+
+**便利性**：⭐⭐⭐⭐⭐
+- ✅ 非常简单，删除文件夹即可
+- ✅ 可以用 Git 回滚
+- ✅ 可以保留部分内容
+
+#### 方案 2：Obsidian Vault
+
+**重置方式**：
+```bash
+# 完全重置
+rm -rf /path/to/vault
+mkdir /path/to/vault
+
+# 或者在 Obsidian 中创建新 vault
+# Settings → Vault → Create new vault
+
+# 从模板恢复
+cp -r vault-template/* /path/to/vault/
+```
+
+**便利性**：⭐⭐⭐⭐⭐
+- ✅ 非常简单，删除文件夹或创建新 vault
+- ✅ Obsidian 提供 UI 操作
+- ✅ 可以维护多个 vault（不同项目）
+
+#### 方案 3：向量数据库
+
+**重置方式**：
+```javascript
+// Chroma
+await client.deleteCollection({ name: 'knowledge' });
+await client.createCollection({ name: 'knowledge' });
+
+// Pinecone
+await pinecone.deleteIndex('knowledge');
+await pinecone.createIndex('knowledge', { dimension: 1536 });
+```
+
+**便利性**：⭐⭐⭐
+- ⚠️ 需要代码操作
+- ⚠️ 重新向量化需要时间
+- ⚠️ 可能有成本（API 调用）
+
+### 推荐：知识库版本管理
+
+#### 使用 Git 管理知识库
+
+```bash
+# 初始化
+cd knowledge
+git init
+git add .
+git commit -m "Initial knowledge base"
+
+# 创建分支（不同项目）
+git checkout -b project-a
+# 修改知识库...
+git commit -am "Update for project A"
+
+git checkout -b project-b
+# 修改知识库...
+git commit -am "Update for project B"
+
+# 切换项目
+git checkout project-a  # 切换到项目 A 的知识库
+git checkout project-b  # 切换到项目 B 的知识库
+```
+
+#### 使用知识库模板
+
+创建 `knowledge-templates/` 目录：
+
+```
+knowledge-templates/
+├── saas-product/          # SaaS 产品模板
+│   ├── core/
+│   ├── domain/
+│   └── README.md
+├── api-service/           # API 服务模板
+│   ├── core/
+│   ├── domain/
+│   └── README.md
+└── ecommerce/             # 电商模板
+    ├── core/
+    ├── domain/
+    └── README.md
+```
+
+**快速初始化脚本**：
+
+```javascript
+// scripts/init-knowledge.js
+const fs = require('fs');
+const path = require('path');
+
+function initKnowledge(template = 'saas-product') {
+  const templateDir = path.join(__dirname, '../knowledge-templates', template);
+  const targetDir = path.join(__dirname, '../knowledge');
+  
+  // 备份现有知识库
+  if (fs.existsSync(targetDir)) {
+    const backup = `${targetDir}.backup.${Date.now()}`;
+    fs.renameSync(targetDir, backup);
+    console.log(`Backed up to: ${backup}`);
+  }
+  
+  // 复制模板
+  copyDir(templateDir, targetDir);
+  console.log(`Initialized knowledge base from template: ${template}`);
+}
+
+function copyDir(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  
+  for (const item of fs.readdirSync(src)) {
+    const srcPath = path.join(src, item);
+    const destPath = path.join(dest, item);
+    
+    if (fs.statSync(srcPath).isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+// 使用
+// node scripts/init-knowledge.js saas-product
+const template = process.argv[2] || 'saas-product';
+initKnowledge(template);
+```
+
+### 多项目知识库管理
+
+#### 方案 A：多个 Vault（推荐）
+
+```
+obsidian-vaults/
+├── project-a/
+│   ├── Core/
+│   └── Domain/
+├── project-b/
+│   ├── Core/
+│   └── Domain/
+└── project-c/
+    ├── Core/
+    └── Domain/
+```
+
+在 `.env` 中配置：
+
+```bash
+# 当前项目
+CURRENT_PROJECT=project-a
+OBSIDIAN_VAULT_PATH=./obsidian-vaults/${CURRENT_PROJECT}
+```
+
+#### 方案 B：单个 Vault + 命名空间
+
+```
+knowledge-vault/
+├── Projects/
+│   ├── ProjectA/
+│   │   ├── Core/
+│   │   └── Domain/
+│   ├── ProjectB/
+│   │   ├── Core/
+│   │   └── Domain/
+└── Shared/
+    ├── Templates/
+    └── Common/
+```
+
+### 总结
+
+| 操作 | 分层知识库 | Obsidian | 向量数据库 |
+|------|-----------|----------|-----------|
+| 完全重置 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| 部分重置 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
+| 版本管理 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
+| 多项目切换 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| 备份恢复 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+
+**推荐组合**：
+- 使用 Obsidian 管理知识库（用户友好）
+- 使用 Git 进行版本控制（可回滚）
+- 使用模板快速初始化（提高效率）
+- 直接文件系统操作（无需 API）
