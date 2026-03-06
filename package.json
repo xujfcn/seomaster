@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "AI-driven content production workflow system for technical product SEO content marketing",
   "main": "index.js",
+  "bin": {
+    "seomaster": "./cli.js",
+    "seo": "./cli.js"
+  },
   "scripts": {
     "init": "node scripts/init-project.js",
     "concept": "node scripts/generate-concept.js",
@@ -19,8 +23,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^4.1.2",
     "cheerio": "^1.2.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.3",
+    "inquirer": "^8.2.7",
     "js-yaml": "^4.1.1",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "ora": "^9.3.0"
   }
 }

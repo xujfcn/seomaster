@@ -19,20 +19,46 @@ Thesis: "${concept.thesis?.final || concept.thesis?.statement || ''}"
 
 IMPORTANT: The article subject is "${concept.keyword}". If this is NOT our product (Crazyrouter/LemonData), do NOT attribute our product's features/data to it. Only mention our product where it naturally fits as a related tool or alternative.
 
+WORD COUNT: 150-250 words (STRICT)
+
 Opening style options (pick the most suitable):
-- Data shock: lead with a surprising statistic
+- Data shock: lead with a surprising statistic with source
 - Pain point: start with a specific developer frustration
-- Counter-intuitive finding: challenge a common assumption
+- Counter-intuitive finding: challenge a common assumption with data
 - Real case: open with a verifiable user scenario
 
-Requirements:
-- 150-250 words
-- First sentence must contain specific information (data/case/problem) — NO "In today's era..." or "As AI develops..."
-- Must make the reader understand what value this article provides
-- MUST include the exact keyword "${concept.keyword}" at least once, preferably in bold: **${concept.keyword}**
-- End with a transition into the first section
+MANDATORY REQUIREMENTS (SOP Compliance):
 
-Output: Markdown paragraph(s) only, no heading.`;
+1. FIRST SENTENCE:
+   - MUST contain specific data/case/problem
+   - FORBIDDEN: "In today's era...", "As AI develops...", "In recent years..."
+   - Example: "API costs jumped 340% in Q4 2025 according to..."
+
+2. KEYWORD USAGE:
+   - Include exact keyword "${concept.keyword}" at least once
+   - Preferably in bold: **${concept.keyword}**
+   - This is your ONE allowed bold in intro
+
+3. LANGUAGE LEVEL:
+   - 8th grade reading level
+   - Simple words, short sentences (15-20 words average)
+   - Active voice only
+
+4. DATA REQUIREMENTS:
+   - Every statistic needs: (Source: Name, Year)
+   - Use specific numbers: "40%" not "significant"
+   - Include dates: "Q4 2025", "as of 2026"
+
+5. VALUE PROPOSITION:
+   - Reader must understand: "What will I learn?"
+   - Be specific: "This guide shows how to cut API costs by 40%" not "This guide helps you save money"
+
+6. TRANSITION:
+   - End with smooth transition to first section
+   - No "In this article, we will..."
+   - Example: "Here's how developers are doing it."
+
+Output: Markdown paragraph(s) only, no heading. 150-250 words.`;
 
   return callAI(prompt);
 }
@@ -55,24 +81,62 @@ async function generateSection(section, concept, forbiddenWords, aiPatterns, voi
 
 Keyword: "${concept.keyword}"
 Key point: ${section.key_point}
-Target: ~${section.word_count} words
+
+WORD COUNT LIMIT (STRICT): ${section.word_count} words maximum. This is a HARD LIMIT. If you exceed this, the content will be rejected. Count carefully.
 
 ${previousTail ? `Previous context:\n...${previousTail}\n\n` : ''}Structure:
 ${subsectionsText}
 
-Rules:
-- Start with ## ${section.title}
-- Cover all H3/H4 points
-- Include keyword "${concept.keyword}" naturally 1-2 times
-- Insert <!-- IMAGE: ... --> where marked
-- Use [DATA: ...] for missing data
-- No signpost words (first/second/finally)
-- No meta-narrative (let's explore/本文)
-- Use tables for comparisons
-- Cite sources: (Source: name, date)
-- Mention Crazyrouter naturally where relevant
+MANDATORY REQUIREMENTS (SOP Compliance):
 
-Output: Markdown with headings.`;
+1. WORD COUNT: ${section.word_count} words MAX. Stop writing when you reach this limit.
+
+2. LANGUAGE LEVEL: 8th grade reading level
+   - Use simple words (avoid: utilize → use, commence → start)
+   - Short sentences (average 15-20 words)
+   - Active voice only
+   - No jargon without explanation
+
+3. DATA & SOURCES:
+   - Every statistic MUST have: (Source: Name, Year)
+   - Use specific numbers: "40% cheaper" not "much cheaper"
+   - Include dates: "as of 2026" or "in Q1 2025"
+   - Mark missing data: [DATA: metric needed]
+
+4. STRUCTURE:
+   - Start with ## ${section.title}
+   - Use tables for ANY comparison (pricing, features, specs)
+   - Add <!-- IMAGE: description --> where visual aids help
+   - H3/H4 must contain keyword variants
+
+5. KEYWORD USAGE:
+   - Include "${concept.keyword}" naturally 1-2 times
+   - Use variants in H3/H4 headings
+   - NO keyword stuffing
+
+6. BOLD USAGE:
+   - Maximum 1 bold per section (we have 6 sections, limit is 3 total)
+   - Only bold the MOST critical insight
+   - Do NOT bold: product names, headings, list items
+
+7. FORBIDDEN:
+   - No "In conclusion", "To sum up", "Overall"
+   - No "Let's explore", "We will discuss"
+   - No "First/Second/Finally" signposting
+   - No vague statements without data
+
+8. PRODUCT MENTION:
+   - Mention Crazyrouter naturally where relevant
+   - Use "You can use..." not "Crazyrouter provides..."
+   - Only mention if it genuinely fits the context
+
+9. CONTENT QUALITY:
+   - No repetitive content
+   - No filler paragraphs
+   - Every sentence must add value
+   - Use concrete examples, not abstract concepts
+
+Output: Markdown with headings. STOP at ${section.word_count} words.`;
 
   try {
     const result = await callAI(prompt);
@@ -104,6 +168,8 @@ async function generateFAQ(concept, forbiddenWords, aiPatterns, voice, previousT
 FAQ items:
 ${faqItems}
 
+WORD COUNT: 400-600 words total (all Q&A combined)
+
 Format:
 ## Frequently Asked Questions
 
@@ -113,10 +179,33 @@ Format:
 ### [Question 2]
 [50-100 word answer]
 
-Rules:
-- Include keyword "${concept.keyword}" in 2+ answers
-- Be specific, no vague statements
-- Use data/examples where possible
+MANDATORY REQUIREMENTS (SOP Compliance):
+
+1. KEYWORD USAGE:
+   - Include keyword "${concept.keyword}" in 2+ questions
+   - Include keyword in 2+ answers
+   - Use naturally, no stuffing
+
+2. ANSWER QUALITY:
+   - Be specific, no vague statements
+   - Use data/examples where possible
+   - Include sources: (Source: Name, Year)
+   - Mark missing data: [DATA: ...]
+
+3. LANGUAGE LEVEL:
+   - 8th grade reading level
+   - Simple words, short sentences
+   - Active voice
+
+4. ANSWER LENGTH:
+   - 50-100 words per answer
+   - No one-sentence answers
+   - No essay-length answers
+
+5. FORBIDDEN:
+   - No "It depends..."
+   - No "There are many ways..."
+   - No vague generalizations
 
 Output: Markdown only.`;
 
@@ -131,14 +220,16 @@ async function generateCTA(concept, previousTail) {
   const ctaUrl = concept.cta?.url || 'https://api.lemondata.cc/signup';
 
   try {
-    const prompt = `Write 2-3 sentence closing for article about "${concept.keyword}".
+    const prompt = `Write 2-3 sentence closing paragraph for an article about "${concept.keyword}".
 
 Requirements:
 - Summarize key takeaway (no "In conclusion")
 - Mention how Crazyrouter helps (use "You can use..." not "Crazyrouter provides...")
-- End with: [${ctaText}](${ctaUrl})
+- End with this exact markdown link: [${ctaText}](${ctaUrl})
+- Output ONLY the paragraph text in plain markdown. No code blocks, no "Here's your closing paragraph:", no preamble.
+- Write ENTIRELY in English.
 
-Output: Markdown paragraph.`;
+Output: plain markdown paragraph only.`;
 
     const result = await callAI(prompt);
     if (result && result.length > 20) {
@@ -159,25 +250,84 @@ function buildSystemPrompt(forbiddenWords, aiPatterns, voice) {
     ? `\nREFERENCE DATA — This is OUR product (Crazyrouter/LemonData) and industry data. Use it for accuracy when relevant, but do NOT confuse our product data with the article's subject. If the article is about a different product, clearly distinguish between them:\n${knowledge}\n`
     : '';
 
-  return `You are a technical content writer. Voice: "${voice.tone}". Style: "${voice.style}".
+  return `You are a technical content writer following Google's E-E-A-T principles (Experience, Expertise, Authoritativeness, Trustworthiness).
+
+Voice: "${voice.tone}"
+Style: "${voice.style}"
+
+LANGUAGE: Write ENTIRELY in English. Do NOT use any Chinese characters, even if the reference data below contains Chinese text.
+
 ${knowledgeSection}
+GOOGLE SEO & E-E-A-T REQUIREMENTS:
+
+1. EXPERIENCE & EXPERTISE:
+   - Write from a practitioner's perspective
+   - Use specific examples, not abstract concepts
+   - Show understanding through technical details
+
+2. AUTHORITATIVENESS:
+   - Cite sources for ALL data: (Source: Name, Year)
+   - Use recent data (2025-2026 preferred)
+   - Reference authoritative sources (official docs, research papers)
+
+3. TRUSTWORTHINESS:
+   - Be accurate and transparent
+   - Admit limitations: use [DATA: ...] for missing info
+   - No exaggeration or misleading claims
+
+4. LANGUAGE LEVEL (8th grade):
+   - Simple vocabulary: "use" not "utilize", "start" not "commence"
+   - Short sentences: average 15-20 words
+   - Active voice: "You can access" not "Access can be obtained"
+   - No jargon without explanation
+
+5. SENTENCE VARIETY:
+   - Mix short (under 10 words) and long (40+ words) sentences
+   - Vary sentence structure
+   - Use transitions naturally
+
 FORBIDDEN words/phrases (never use these):
 ${forbiddenWords.map((w) => `- "${w}"`).join('\n')}
 
 FORBIDDEN AI patterns (never use these sentence structures):
 ${aiPatterns.map((p) => `- ${p}`).join('\n')}
 
+ADDITIONAL FORBIDDEN PATTERNS (SOP):
+- "In today's era...", "As AI develops...", "In recent years..."
+- "Let's explore...", "We will discuss..."
+- "First/Second/Finally" (use natural transitions)
+- "In conclusion", "To sum up", "Overall"
+- "It depends...", "There are many ways..."
+
 STRICT FORMATTING RULES:
-- Use **bold** MAXIMUM 3 times in the entire article. Reserve it only for the single most critical insight.
-- Use em dash (——) MAXIMUM 3 times total.
-- Use exclamation mark (!) MAXIMUM 2 times total.
-- Do NOT bold product names, section labels, or list items. Plain text only.
+
+1. BOLD USAGE:
+   - MAXIMUM 3 times in ENTIRE article (across all sections)
+   - Only for the single most critical insight per section
+   - Do NOT bold: product names, headings, list items, keywords (except once in intro)
+
+2. EM DASH (——):
+   - MAXIMUM 3 times total
+
+3. EXCLAMATION MARK (!):
+   - MAXIMUM 2 times total
+
+4. TABLES:
+   - REQUIRED for any comparison (pricing, features, specs)
+   - Use markdown table format
+   - Include sources in caption
+
+5. DATA FORMAT:
+   - Numbers: "40%" not "forty percent"
+   - Dates: "Q4 2025" or "March 2026"
+   - Sources: (Source: Company Name, 2026)
+   - Missing data: [DATA: specific metric needed]
 
 Writing principles:
-- Vary sentence length: mix short (under 10 words) and long (40+ words) sentences
 - Use specific numbers instead of vague terms ("300+ models" not "many models")
 - Every claim needs evidence or a [DATA: ...] placeholder
-- Write for developers: code > prose, numbers > adjectives`;
+- Write for developers: code > prose, numbers > adjectives
+- No filler content: every sentence must add value`;
 }
 
 async function callAI(prompt) {
@@ -241,9 +391,9 @@ function stripExcessBold(text, maxBold = 3) {
     return `__INLINE_CODE_${inlineCode.length - 1}__`;
   });
 
-  // Now strip excess bold from non-code content
+  // Now strip excess bold from non-code content (s flag = dotAll, matches newlines too)
   let count = 0;
-  textWithoutCode = textWithoutCode.replace(/\*\*(.+?)\*\*/g, (match, inner) => {
+  textWithoutCode = textWithoutCode.replace(/\*\*(.+?)\*\*/gs, (match, inner) => {
     count++;
     return count <= maxBold ? match : inner;
   });

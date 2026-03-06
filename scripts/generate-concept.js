@@ -56,6 +56,7 @@ async function main() {
   const lang = args.lang || 'en';
   const market = args.market || 'us';
   const maxResults = Math.min(parseInt(args.results) || 10, 10);
+  const maxWords = parseInt(args.words) || 2500;
   const SEOMASTER_ROOT = path.join(__dirname, '..');
   const outputDir = args.out
     ? path.resolve(process.cwd(), args.out)
@@ -103,7 +104,7 @@ async function main() {
 
   // Step 3: AI 生成大纲
   console.log(`[3/4] Generating optimized outline with AI...`);
-  const outline = await generateOutline(keyword, outlineData, { lang, maxWords: 15000 });
+  const outline = await generateOutline(keyword, outlineData, { lang, maxWords });
   console.log(`  Generated ${outline.sections?.length || 0} sections\n`);
 
   // Step 4: 写入 YAML

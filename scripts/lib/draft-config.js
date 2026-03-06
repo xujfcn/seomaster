@@ -31,8 +31,8 @@ function loadDraftConfig(conceptPath) {
   // 读取 project-config.yaml（可选，不存在则用默认值）
   const projectConfigPath = path.join(SEOMASTER_ROOT, 'project-config.yaml');
   let voice = {
-    tone: '技术老手的实话实说',
-    style: '数据驱动，不吹不黑',
+    tone: "tech veteran's straight talk",
+    style: 'data-driven, no hype',
   };
   if (fs.existsSync(projectConfigPath)) {
     const projectConfig = yaml.load(fs.readFileSync(projectConfigPath, 'utf-8'));

@@ -86,31 +86,37 @@ async function main() {
   fullText += intro;
   console.log(`  ✓ intro (${countWords(intro)} words)\n`);
 
-  // Step 2: 逐 section 生成
+  // Step 2: 并发生成所有 section（共享同一个 intro tail 作为上下文）
   const sections = concept.sections || [];
-  for (let i = 0; i < sections.length; i++) {
-    const section = sections[i];
-    console.log(`[${i + 2}/${sections.length + 3}] Writing section: "${section.title}"...`);
-    const sectionText = await generateSection(
-      section, concept, forbiddenWords, aiPatterns, voice, getTail(fullText)
-    );
+  console.log(`[2-${sections.length + 1}/${sections.length + 3}] Writing ${sections.length} sections in parallel...`);
+  const introTail = getTail(fullText);
+  const sectionResults = await Promise.all(
+    sections.map((section, i) =>
+      generateSection(section, concept, forbiddenWords, aiPatterns, voice, introTail)
+        .then((text) => {
+          const wc = countWords(text);
+          const target = section.word_count || 0;
+          const warn = target && wc > target * 1.3 ? ` ⚠️  (target: ${target})` : '';
+          console.log(`  ✓ [${i + 1}/${sections.length}] "${section.title}" — ${wc} words${warn}`);
+          return text;
+        })
+    )
+  );
+  for (const sectionText of sectionResults) {
     parts.push(sectionText);
     fullText += '\n\n' + sectionText;
-    const wc = countWords(sectionText);
-    const target = section.word_count || 0;
-    const warn = target && wc > target * 1.3 ? ` ⚠️  (target: ${target})` : '';
-    console.log(`  ✓ ${wc} words${warn}\n`);
   }
+  console.log('');
 
   // Step 3: FAQ
-  console.log(`[${sections.length + 2}/${sections.length + 3}] Writing FAQ...`);
+  console.log(`[3/4] Writing FAQ...`);
   const faq = await generateFAQ(concept, forbiddenWords, aiPatterns, voice, getTail(fullText));
   parts.push(faq);
   fullText += '\n\n' + faq;
   console.log(`  ✓ FAQ (${countWords(faq)} words)\n`);
 
   // Step 4: CTA
-  console.log(`[${sections.length + 3}/${sections.length + 3}] Writing CTA...`);
+  console.log(`[4/4] Writing CTA...`);
   const cta = await generateCTA(concept, getTail(fullText));
   parts.push('\n---\n\n' + cta);
   fullText += '\n\n' + cta;

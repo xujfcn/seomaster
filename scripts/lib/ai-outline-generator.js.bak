@@ -75,15 +75,11 @@ async function generateOutline(keyword, competitorData, options = {}) {
 function formatCompetitorData(competitorData) {
   return competitorData
     .filter((c) => c.outline && c.outline.length > 0)
-    .slice(0, 4) // Limit to top 4 competitors to reduce prompt length
     .map((c) => {
-      // Limit outline depth to H1-H3 only and max 20 headings per article
       const outlineText = c.outline
-        .filter(h => h.level <= 3) // Only include H1, H2, H3 (skip H4)
-        .slice(0, 20) // Max 20 headings per article (reduced from 25)
         .map((h) => `${'  '.repeat(h.level - 1)}H${h.level}: ${h.text}`)
         .join('\n');
-      return `[#${c.position}] ${c.title}\n${outlineText}`; // Remove URL to save tokens
+      return `[#${c.position}] ${c.title}\nURL: ${c.url}\n${outlineText}`;
     })
     .join('\n\n---\n\n');
 }

@@ -3,8 +3,8 @@ const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4'];
-const FETCH_TIMEOUT = 15000; // 15秒超时
-const CONCURRENCY = 3; // 同时抓取数量
+const FETCH_TIMEOUT = 10000; // 10秒超时，慢站直接跳过
+const CONCURRENCY = 5; // 同时抓取数量
 
 /**
  * 并发抓取多篇文章的 H1-H4 大纲
@@ -19,7 +19,7 @@ async function scrapeOutlines(articles) {
     const batchResults = await Promise.all(batch.map(scrapeOne));
     results.push(...batchResults);
     if (i + CONCURRENCY < articles.length) {
-      await sleep(1000); // 批次间休息 1 秒，避免被封
+      await sleep(500); // 批次间短暂休息，避免被封
     }
   }
   return results;

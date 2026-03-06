@@ -168,6 +168,78 @@ node scripts/quality-check.js articles/my-first-article-draft.md
 
 ### 8. 发布
 
+## CLI 工具（推荐）
+
+SEOMaster 提供了便捷的 CLI 工具，简化工作流程。
+
+### 安装
+
+```bash
+cd seomaster
+npm install -g .
+```
+
+### 快速使用
+
+#### 1. 交互式工作流（推荐新手）
+
+```bash
+seomaster new "your keyword" -i
+```
+
+生成大纲后会显示预览并等待确认：
+- ✓ 继续生成 draft
+- ↻ 重新生成 concept
+- ✎ 手动编辑 concept 文件
+- ✕ 取消流程
+
+#### 2. 自动全流程（推荐熟练用户）
+
+```bash
+seomaster new "your keyword" --words 2500
+```
+
+自动执行：concept → draft → images → quality check
+
+#### 3. 分步执行（精细控制）
+
+```bash
+# Step 1: 生成大纲
+seomaster concept "your keyword"
+
+# Step 2: 预览大纲
+seomaster preview your-keyword
+
+# Step 3: 生成正文
+seomaster draft output/your-keyword-concept.yaml
+
+# Step 4: 生成配图（最多3张）
+seomaster images output/your-keyword-draft.md
+
+# Step 5: 质量检查
+seomaster check your-keyword
+```
+
+### 主要命令
+
+| 命令 | 说明 | 示例 |
+|------|------|------|
+| `new <keyword> -i` | 交互式全流程 | `seomaster new "api guide" -i` |
+| `new <keyword>` | 自动全流程 | `seomaster new "api guide"` |
+| `concept <keyword>` | 仅生成大纲 | `seomaster concept "api guide"` |
+| `preview <slug>` | 预览大纲 | `seomaster preview api-guide` |
+| `draft <concept-file>` | 生成正文 | `seomaster draft output/api-guide-concept.yaml` |
+| `images <draft-file>` | 生成配图 | `seomaster images output/api-guide-draft.md` |
+| `check <draft-file>` | 质量检查 | `seomaster check api-guide` |
+| `list` | 列出所有文章 | `seomaster list` |
+
+### 详细文档
+
+- [交互式工作流指南](INTERACTIVE_WORKFLOW.md) - 大纲确认、重试、编辑
+- [自动配图工作流](IMAGE_WORKFLOW.md) - DALL-E 3 配图、GitHub 图床
+
+### 8. 发布（原流程）
+
 ```bash
 # 翻译（如果需要）
 node scripts/translate.js articles/my-first-article-final.md --to en

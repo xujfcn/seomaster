@@ -18,12 +18,13 @@ async function searchGoogle(keyword, options = {}) {
   const langMap = { zh: 'zh-CN', 'zh-tw': 'zh-TW', pt: 'pt-BR' };
   const languageCode = langMap[lang.toLowerCase()] || lang;
 
-  // 启动 Actor run
+  // 启动 Actor run，使用 waitForFinish=120 让 Apify 服务端等待，避免客户端轮询
   const runRes = await fetch(
-    `${APIFY_BASE}/acts/${ACTOR_ID}/runs?token=${token}`,
+    `${APIFY_BASE}/acts/${ACTOR_ID}/run-sync-get-dataset-items?token=${token}&waitForFinish=120`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      timeout: 150000, // 150s，比 Apify 等待时间多一些
       body: JSON.stringify({
         queries: keyword,
         languageCode: languageCode,
@@ -41,18 +42,7 @@ async function searchGoogle(keyword, options = {}) {
     throw new Error(`Apify run failed: ${runRes.status} ${text}`);
   }
 
-  const runData = await runRes.json();
-  const runId = runData.data.id;
-
-  // 轮询等待完成（最多 120 秒）
-  console.log(`  Apify run started: ${runId}, waiting...`);
-  const datasetId = await waitForRun(runId, token);
-
-  // 取结果
-  const itemsRes = await fetch(
-    `${APIFY_BASE}/datasets/${datasetId}/items?token=${token}&limit=1`
-  );
-  const items = await itemsRes.json();
+  const items = await runRes.json();
 
   if (!items || !items.length) throw new Error('Apify returned empty dataset');
 
@@ -65,23 +55,5 @@ async function searchGoogle(keyword, options = {}) {
   }));
 }
 
-async function waitForRun(runId, token, timeoutMs = 120000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    await sleep(3000);
-    const res = await fetch(`${APIFY_BASE}/actor-runs/${runId}?token=${token}`);
-    const data = await res.json();
-    const status = data.data.status;
-    if (status === 'SUCCEEDED') return data.data.defaultDatasetId;
-    if (status === 'FAILED' || status === 'ABORTED') {
-      throw new Error(`Apify run ${status}: ${runId}`);
-    }
-  }
-  throw new Error(`Apify run timeout after ${timeoutMs}ms`);
-}
-
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
 
 module.exports = { searchGoogle };
