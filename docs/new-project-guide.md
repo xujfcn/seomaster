@@ -145,6 +145,30 @@ node scripts/generate-concept.js \
 | `--market` | us | 目标市场（us/cn） |
 | `--results` | 10 | 抓取竞品数量 |
 | `--out` | 当前目录 | 输出目录 |
+| `--no-filter` | false | 禁用域名过滤（默认启用） |
+
+### 域名过滤（Blog-Only 模式）
+
+默认情况下，系统会自动过滤掉论坛、问答、社交媒体等网站，只保留高质量的博客文章：
+
+**过滤的网站类型**：
+- 论坛：Reddit, Quora, Stack Overflow, V2EX, 知乎
+- 社交媒体：Twitter, Facebook, LinkedIn, YouTube
+- 产品平台：Product Hunt
+- 其他：Wikipedia
+
+**自定义过滤规则**：
+编辑 `seomaster/config/domain-filter.js` 文件：
+- `EXCLUDED_DOMAINS`：黑名单（会被过滤）
+- `ALLOWED_DOMAINS`：白名单（优先级更高）
+
+**禁用过滤**：
+```bash
+node scripts/generate-concept.js \
+  --keyword "your keyword" \
+  --slug your-slug \
+  --no-filter
+```
 
 ### 输出文件
 

@@ -40,41 +40,74 @@ function extractImageMarkers(content) {
 
 async function generateImage(description, index) {
   console.log(`  [${index + 1}] Generating: "${description.slice(0, 60)}..."`);
-  
+
   const imagePrompt = buildImagePrompt(description);
-  
+
   try {
-    const res = await fetch(`${config.aiBaseUrl()}/images/generations`, {
+    // 使用 Gemini 3.1 Flash Image Preview 模型
+    const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${config.aiApiKey()}`
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: imagePrompt,
-        n: 1,
-        size: '1792x1024',
-        quality: 'standard',
-        style: 'natural'
+        model: 'gemini-3.1-flash-image-preview',
+        messages: [
+          {
+            role: 'user',
+            content: imagePrompt
+          }
+        ],
+        max_tokens: 4096,
+        temperature: 0.7
       })
     });
-    
+
     if (!res.ok) {
       const error = await res.text();
       console.warn(`    ⚠️  Generation failed: ${error}`);
       return null;
     }
-    
+
     const data = await res.json();
-    const imageUrl = data.data[0].url;
-    
-    const imageRes = await fetch(imageUrl);
-    const imageBuffer = await imageRes.buffer();
-    
+
+    // Gemini 返回的图片可能在 message.content 中（base64 或 URL）
+    // 需要根据实际 API 响应格式调整
+    let imageUrl = null;
+    let imageBuffer = null;
+
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      const message = data.choices[0].message;
+
+      // 检查是否有图片 URL
+      if (message.image_url) {
+        imageUrl = message.image_url;
+      } else if (message.content && typeof message.content === 'string') {
+        // 检查是否是 base64 图片
+        if (message.content.startsWith('data:image')) {
+          const base64Data = message.content.split(',')[1];
+          imageBuffer = Buffer.from(base64Data, 'base64');
+        } else if (message.content.startsWith('http')) {
+          imageUrl = message.content;
+        }
+      }
+    }
+
+    // 如果有 URL，下载图片
+    if (imageUrl) {
+      const imageRes = await fetch(imageUrl);
+      imageBuffer = await imageRes.buffer();
+    }
+
+    if (!imageBuffer) {
+      console.warn(`    ⚠️  No image data in response`);
+      return null;
+    }
+
     console.log(`    ✓ Generated (${(imageBuffer.length / 1024).toFixed(1)} KB)`);
     return imageBuffer;
-    
+
   } catch (error) {
     console.warn(`    ⚠️  Error: ${error.message}`);
     return null;

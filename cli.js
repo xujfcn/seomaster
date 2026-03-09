@@ -397,8 +397,23 @@ program
     await createNewProject();
   });
 
-program.parse(process.argv);
+program
+  .command('vault:import <draft-file>')
+  .description('Import article to Obsidian vault')
+  .option('--dir <name>', 'Vault subdirectory', 'Published')
+  .action(async (draftFile, options) => {
+    await runScript('./scripts/import-to-vault.js', [
+      '--draft', draftFile,
+      '--dir', options.dir
+    ]);
+  });
 
+// 如果没有提供任何命令，启动交互式菜单
 if (!process.argv.slice(2).length) {
-  program.outputHelp();
+  const interactiveProcess = spawn('node', [path.join(__dirname, 'interactive.js')], {
+    stdio: 'inherit',
+  });
+  interactiveProcess.on('exit', (code) => process.exit(code));
+} else {
+  program.parse(process.argv);
 }

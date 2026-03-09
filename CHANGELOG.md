@@ -4,6 +4,100 @@ All notable changes to SEOMaster will be documented in this file.
 
 ## [Unreleased]
 
+### Changed - 2026-03-09
+
+#### Outline Generation Logic Optimization
+- **Flexible What-Why-How Structure**:
+  - AI now analyzes competitor structures first before applying What-Why-How logic
+  - Adapts to successful competitor patterns instead of forcing rigid templates
+  - Priority: Competitor patterns > What-Why-How template
+  - Results in more natural, organic article structures
+
+**Prompt Changes**:
+```
+Old: "Follow the natural human thinking pattern: What → Why → How"
+New: "Follow natural human thinking patterns (What → Why → How), but adapt to competitor outlines"
+```
+
+**Benefits**:
+- More natural article flow
+- Better alignment with top-ranking content
+- Avoids formulaic, repetitive structures
+- Maintains human thinking logic while being flexible
+
+#### Image Generation Model Update
+- **Switched from DALL-E 3 to Gemini 3.1 Flash Image Preview**
+- **API Endpoint**: Changed from `/images/generations` to `/chat/completions`
+- **Response Handling**: Support for both URL and base64 image formats
+- **Model**: `gemini-3.1-flash-image-preview`
+
+**Benefits**:
+- Faster generation speed
+- Better cost efficiency
+- Improved image quality for technical diagrams
+
+### Added - 2026-03-09
+
+#### Interactive Menu System
+- **Zero-Learning-Curve CLI**: Launch with `seomaster` to access graphical menu
+- **Project Management**: Visual project selection, creation, and switching
+- **Article Management**: List all articles with status indicators (Concept/Draft)
+- **Guided Workflow**: Step-by-step prompts for creating articles
+
+#### Concept Confirmation Step ⭐
+- **Preview Concept**: View article outline, sections, and FAQ before generating draft
+- **Regenerate Option**: Unsatisfied with outline? Regenerate with one click
+- **Manual Edit**: Edit YAML file manually and continue
+- **Cancel Workflow**: Return to project menu without generating draft
+
+**Benefits**:
+- Avoid generating unsatisfactory drafts (saves time and API costs)
+- Iterate on outline until satisfied
+- Fine-tune structure before committing to full draft
+
+#### Blog-Only Domain Filtering
+- **Auto-Filter Forums/Q&A**: Excludes Reddit, Quora, Stack Overflow, Zhihu, V2EX
+- **Auto-Filter Social Media**: Excludes Twitter, Facebook, LinkedIn, YouTube
+- **Auto-Filter Others**: Excludes Product Hunt, Wikipedia
+- **Customizable**: Edit `config/domain-filter.js` to add/remove domains
+- **Whitelist Support**: Override blacklist for specific subdomains
+- **CLI Flag**: Use `--no-filter` to disable filtering
+
+**Benefits**:
+- Only reference high-quality blog articles
+- Better outline structure (not influenced by forum discussions)
+- More professional content (not influenced by social media tone)
+
+#### New Files
+- `interactive.js` - Interactive menu system
+- `config/domain-filter.js` - Domain filtering configuration
+- `docs/interactive-guide.md` - Interactive mode usage guide
+- `docs/new-project-guide.md` - New project setup guide
+- `docs/domain-filtering.md` - Domain filtering documentation
+- `QUICK-REFERENCE.md` - Quick reference card
+
+### Changed - 2026-03-09
+
+#### CLI Entry Point
+- **Modified `cli.js`**: Launch interactive menu when no arguments provided
+- **Backward Compatible**: All existing commands still work
+
+#### Google Search
+- **Modified `scripts/lib/google-search.js`**:
+  - Added `shouldFilterUrl()` function
+  - Added `filterDomains` parameter (default: true)
+  - Fetch 2x results and filter to ensure enough quality results
+
+#### Concept Generation
+- **Modified `scripts/generate-concept.js`**:
+  - Added `--no-filter` parameter
+  - Display filter status in output
+  - Pass `filterDomains` to `searchGoogle()`
+
+#### Documentation
+- **Updated `README.md`**: Highlight interactive mode as primary usage
+- **Updated all docs**: Add interactive mode examples
+
 ### Added - 2026-03-06
 
 #### Obsidian Knowledge Base Integration

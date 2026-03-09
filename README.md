@@ -8,25 +8,40 @@ AI 驱动的 SEO 内容生成工具，支持多项目管理和智能知识库。
 # 1. 进入目录
 cd D:\lemondata-free\lemondata-content\seomaster
 
-# 2. 查看项目
-seomaster project:list
+# 2. 启动交互式菜单（推荐）
+seomaster
 
-# 3. 生成文章
+# 或使用命令行模式
 seomaster new "your keyword"
 ```
 
 ## 核心特性
 
+- ✅ **交互式菜单** - 零学习成本，图形化操作
 - ✅ **AI 驱动** - 使用 Claude/GPT 生成高质量 SEO 文章
 - ✅ **多项目支持** - 为不同产品维护独立知识库
 - ✅ **智能知识库** - 基于关键词自动加载相关知识（Obsidian 集成）
+- ✅ **Blog-Only 模式** - 自动过滤论坛/问答网站，只参考高质量博客
 - ✅ **完整工作流** - Concept → Draft → Images → Quality Check
-- ✅ **交互式模式** - 预览和确认每个步骤
 - ✅ **自动配图** - AI 生成文章配图
 
-## 使用示例
+## 使用模式
 
-### 基本用法
+### 交互式模式（推荐新手）
+
+```bash
+seomaster
+```
+
+启动后通过菜单操作：
+1. 选择或创建项目
+2. 新建文章（输入关键词）
+3. 查看文章列表
+4. 管理文章（生成 Draft、质量检查、配图）
+
+详见：[交互式使用指南](docs/interactive-guide.md)
+
+### 命令行模式（推荐高级用户）
 
 ```bash
 # 生成英文文章
@@ -40,6 +55,9 @@ seomaster new "keyword" -i
 
 # 自定义参数
 seomaster new "keyword" --words 3000 --results 5
+
+# 导入文章到 Obsidian vault
+seomaster vault:import output/keyword-draft.md
 ```
 
 ### 多项目管理
@@ -94,7 +112,16 @@ seomaster list                    # 列出所有文章
 -r, --results <number>    搜索结果数（默认: 5）
 -i, --interactive         交互式模式
 --skip-images             跳过图片生成
+--no-filter               禁用域名过滤（默认过滤论坛/问答网站）
 ```
+
+### 域名过滤（Blog-Only 模式）
+
+默认启用，自动过滤 Reddit、Quora、知乎等论坛/问答网站，只保留高质量博客文章。
+
+- 查看过滤规则：`seomaster/config/domain-filter.js`
+- 禁用过滤：添加 `--no-filter` 参数
+- 详细说明：[域名过滤文档](docs/domain-filtering.md)
 
 ## 输出文件
 
@@ -220,10 +247,12 @@ GITHUB_BRANCH=main
 
 ## 文档
 
-- **[GETTING-STARTED.md](GETTING-STARTED.md)** - 完整启动指南
-- **[MULTI-PROJECT-GUIDE.md](MULTI-PROJECT-GUIDE.md)** - 多项目使用指南
-- **[OBSIDIAN-QUICKSTART.md](OBSIDIAN-QUICKSTART.md)** - Obsidian 快速开始
-- **[CHANGELOG.md](CHANGELOG.md)** - 更新日志
+- **[交互式使用指南](docs/interactive-guide.md)** - 图形化菜单操作（推荐新手）
+- **[新项目使用指南](docs/new-project-guide.md)** - 从零开始构建知识库
+- **[域名过滤说明](docs/domain-filtering.md)** - Blog-Only 模式详解
+- **[快速开始指南](docs/quick-start.md)** - 命令行快速上手
+- **[工作流详细指南](docs/workflow-guide.md)** - 完整工作流程
+- **[项目初始化](docs/init-workflow.md)** - 从原始文档生成配置
 
 ## 故障排除
 

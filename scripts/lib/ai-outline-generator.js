@@ -97,7 +97,19 @@ function buildPrompt(keyword, competitorSummary, lang, maxWords) {
   // 加载知识库上下文（传递关键词以匹配相关文件）
   const knowledge = loadConceptKnowledge(keyword);
   const knowledgeSection = knowledge
-    ? `\n## Internal Knowledge Base (use this data for accuracy — reference only, do NOT copy its language)\n${knowledge}\n`
+    ? `\n## Internal Knowledge Base (CRITICAL: Use this data for accuracy)
+
+**IMPORTANT RULES FOR KNOWLEDGE BASE DATA**:
+1. **Pricing Information**: MUST use exact prices from knowledge base. DO NOT modify, estimate, or update prices.
+2. **Competitor Data**: MUST use exact competitor information from knowledge base. DO NOT add or modify competitor details.
+3. **Product Features**: MUST use exact feature descriptions from knowledge base.
+4. **Data Sources**: All data from knowledge base is verified and must be used as-is.
+5. **DO NOT**: Make up prices, features, or competitor information not in the knowledge base.
+
+${knowledge}
+
+**REMINDER**: The above data is authoritative. Use it exactly as provided. Do not modify prices or competitor information.
+\n`
     : '';
 
   return `You are an expert SEO content strategist. Analyze the following competitor articles for the keyword "${keyword}", then generate an optimized article outline.
@@ -112,11 +124,16 @@ Generate a comprehensive article outline for the keyword: "${keyword}"
 
 ### Rules:
 
-1. **Structure logic**: Follow the natural human thinking pattern:
-   - What is it? (definition, background, context)
-   - Why does it matter? (pain points, benefits, use cases)
-   - How to do it? (practical steps, examples, comparisons)
-   - What to watch out for? (limitations, alternatives, FAQs)
+1. **Structure logic**: Follow natural human thinking patterns (What → Why → How), but adapt to the competitor outlines:
+   - **Analyze competitor structures first**: Study how top-ranking articles organize their content
+   - **Adapt, don't force**: If competitors use a different logical flow that works well, follow it
+   - **General guidance** (use flexibly, not rigidly):
+     * What is it? (definition, background, context)
+     * Why does it matter? (pain points, benefits, use cases)
+     * How to do it? (practical steps, examples, comparisons)
+     * What to watch out for? (limitations, alternatives, FAQs)
+   - **Priority**: Competitor patterns > What-Why-How template
+   - **Natural flow**: Sections should feel organic, not formulaic
 
 2. **Keyword coverage**: Each heading level (H1→H2→H3→H4) must include different angles/variants of the keyword:
    - H1: exact keyword or close variant
