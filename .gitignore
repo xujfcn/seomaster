@@ -24,9 +24,11 @@ Thumbs.db
 test-*.yaml
 *-test.yaml
 output/*.md
+output/*.html
 output/*.yaml
 output/*.json
 output/*.txt
+output/*.png
 
 # Project configs (keep local only)
 *-project-config.yaml

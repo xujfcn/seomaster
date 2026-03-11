@@ -129,6 +129,69 @@ hard_metrics:
         - "substantial"
       fix: "用具体数字替代"
 
+    # AI 企业腔（AI Corporate Speak）
+    ai_corporate:
+      words:
+        - "comprehensive"
+        - "robust"
+        - "strategic"
+        - "optimize"
+        - "enhance"
+        - "leverage"
+        - "streamline"
+        - "maximize"
+        - "effective solution"
+        - "valuable"
+        - "framework"
+        - "landscape"
+        - "critical"
+        - "crucial"
+        - "utilize"
+      fix: "用更直接具体的常见词替代（comprehensive→full, leverage→use, robust→solid, optimize→improve）"
+
+    # 空话句（Filler Sentences）
+    filler_sentences:
+      words:
+        - "This is important for users"
+        - "This helps improve efficiency"
+        - "There are many factors to consider"
+        - "It is essential to understand"
+        - "This can lead to better results"
+        - "This is beneficial for users"
+        - "This is important in today's environment"
+        - "This can significantly improve"
+      fix: "删除或改成提供具体信息/判断/依据的句子"
+
+    # 标题复述句（Title Restatement）
+    title_restatement:
+      words:
+        - "is important because"
+        - "matters because"
+        - "Understanding X is essential"
+        - "plays a key role in"
+        - "Checking X helps users"
+      fix: "直接写用户真正想知道的信息，不要复述标题"
+
+    # 过度中立句（Neutral Hedging）
+    neutral_hedging:
+      words:
+        - "It depends on your needs"
+        - "Both options have pros and cons"
+        - "There is no one-size-fits-all answer"
+        - "Users should consider multiple factors"
+        - "Users should consider multiple aspects"
+      fix: "给出明确但克制的判断，不要假装中立"
+
+    # 书面过渡词（Formal Transitions）
+    formal_transition:
+      words:
+        - "moreover"
+        - "furthermore"
+        - "additionally"
+        - "therefore"
+        - "overall"
+      fix: "删除，用自然衔接替代"
+
   # AI 句式禁令
   ai_patterns:
     - pattern: "这不是X，这是Y"
@@ -146,6 +209,38 @@ hard_metrics:
     - pattern: "不仅...而且..."
       description: "排比堆砌"
       fix: "拆分为独立论点"
+
+    - pattern: "In today's digital world..."
+      description: "AI 英文开篇套话"
+      fix: "直接切入主题"
+
+    - pattern: "As the market continues to evolve..."
+      description: "AI 英文过渡套话"
+      fix: "用具体事件替代"
+
+    - pattern: "With the growing demand for..."
+      description: "AI 英文背景铺垫"
+      fix: "直接进入用户关心的内容"
+
+    - pattern: "When it comes to..."
+      description: "AI 英文起题句"
+      fix: "直接陈述要点"
+
+    - pattern: "Another key factor is..."
+      description: "AI 英文列举句"
+      fix: "用自然承接替代，让段落有推进感"
+
+    - pattern: "Another important factor is..."
+      description: "AI 英文列举句"
+      fix: "用自然承接替代"
+
+    - pattern: "Another thing to consider is..."
+      description: "AI 英文列举句"
+      fix: "用自然承接替代"
+
+    - pattern: "Whether you're X or Y..."
+      description: "AI 英文通用开头"
+      fix: "直接针对具体场景写"
 
 # ============================================
 # 开篇规范（Opening Rules）

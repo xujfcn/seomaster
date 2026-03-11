@@ -108,6 +108,8 @@ program
   .option('-r, --results <number>', 'Search results')
   .option('-w, --words <number>', 'Target word count')
   .option('-i, --interactive', 'Interactive mode with confirmations')
+  .option('--intent <type>', 'Keyword intent (informational/navigational/commercial/transactional)')
+  .option('--scene <scenes>', 'DICloak business scenes, comma-separated')
   .option('--skip-images', 'Skip image generation')
   .action(async (keyword, options) => {
     // Initialize workflow with project selection
@@ -119,14 +121,22 @@ program
     const market = options.market || defaults.market;
     const results = options.results || defaults.results;
     const words = options.words || defaults.words;
-    const outputDir = path.join(__dirname, defaults.outputDir);
+    const intent = options.intent || 'informational';
+    const scene = options.scene || '';
+    const outputDir = path.isAbsolute(defaults.outputDir)
+      ? defaults.outputDir
+      : path.join(__dirname, defaults.outputDir);
 
     console.log(chalk.cyan(`🚀 Generating article: "${keyword}"\n`));
+    console.log(chalk.gray(`  Intent: ${intent}`));
+    if (scene) console.log(chalk.gray(`  Scenes: ${scene}`));
 
     try {
       console.log(chalk.cyan('[1/4] Generating concept...\n'));
       await runScript('./scripts/generate-concept.js', [
         '--keyword', keyword,
+        '--intent', intent,
+        '--scene', scene,
         '--lang', lang,
         '--market', market,
         '--results', results.toString(),
@@ -148,7 +158,7 @@ program
       }
 
       console.log(chalk.cyan('\n[2/4] Generating draft...\n'));
-      await runScript('./scripts/generate-draft.js', ['--concept', conceptFile]);
+      await runScript('./scripts/generate-draft.js', ['--concept', conceptFile, '--out', outputDir]);
 
       // 自动生成配图（最多3张）
       if (!options.skipImages) {
@@ -189,10 +199,14 @@ program
   .option('-m, --market <market>', 'Market', 'us')
   .option('-r, --results <number>', 'Results', '10')
   .option('-w, --words <number>', 'Words', '2500')
+  .option('--intent <type>', 'Keyword intent (informational/navigational/commercial/transactional)', 'informational')
+  .option('--scene <scenes>', 'DICloak business scenes, comma-separated', '')
   .option('--no-preview', 'Skip preview')
   .action(async (keyword, options) => {
     await runScript('./scripts/generate-concept.js', [
       '--keyword', keyword,
+      '--intent', options.intent,
+      '--scene', options.scene,
       '--lang', options.lang,
       '--market', options.market,
       '--results', options.results,

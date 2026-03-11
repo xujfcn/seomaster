@@ -59,6 +59,9 @@ async function main() {
   const slug = args.slug || keywordToSlug(keyword);
   const lang = args.lang || 'en';
   const market = args.market || 'us';
+  const intent = (typeof args.intent === 'string') ? args.intent : 'informational';
+  const scene = (typeof args.scene === 'string') ? args.scene : '';
+  const scenes = scene ? scene.split(',').filter(Boolean) : [];
   const maxResults = Math.min(parseInt(args.results) || 10, 10);
   const maxWords = parseInt(args.words) || 2500;
   const filterDomains = args['no-filter'] !== true; // 默认启用过滤
@@ -72,6 +75,8 @@ async function main() {
 
   console.log(`\n🔍 SEOMaster: Generating concept for keyword "${keyword}"\n`);
   console.log(`  slug:    ${slug}`);
+  console.log(`  intent:  ${intent}`);
+  if (scenes.length > 0) console.log(`  scenes:  ${scenes.join(', ')}`);
   console.log(`  lang:    ${lang}`);
   console.log(`  market:  ${market}`);
   console.log(`  filter:  ${filterDomains ? 'enabled (blog-only)' : 'disabled (all sites)'}`);
@@ -141,7 +146,7 @@ async function main() {
 
   // Step 3: AI 生成大纲
   console.log(`[3/4] Generating optimized outline with AI...`);
-  const outline = await generateOutline(keyword, outlineData, { lang, maxWords });
+  const outline = await generateOutline(keyword, outlineData, { lang, maxWords, intent, scenes });
   console.log(`  Generated ${outline.sections?.length || 0} sections\n`);
 
   // Step 4: 写入 YAML

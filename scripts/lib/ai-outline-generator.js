@@ -1,20 +1,21 @@
 // seomaster/scripts/lib/ai-outline-generator.js
 const fetch = require('node-fetch');
 const config = require('./config');
-const { loadConceptKnowledge } = require('./knowledge');
+const { loadFileByName, loadContentByType } = require('./knowledge');
+const { isBlogUrl } = require('../../config/domain-filter');
 
 /**
  * 调用 AI API，根据竞品大纲生成本文大纲
  * @param {string} keyword - 目标关键词
  * @param {Array<{ position, title, url, outline }>} competitorData
- * @param {object} options - { lang: 'en', maxWords: 15000 }
+ * @param {object} options - { lang, maxWords, intent, scenes }
  * @returns {Promise<object>} - 结构化大纲对象
  */
 async function generateOutline(keyword, competitorData, options = {}) {
-  const { lang = 'en', maxWords = 15000 } = options;
+  const { lang = 'en', maxWords = 15000, intent = 'informational', scenes = [] } = options;
 
   const competitorSummary = formatCompetitorData(competitorData);
-  const prompt = buildPrompt(keyword, competitorSummary, lang, maxWords);
+  const prompt = buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes);
 
   const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
     method: 'POST',
@@ -59,6 +60,12 @@ async function generateOutline(keyword, competitorData, options = {}) {
   console.log(`[DEBUG] AI content saved to: ${debugPath}`);
   console.log(`[DEBUG] Content length: ${content.length}`);
 
+  // Debug: 保存完整 prompt
+  const debugPromptPath = require('path').join(process.cwd(), 'output', 'debug-prompt.txt');
+  fs.writeFileSync(debugPromptPath, prompt, 'utf8');
+  console.log(`[DEBUG] Prompt saved to: ${debugPromptPath}`);
+  console.log(`[DEBUG] Prompt length: ${prompt.length}`);
+
   try {
     // 剥离 markdown 代码块包裹（```json ... ``` 或 ``` ... ```），支持前后空行
     let cleaned = content.trim();
@@ -73,81 +80,95 @@ async function generateOutline(keyword, competitorData, options = {}) {
 }
 
 function formatCompetitorData(competitorData) {
-  return competitorData
-    .filter((c) => c.outline && c.outline.length > 0)
-    .slice(0, 4) // Limit to top 4 competitors to reduce prompt length
-    .map((c) => {
-      // Limit outline depth to H1-H3 only and max 20 headings per article
-      const outlineText = c.outline
-        .filter(h => h.level <= 3) // Only include H1, H2, H3 (skip H4)
-        .slice(0, 20) // Max 20 headings per article (reduced from 25)
-        .map((h) => `${'  '.repeat(h.level - 1)}H${h.level}: ${h.text}`)
-        .join('\n');
-      return `[#${c.position}] ${c.title}\n${outlineText}`; // Remove URL to save tokens
-    })
-    .join('\n\n---\n\n');
+  const valid = competitorData.filter((c) => c.outline && c.outline.length > 0);
+
+  // 博客/文章类 URL：不限数量，完整 H1-H4
+  const blogArticles = valid.filter(c => isBlogUrl(c.url));
+  const blogText = blogArticles.map((c) => {
+    const outlineText = c.outline
+      .map((h) => `${'  '.repeat(h.level - 1)}H${h.level}: ${h.text}`)
+      .join('\n');
+    return `[Blog #${c.position}] ${c.title}\n${outlineText}`;
+  }).join('\n\n---\n\n');
+
+  // 非博客 URL：限制 4 篇，H1-H3，每篇最多 20 个标题
+  const nonBlogArticles = valid.filter(c => !isBlogUrl(c.url)).slice(0, 4);
+  const nonBlogText = nonBlogArticles.map((c) => {
+    const outlineText = c.outline
+      .filter(h => h.level <= 3)
+      .slice(0, 20)
+      .map((h) => `${'  '.repeat(h.level - 1)}H${h.level}: ${h.text}`)
+      .join('\n');
+    return `[#${c.position}] ${c.title}\n${outlineText}`;
+  }).join('\n\n---\n\n');
+
+  const parts = [blogText, nonBlogText].filter(Boolean);
+  if (blogArticles.length > 0) {
+    console.log(`  📝 Blog/article sources: ${blogArticles.length} (full H1-H4), other sources: ${nonBlogArticles.length} (H1-H3, max 4)`);
+  }
+  return parts.join('\n\n---\n\n');
 }
 
-function buildPrompt(keyword, competitorSummary, lang, maxWords) {
+function buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes) {
   const langInstruction =
     lang === 'zh'
       ? '用中文输出大纲标题。整篇大纲必须全部用中文，不得混入英文。'
       : 'Output ENTIRELY in English. Do NOT use any Chinese characters, even if the knowledge base below contains Chinese text.';
 
-  // 加载知识库上下文（传递关键词以匹配相关文件）
-  const knowledge = loadConceptKnowledge(keyword);
-  const knowledgeSection = knowledge
-    ? `\n## Internal Knowledge Base (CRITICAL: Use this data for accuracy)
-
-**IMPORTANT RULES FOR KNOWLEDGE BASE DATA**:
-1. **Pricing Information**: MUST use exact prices from knowledge base. DO NOT modify, estimate, or update prices.
-2. **Competitor Data**: MUST use exact competitor information from knowledge base. DO NOT add or modify competitor details.
-3. **Product Features**: MUST use exact feature descriptions from knowledge base.
-4. **Data Sources**: All data from knowledge base is verified and must be used as-is.
-5. **DO NOT**: Make up prices, features, or competitor information not in the knowledge base.
-
-${knowledge}
-
-**REMINDER**: The above data is authoritative. Use it exactly as provided. Do not modify prices or competitor information.
-\n`
+  // 1. 加载意图文件
+  const intentContent = loadFileByName(`intent-${intent}.md`);
+  const intentSection = intentContent
+    ? `\n## Keyword Intent: ${intent}\n\nThe user has selected the following keyword intent. You MUST follow its preferred article type and writing focus.\n\n${intentContent}\n`
     : '';
 
-  return `You are an expert SEO content strategist. Analyze the following competitor articles for the keyword "${keyword}", then generate an optimized article outline.
+  // 2. 加载大纲规则 (always_load: true)
+  const outlineRules = loadFileByName('outline-rules.md');
+  const rulesSection = outlineRules
+    ? `\n## Outline Generation Rules (MUST FOLLOW)\n\n${outlineRules}\n`
+    : '';
+
+  // 3. 加载 DICloak 基础介绍
+  const dicloakIntro = loadFileByName('dicloak-intro.md');
+  const introSection = dicloakIntro
+    ? `\n## DICloak Product Information\n\n${dicloakIntro}\n`
+    : '';
+
+  // 4. 加载选中的业务场景
+  let scenesSection = '';
+  if (scenes && scenes.length > 0) {
+    const sceneParts = [];
+    for (const scene of scenes) {
+      const sceneContent = loadFileByName(`dicloak-scene-${scene}.md`);
+      if (sceneContent) {
+        sceneParts.push(sceneContent);
+      }
+    }
+    if (sceneParts.length > 0) {
+      scenesSection = `\n## DICloak Business Scenes to Integrate\n\nThe user has selected the following DICloak business scenes. Integrate them naturally according to the outline rules (max 1 main integration section).\n\n${sceneParts.join('\n\n---\n\n')}\n`;
+    }
+  }
+
+  // 5. 加载的文件统计
+  const loadedParts = [];
+  if (intentContent) loadedParts.push(`intent-${intent}`);
+  if (outlineRules) loadedParts.push('outline-rules');
+  if (dicloakIntro) loadedParts.push('dicloak-intro');
+  if (scenes && scenes.length > 0) loadedParts.push(`scenes: ${scenes.join(', ')}`);
+  if (loadedParts.length > 0) {
+    console.log(`  📚 Prompt knowledge: ${loadedParts.join(' | ')}`);
+  }
+
+  return `You are an expert SEO content strategist. Generate an optimized article outline for the keyword: "${keyword}"
+
 LANGUAGE RULE: ${langInstruction}
-${knowledgeSection}
+${intentSection}${rulesSection}
 ## Competitor Outlines
+
 ${competitorSummary}
+${introSection}${scenesSection}
+## Word Count Constraint
 
-## Your Task
-
-Generate a comprehensive article outline for the keyword: "${keyword}"
-
-### Rules:
-
-1. **Structure logic**: Follow natural human thinking patterns (What → Why → How), but adapt to the competitor outlines:
-   - **Analyze competitor structures first**: Study how top-ranking articles organize their content
-   - **Adapt, don't force**: If competitors use a different logical flow that works well, follow it
-   - **General guidance** (use flexibly, not rigidly):
-     * What is it? (definition, background, context)
-     * Why does it matter? (pain points, benefits, use cases)
-     * How to do it? (practical steps, examples, comparisons)
-     * What to watch out for? (limitations, alternatives, FAQs)
-   - **Priority**: Competitor patterns > What-Why-How template
-   - **Natural flow**: Sections should feel organic, not formulaic
-
-2. **Keyword coverage**: Each heading level (H1→H2→H3→H4) must include different angles/variants of the keyword:
-   - H1: exact keyword or close variant
-   - H2: topic + keyword context (e.g., "why use X", "best X for Y")
-   - H3: specific subtopics, long-tail variants, use cases
-   - H4: detailed breakdowns, comparisons, edge cases
-
-3. **Gap analysis**: Find topics covered by ALL competitors (must include) and topics MISSING from most competitors (differentiation opportunity). Note which is which.
-
-4. **Word count (STRICT)**: Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of all section word_count values MUST NOT exceed ${maxWords}. Keep sections focused — do NOT add unnecessary subsections to pad length. Fewer, denser sections are better than many thin ones.
-
-5. **Images**: Mark exactly 1-2 sections where an image/diagram would be most valuable (set image_needed: true).
-
-6. **${langInstruction}**
+Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of all section word_count values MUST NOT exceed ${maxWords}.
 
 ## Output Format (JSON only, no markdown wrapper):
 
@@ -155,15 +176,16 @@ Generate a comprehensive article outline for the keyword: "${keyword}"
   "title": "H1 article title (include keyword)",
   "meta_description": "120-160 char SEO description with keyword",
   "keyword": "${keyword}",
+  "intent": "${intent}",
   "keyword_variants": ["variant1", "variant2", "variant3"],
   "competitor_insights": {
-    "common_topics": ["topic covered by 7+ competitors"],
+    "common_topics": ["topic covered by multiple competitors"],
     "gap_opportunities": ["topic missing from most competitors"]
   },
   "sections": [
     {
       "h2": "Section title",
-      "key_point": "One sentence: what will reader learn/believe after this section (judgment, not description)",
+      "key_point": "One sentence: what will reader learn/believe after this section",
       "h3_items": [
         {
           "h3": "Subsection title",
@@ -179,8 +201,13 @@ Generate a comprehensive article outline for the keyword: "${keyword}"
   "faq": [
     { "question": "FAQ question with keyword", "answer_hint": "brief answer direction" }
   ],
-  "total_word_count": 3000,
-  "cta_placement": "after section 2 and at end"
+  "total_word_count": ${maxWords},
+  "dicloak_integration": {
+    "section_index": 5,
+    "integration_type": "natural scene mention",
+    "product_angle": "Which specific DICloak feature/benefit solves the problem in this section",
+    "talking_points": ["concrete point 1 connecting the section topic to DICloak", "concrete point 2"]
+  }
 }`;
 }
 

@@ -1,6 +1,6 @@
 // seomaster/scripts/lib/google-search.js
 const fetch = require('node-fetch');
-const { shouldFilterUrl, EXCLUDED_DOMAINS } = require('../../config/domain-filter');
+const { shouldFilterUrl, isBlogUrl } = require('../../config/domain-filter');
 
 const APIFY_BASE = 'https://api.apify.com/v2';
 const ACTOR_ID = 'apify~google-search-scraper';
@@ -59,6 +59,13 @@ async function searchGoogle(keyword, options = {}) {
     if (filteredCount > 0) {
       console.log(`  🚫 Filtered out ${filteredCount} forum/Q&A sites (reddit, quora, etc.)`);
     }
+  }
+
+  // 博客/文章类 URL 优先排序
+  const blogCount = results.filter(r => isBlogUrl(r.url)).length;
+  if (blogCount > 0) {
+    results.sort((a, b) => isBlogUrl(b.url) - isBlogUrl(a.url));
+    console.log(`  ✅ Prioritized ${blogCount} blog/article URLs`);
   }
 
   // 取前 maxResults 个

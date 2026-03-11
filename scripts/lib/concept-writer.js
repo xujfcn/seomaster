@@ -64,6 +64,9 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
     // FAQ
     faq: outline.faq || [],
 
+    // DICloak 融合信息
+    dicloak_integration: outline.dicloak_integration || null,
+
     // CTA
     cta: {
       text: '[待填写]',

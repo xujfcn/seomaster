@@ -27,6 +27,8 @@ function getKnowledgeBasePath() {
  * @returns {object} { metadata, content }
  */
 function parseFrontMatter(content) {
+  // Normalize line endings to \n for consistent parsing on Windows
+  content = content.replace(/\r\n/g, '\n');
   const frontMatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
   const match = content.match(frontMatterRegex);
 
@@ -289,6 +291,48 @@ function listKnowledgeFiles() {
   return fs.readdirSync(LEGACY_KNOWLEDGE_DIR).filter((f) => f.endsWith('.md'));
 }
 
+/**
+ * List files by front matter type (e.g. 'intent', 'business-scene', 'rules')
+ * @param {string} type - front matter type value
+ * @returns {Array<{ filename, name, content, metadata }>}
+ */
+function listFilesByType(type) {
+  if (!OBSIDIAN_VAULT_PATH || !fs.existsSync(OBSIDIAN_VAULT_PATH)) return [];
+
+  const allFiles = readAllMarkdownFiles(OBSIDIAN_VAULT_PATH);
+  return allFiles
+    .filter(f => f.metadata.type === type)
+    .map(f => ({
+      filename: f.filename,
+      name: f.filename.replace('.md', ''),
+      content: f.content,
+      metadata: f.metadata,
+    }));
+}
+
+/**
+ * Load a single file by filename from the vault
+ * @param {string} filename - e.g. 'intent-informational.md'
+ * @returns {string} file content (without front matter), or empty string
+ */
+function loadFileByName(filename) {
+  if (!OBSIDIAN_VAULT_PATH || !fs.existsSync(OBSIDIAN_VAULT_PATH)) return '';
+
+  const allFiles = readAllMarkdownFiles(OBSIDIAN_VAULT_PATH);
+  const file = allFiles.find(f => f.filename === filename);
+  return file ? file.content : '';
+}
+
+/**
+ * Load all files matching a front matter type
+ * @param {string} type - front matter type value
+ * @returns {string} concatenated content
+ */
+function loadContentByType(type) {
+  const files = listFilesByType(type);
+  return files.map(f => f.content).join('\n\n');
+}
+
 module.exports = {
   loadKnowledge,
   loadObsidianKnowledge,
@@ -299,6 +343,9 @@ module.exports = {
   listKnowledgeFiles,
   setKnowledgeBasePath,
   getKnowledgeBasePath,
+  listFilesByType,
+  loadFileByName,
+  loadContentByType,
   KNOWLEDGE_DIR: LEGACY_KNOWLEDGE_DIR,
   OBSIDIAN_VAULT_PATH,
 };

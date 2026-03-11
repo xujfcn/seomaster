@@ -1,7 +1,24 @@
 // seomaster/scripts/lib/draft-generator.js
 const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
 const config = require('./config');
 const { loadDraftKnowledge } = require('./knowledge');
+
+// 加载完整写作规则文件（一次性读取，缓存在内存中）
+const WRITING_RULES_PATH = path.join(__dirname, '../../templates/writing-rules.md');
+let _writingRulesCache = null;
+function loadWritingRules() {
+  if (_writingRulesCache === null) {
+    try {
+      _writingRulesCache = fs.readFileSync(WRITING_RULES_PATH, 'utf-8');
+    } catch (e) {
+      console.warn('  ⚠️  writing-rules.md not found, using built-in rules only');
+      _writingRulesCache = '';
+    }
+  }
+  return _writingRulesCache;
+}
 
 const CONTEXT_TAIL_CHARS = 800; // 上一段末尾传入的字符数
 
@@ -17,7 +34,7 @@ Article title: "${concept.title}"
 Keyword: "${concept.keyword}"
 Thesis: "${concept.thesis?.final || concept.thesis?.statement || ''}"
 
-IMPORTANT: The article subject is "${concept.keyword}". If this is NOT our product (Crazyrouter/LemonData), do NOT attribute our product's features/data to it. Only mention our product where it naturally fits as a related tool or alternative.
+IMPORTANT: The article subject is "${concept.keyword}". Focus on the topic. Only mention products from the knowledge base where they naturally fit the context.
 
 WORD COUNT: 150-250 words (STRICT)
 
@@ -45,9 +62,10 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - Active voice only
 
 4. DATA REQUIREMENTS:
-   - Every statistic needs: (Source: Name, Year)
-   - Use specific numbers: "40%" not "significant"
-   - Include dates: "Q4 2025", "as of 2026"
+   - Use specific numbers when available from the knowledge base
+   - If you don't have exact data, write a concrete statement without making up statistics
+   - Do NOT use [DATA: ...] placeholders — write complete, publishable content
+   - Do NOT invent statistics or sources
 
 5. VALUE PROPOSITION:
    - Reader must understand: "What will I learn?"
@@ -75,6 +93,31 @@ async function generateSection(section, concept, forbiddenWords, aiPatterns, voi
     return `  ### ${sub.title}\n${points}${imageMarker}`;
   }).join('\n\n');
 
+  // 检查此 section 是否是 DICloak 融合 section
+  const integration = concept.dicloak_integration;
+  const sectionIndex = (concept.sections || []).indexOf(section);
+  const isIntegrationSection = integration && integration.section_index === sectionIndex;
+
+  let integrationPrompt = '';
+  if (isIntegrationSection) {
+    const angle = integration.product_angle || '';
+    const points = (integration.talking_points || []).map(p => `- ${p}`).join('\n');
+    integrationPrompt = `
+
+PRODUCT INTEGRATION (this is the designated integration section):
+This section should naturally weave in how DICloak helps solve the problem being discussed.
+Product angle: ${angle}
+Key points to cover:
+${points}
+
+Requirements:
+- Lead with the user's problem, then introduce DICloak as a practical solution
+- Mention specific DICloak features (from the knowledge base) that address this problem
+- Use "You can use..." or "Tools like DICloak let you..." style, NOT "DICloak provides..."
+- Keep the product mention substantial (2-3 paragraphs) but not dominant
+- Do NOT write like a landing page or sales pitch`;
+  }
+
   const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword) + `
 
 ## Task: Write Section "${section.title}"
@@ -86,7 +129,7 @@ WORD COUNT LIMIT (STRICT): ${section.word_count} words maximum. This is a HARD L
 
 ${previousTail ? `Previous context:\n...${previousTail}\n\n` : ''}Structure:
 ${subsectionsText}
-
+${integrationPrompt}
 MANDATORY REQUIREMENTS (SOP Compliance):
 
 1. WORD COUNT: ${section.word_count} words MAX. Stop writing when you reach this limit.
@@ -98,10 +141,10 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - No jargon without explanation
 
 3. DATA & SOURCES:
-   - Every statistic MUST have: (Source: Name, Year)
-   - Use specific numbers: "40% cheaper" not "much cheaper"
-   - Include dates: "as of 2026" or "in Q1 2025"
-   - Mark missing data: [DATA: metric needed]
+   - Use specific numbers from the knowledge base when available
+   - If you don't have exact data, write concrete statements without inventing statistics
+   - Do NOT use [DATA: ...] placeholders — write complete, publishable content
+   - Do NOT make up sources or statistics
 
 4. STRUCTURE:
    - Start with ## ${section.title}
@@ -126,9 +169,9 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - No vague statements without data
 
 8. PRODUCT MENTION:
-   - Mention Crazyrouter naturally where relevant
-   - Use "You can use..." not "Crazyrouter provides..."
-   - Only mention if it genuinely fits the context
+   ${isIntegrationSection
+    ? '- This is the integration section. Follow the PRODUCT INTEGRATION instructions above.\n   - Make the product mention substantial with specific features and use cases'
+    : '- Only mention products from the knowledge base where they naturally fit\n   - Use "You can use..." style, not "[Product] provides..."\n   - Only mention if it genuinely fits the context'}
 
 9. CONTENT QUALITY:
    - No repetitive content
@@ -150,9 +193,9 @@ Output: Markdown with headings. STOP at ${section.word_count} words.`;
   // Fallback: generate placeholder
   return `## ${section.title}
 
-[DATA: This section requires manual writing due to complexity. Key points to cover: ${section.key_point}]
+This section covers: ${section.key_point}
 
-${(section.subsections || []).map(sub => `### ${sub.title}\n\n[DATA: ${sub.points?.join(', ') || 'Content needed'}]\n`).join('\n')}`;
+${(section.subsections || []).map(sub => `### ${sub.title}\n\n${sub.points?.join('. ') || 'Content needed.'}\n`).join('\n')}`;
 }
 
 /**
@@ -188,9 +231,9 @@ MANDATORY REQUIREMENTS (SOP Compliance):
 
 2. ANSWER QUALITY:
    - Be specific, no vague statements
-   - Use data/examples where possible
-   - Include sources: (Source: Name, Year)
-   - Mark missing data: [DATA: ...]
+   - Use data/examples where possible from the knowledge base
+   - Do NOT use [DATA: ...] placeholders — write complete, publishable answers
+   - Do NOT invent statistics or sources
 
 3. LANGUAGE LEVEL:
    - 8th grade reading level
@@ -216,18 +259,18 @@ Output: Markdown only.`;
  * 生成 CTA 结尾
  */
 async function generateCTA(concept, previousTail) {
-  const ctaText = concept.cta?.text || 'Try Crazyrouter for free';
-  const ctaUrl = concept.cta?.url || 'https://api.lemondata.cc/signup';
+  const ctaText = concept.cta?.text || 'Get started for free';
+  const ctaUrl = concept.cta?.url || '#';
 
   try {
     const prompt = `Write 2-3 sentence closing paragraph for an article about "${concept.keyword}".
 
 Requirements:
 - Summarize key takeaway (no "In conclusion")
-- Mention how Crazyrouter helps (use "You can use..." not "Crazyrouter provides...")
 - End with this exact markdown link: [${ctaText}](${ctaUrl})
-- Output ONLY the paragraph text in plain markdown. No code blocks, no "Here's your closing paragraph:", no preamble.
+- Output ONLY the paragraph text in plain markdown. No code blocks, no preamble.
 - Write ENTIRELY in English.
+- Do NOT use exclamation marks.
 
 Output: plain markdown paragraph only.`;
 
@@ -240,14 +283,14 @@ Output: plain markdown paragraph only.`;
   }
 
   // Fallback: generate simple CTA
-  return `Ready to simplify your AI API integration? You can use Crazyrouter to access 300+ models with one API key, native protocol support, and transparent pricing. [${ctaText}](${ctaUrl})`;
+  return `Ready to get started? [${ctaText}](${ctaUrl})`;
 }
 
 function buildSystemPrompt(forbiddenWords, aiPatterns, voice, keyword = '') {
   // 加载知识库上下文（传递关键词以匹配相关文件）
   const knowledge = loadDraftKnowledge(keyword);
   const knowledgeSection = knowledge
-    ? `\nREFERENCE DATA — This is OUR product (Crazyrouter/LemonData) and industry data. Use it for accuracy when relevant, but do NOT confuse our product data with the article's subject. If the article is about a different product, clearly distinguish between them:\n${knowledge}\n`
+    ? `\nREFERENCE DATA — Use this product and industry data for accuracy when relevant. Do NOT confuse different products. Use exact pricing and feature data from the knowledge base:\n${knowledge}\n`
     : '';
 
   return `You are a technical content writer following Google's E-E-A-T principles (Experience, Expertise, Authoritativeness, Trustworthiness).
@@ -266,13 +309,13 @@ GOOGLE SEO & E-E-A-T REQUIREMENTS:
    - Show understanding through technical details
 
 2. AUTHORITATIVENESS:
-   - Cite sources for ALL data: (Source: Name, Year)
-   - Use recent data (2025-2026 preferred)
-   - Reference authoritative sources (official docs, research papers)
+   - Cite sources only when you have real data from the knowledge base
+   - Do NOT invent statistics or sources
+   - Do NOT use [DATA: ...] placeholders — write complete, publishable content
 
 3. TRUSTWORTHINESS:
    - Be accurate and transparent
-   - Admit limitations: use [DATA: ...] for missing info
+   - If you don't have specific data, write concrete statements without making up numbers
    - No exaggeration or misleading claims
 
 4. LANGUAGE LEVEL (8th grade):
@@ -319,15 +362,17 @@ STRICT FORMATTING RULES:
 
 5. DATA FORMAT:
    - Numbers: "40%" not "forty percent"
-   - Dates: "Q4 2025" or "March 2026"
-   - Sources: (Source: Company Name, 2026)
-   - Missing data: [DATA: specific metric needed]
+   - Use concrete statements, not vague claims
+   - Do NOT use [DATA: ...] placeholders
+   - Do NOT invent statistics or sources
 
 Writing principles:
-- Use specific numbers instead of vague terms ("300+ models" not "many models")
-- Every claim needs evidence or a [DATA: ...] placeholder
-- Write for developers: code > prose, numbers > adjectives
-- No filler content: every sentence must add value`;
+- Use specific numbers instead of vague terms
+- Write concrete, publishable content — no placeholders
+- Every sentence must add value
+- No filler content or vague generalizations
+
+${loadWritingRules()}`;
 }
 
 async function callAI(prompt) {
@@ -440,6 +485,22 @@ function postProcessDraft(text, forbiddenWords) {
     'in this article': '',
     "it's worth noting": '',
     'in conclusion': '',
+    // AI 企业腔替换
+    'comprehensive': 'full',
+    'robust': 'solid',
+    'leverage': 'use',
+    'utilize': 'use',
+    'seamless': 'smooth',
+    'streamline': 'simplify',
+    'optimize': 'improve',
+    'enhance': 'improve',
+    'maximize': 'increase',
+    // 书面过渡词删除
+    'moreover': '',
+    'furthermore': '',
+    'additionally': '',
+    'therefore': '',
+    'overall': '',
   };
 
   let result = text;
@@ -467,6 +528,13 @@ function postProcessDraft(text, forbiddenWords) {
   // Add external links
   result = addExternalLinks(result);
 
+  // Strip excess exclamation marks (keep at most 2)
+  let exclamationCount = 0;
+  result = result.replace(/!/g, (match) => {
+    exclamationCount++;
+    return exclamationCount <= 2 ? match : '.';
+  });
+
   return stripExcessBold(result);
 }
 
@@ -475,11 +543,7 @@ function postProcessDraft(text, forbiddenWords) {
  */
 function addExternalLinks(text) {
   const links = {
-    'OpenAI API': 'https://platform.openai.com/docs/api-reference',
-    'Anthropic API': 'https://docs.anthropic.com/en/api/getting-started',
-    'Google Gemini': 'https://ai.google.dev/gemini-api/docs',
-    'OpenRouter': 'https://openrouter.ai/docs',
-    'Together AI': 'https://docs.together.ai/',
+    'DICloak': 'https://dicloak.com/',
   };
 
   let result = text;

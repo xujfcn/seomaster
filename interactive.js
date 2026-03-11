@@ -12,6 +12,11 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
+// 解析输出目录：绝对路径直接用，相对路径基于 __dirname
+function resolveOutputDir(dir) {
+  return path.isAbsolute(dir) ? dir : path.join(__dirname, dir);
+}
+
 // 加载环境变量
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
@@ -23,6 +28,8 @@ const {
   selectProject,
   createNewProject,
 } = require('./scripts/lib/project-manager');
+
+const { listFilesByType, setKnowledgeBasePath } = require('./scripts/lib/knowledge');
 
 // 运行脚本
 function runScript(scriptPath, args = []) {
@@ -97,6 +104,10 @@ async function confirmConcept(conceptFile, keyword, options) {
     await runScript('./scripts/generate-concept.js', [
       '--keyword',
       keyword,
+      '--intent',
+      options.intent || 'informational',
+      '--scene',
+      (options.scenes || []).join(','),
       '--lang',
       options.lang,
       '--market',
@@ -106,7 +117,7 @@ async function confirmConcept(conceptFile, keyword, options) {
       '--words',
       options.words.toString(),
       '--out',
-      path.join(__dirname, options.outputDir),
+      resolveOutputDir(options.outputDir),
     ]);
     return confirmConcept(conceptFile, keyword, options);
   } else if (action === 'edit') {
@@ -232,6 +243,44 @@ async function newArticleFlow(project) {
     },
   ]);
 
+  // 选择关键词意图
+  const { intent } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'intent',
+      message: 'Keyword intent:',
+      choices: [
+        { name: `${chalk.blue('ℹ')}  Informational — Learn, understand, solve a problem`, value: 'informational' },
+        { name: `${chalk.magenta('⚖')}  Commercial — Compare options before deciding`, value: 'commercial' },
+        { name: `${chalk.green('💰')} Transactional — Ready to buy, sign up, download`, value: 'transactional' },
+        { name: `${chalk.yellow('🧭')} Navigational — Find a specific brand/product/page`, value: 'navigational' },
+      ],
+    },
+  ]);
+
+  // 选择 DICloak 业务场景（多选）
+  // 初始化知识库路径以读取场景文件
+  setKnowledgeBasePath(project.vault_path);
+  const sceneFiles = listFilesByType('business-scene');
+  const sceneChoices = sceneFiles.map(f => {
+    // dicloak-scene-social-media.md → Social Media
+    const label = f.name
+      .replace('dicloak-scene-', '')
+      .split('-')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+    return { name: label, value: f.name.replace('dicloak-scene-', '') };
+  });
+
+  const { scenes } = await inquirer.prompt([
+    {
+      type: 'checkbox',
+      name: 'scenes',
+      message: 'Select DICloak business scenes to integrate:',
+      choices: sceneChoices,
+    },
+  ]);
+
   const { lang } = await inquirer.prompt([
     {
       type: 'list',
@@ -260,35 +309,67 @@ async function newArticleFlow(project) {
     },
   ]);
 
+  // 确认所有选项
+  console.log(chalk.cyan('\n📋 Summary:\n'));
+  console.log(chalk.white(`  Keyword:  ${chalk.green(keyword)}`));
+  console.log(chalk.white(`  Intent:   ${chalk.green(intent)}`));
+  console.log(chalk.white(`  Scenes:   ${chalk.green(scenes.length > 0 ? scenes.join(', ') : '(none)')}`));
+  console.log(chalk.white(`  Language:  ${chalk.green(lang)}`));
+  console.log(chalk.white(`  Words:    ${chalk.green(words)}`));
+  console.log(chalk.white(`  Results:  ${chalk.green(results)}`));
+  console.log('');
+
+  const { confirm } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'confirm',
+      message: 'Proceed?',
+      choices: [
+        { name: chalk.green('✓ Start generating'), value: 'start' },
+        { name: chalk.yellow('↻ Re-enter all options'), value: 'restart' },
+        { name: chalk.gray('✕ Cancel'), value: 'cancel' },
+      ],
+    },
+  ]);
+
+  if (confirm === 'restart') {
+    return newArticleFlow(project);
+  }
+  if (confirm === 'cancel') {
+    await projectMenu(project);
+    return;
+  }
+
   console.log(chalk.cyan('\n🚀 Generating article...\n'));
 
   try {
     // Step 1: Generate concept
     console.log(chalk.cyan('[1/4] Generating concept...\n'));
-    await runScript('./scripts/generate-concept.js', [
-      '--keyword',
-      keyword,
-      '--lang',
-      lang,
-      '--market',
-      lang === 'zh' ? 'cn' : 'us',
-      '--results',
-      results.toString(),
-      '--words',
-      words.toString(),
-      '--out',
-      path.join(__dirname, project.output_dir),
-    ]);
+    const conceptArgs = [
+      '--keyword', keyword,
+      '--intent', intent,
+      '--lang', lang,
+      '--market', lang === 'zh' ? 'cn' : 'us',
+      '--results', results.toString(),
+      '--words', words.toString(),
+      '--out', resolveOutputDir(project.output_dir),
+    ];
+    if (scenes.length > 0) {
+      conceptArgs.push('--scene', scenes.join(','));
+    }
+    await runScript('./scripts/generate-concept.js', conceptArgs);
 
     const slug = keyword
       .toLowerCase()
       .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
       .replace(/^-+|-+$/g, '');
-    const conceptFile = path.join(__dirname, project.output_dir, `${slug}-concept.yaml`);
+    const conceptFile = path.join(resolveOutputDir(project.output_dir), `${slug}-concept.yaml`);
 
     // Step 1.5: 确认 Concept
     console.log(chalk.cyan('\n[1.5/4] Reviewing concept...\n'));
     const shouldContinue = await confirmConcept(conceptFile, keyword, {
+      intent,
+      scenes,
       lang,
       market: lang === 'zh' ? 'cn' : 'us',
       results,
@@ -305,11 +386,11 @@ async function newArticleFlow(project) {
 
     // Step 2: Generate draft
     console.log(chalk.cyan('\n[2/4] Generating draft...\n'));
-    await runScript('./scripts/generate-draft.js', ['--concept', conceptFile]);
+    await runScript('./scripts/generate-draft.js', ['--concept', conceptFile, '--out', resolveOutputDir(project.output_dir)]);
 
     // Step 3: Quality check
     console.log(chalk.cyan('\n[3/4] Quality check...\n'));
-    const draftFile = path.join(__dirname, project.output_dir, `${slug}-draft.md`);
+    const draftFile = path.join(resolveOutputDir(project.output_dir), `${slug}-draft.md`);
     try {
       await runScript('./scripts/quality-check.js', [draftFile]);
     } catch (err) {

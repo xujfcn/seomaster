@@ -45,6 +45,11 @@ const ALLOWED_DOMAINS = [
   // 例如：'blog.reddit.com',  // Reddit 官方博客
 ];
 
+// URL 路径中包含这些关键词的链接会被优先排序
+const PRIORITY_PATH_KEYWORDS = [
+  'blog', 'article', 'articles', 'post', 'posts', 'guide', 'guides',
+];
+
 /**
  * 检查 URL 是否应该被过滤
  * @param {string} url
@@ -69,8 +74,28 @@ function shouldFilterUrl(url) {
   }
 }
 
+/**
+ * 检查 URL 是否为博客/文章类页面（路径或子域名含 blog/article 等关键词）
+ * @param {string} url
+ * @returns {boolean} true 表示是优先链接
+ */
+function isBlogUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+    const pathname = parsed.pathname.toLowerCase();
+    return PRIORITY_PATH_KEYWORDS.some(kw =>
+      pathname.includes('/' + kw) || hostname.startsWith(kw + '.')
+    );
+  } catch {
+    return false;
+  }
+}
+
 module.exports = {
   EXCLUDED_DOMAINS,
   ALLOWED_DOMAINS,
+  PRIORITY_PATH_KEYWORDS,
   shouldFilterUrl,
+  isBlogUrl,
 };
