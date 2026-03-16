@@ -12,7 +12,8 @@
     "init": "node scripts/init-project.js",
     "concept": "node scripts/generate-concept.js",
     "draft": "node scripts/generate-draft.js",
-    "check": "node scripts/quality-check.js"
+    "check": "node scripts/quality-check.js",
+    "workflow": "node scripts/workflow.js"
   },
   "keywords": [
     "seo",

@@ -8,6 +8,7 @@ const { spawn } = require('child_process');
 const inquirer = require('inquirer');
 const yaml = require('js-yaml');
 const { initWorkflow, getProjectDefaults } = require('./scripts/lib/cli-workflow');
+const { runAutomatedWorkflow } = require('./scripts/lib/automated-workflow');
 
 const VERSION = '1.0.0';
 
@@ -81,13 +82,20 @@ async function confirmConcept(conceptFile, keyword, options) {
     return true;
   } else if (action === 'retry') {
     console.log(chalk.yellow('\n↻ Regenerating concept...\n'));
-    await runScript('./scripts/generate-concept.js', [
+    const args = [
       '--keyword', keyword,
+      '--intent', options.intent || 'informational',
+      '--scene', options.scene || '',
       '--lang', options.lang,
       '--market', options.market,
       '--results', options.results,
-      '--words', options.words
-    ]);
+      '--words', options.words,
+      '--out', options.outputDir
+    ];
+    if (options.filter === false) {
+      args.push('--no-filter');
+    }
+    await runScript('./scripts/generate-concept.js', args);
     return confirmConcept(conceptFile, keyword, options);
   } else if (action === 'edit') {
     console.log(chalk.cyan(`\n✎ Please edit: ${conceptFile}`));
@@ -99,19 +107,67 @@ async function confirmConcept(conceptFile, keyword, options) {
   }
 }
 
+function printWorkflowSummary(report) {
+  console.log(chalk.green('\n✅ Workflow finished\n'));
+  console.log(chalk.cyan('Files:'));
+  console.log(chalk.gray(`  Concept: ${report.files.concept}`));
+  console.log(chalk.gray(`  Draft: ${report.files.draft}`));
+  if (report.files.vault) {
+    console.log(chalk.gray(`  Vault: ${report.files.vault}`));
+  }
+  console.log(chalk.gray(`  Report: ${report.files.report}`));
+
+  if (report.status !== 'completed') {
+    console.log(chalk.yellow('\n⚠️  Quality check found critical issues. See the workflow report for details.\n'));
+  }
+}
+
 program
   .command('new <keyword>')
-  .description('Generate concept + draft + images (full workflow)')
+  .description('Generate article end-to-end; use -i to confirm the concept manually')
   .option('-p, --project <name>', 'Project name (skip project selection)')
   .option('-l, --lang <lang>', 'Language (en/zh)')
   .option('-m, --market <market>', 'Market (us/cn)')
   .option('-r, --results <number>', 'Search results')
   .option('-w, --words <number>', 'Target word count')
+  .option('-o, --out <dir>', 'Output directory override')
   .option('-i, --interactive', 'Interactive mode with confirmations')
   .option('--intent <type>', 'Keyword intent (informational/navigational/commercial/transactional)')
   .option('--scene <scenes>', 'DICloak business scenes, comma-separated')
   .option('--skip-images', 'Skip image generation')
+  .option('--skip-import', 'Skip automatic vault import')
+  .option('--force-import', 'Import draft into vault even if quality check fails')
+  .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Published')
+  .option('--no-filter', 'Disable domain filtering for research')
   .action(async (keyword, options) => {
+    if (!options.interactive) {
+      try {
+        const report = await runAutomatedWorkflow(keyword, {
+          project: options.project,
+          lang: options.lang,
+          market: options.market,
+          results: options.results,
+          words: options.words,
+          intent: options.intent,
+          scene: options.scene,
+          skipImages: options.skipImages,
+          skipImport: options.skipImport,
+          forceImport: options.forceImport,
+          importDir: options.importDir,
+          outputDir: options.out,
+          filterDomains: options.filter !== false,
+        });
+        printWorkflowSummary(report);
+        if (report.status !== 'completed') {
+          process.exit(1);
+        }
+        return;
+      } catch (error) {
+        console.error(chalk.red('\n❌ Failed:'), error.message);
+        process.exit(1);
+      }
+    }
+
     // Initialize workflow with project selection
     const project = await initWorkflow({ project: options.project });
     const defaults = getProjectDefaults(project);
@@ -123,9 +179,10 @@ program
     const words = options.words || defaults.words;
     const intent = options.intent || 'informational';
     const scene = options.scene || '';
-    const outputDir = path.isAbsolute(defaults.outputDir)
-      ? defaults.outputDir
-      : path.join(__dirname, defaults.outputDir);
+    const rawOutputDir = options.out || defaults.outputDir;
+    const outputDir = path.isAbsolute(rawOutputDir)
+      ? rawOutputDir
+      : path.join(__dirname, rawOutputDir);
 
     console.log(chalk.cyan(`🚀 Generating article: "${keyword}"\n`));
     console.log(chalk.gray(`  Intent: ${intent}`));
@@ -133,7 +190,7 @@ program
 
     try {
       console.log(chalk.cyan('[1/4] Generating concept...\n'));
-      await runScript('./scripts/generate-concept.js', [
+      const conceptArgs = [
         '--keyword', keyword,
         '--intent', intent,
         '--scene', scene,
@@ -142,7 +199,11 @@ program
         '--results', results.toString(),
         '--words', words.toString(),
         '--out', outputDir
-      ]);
+      ];
+      if (options.filter === false) {
+        conceptArgs.push('--no-filter');
+      }
+      await runScript('./scripts/generate-concept.js', conceptArgs);
 
       const slug = keywordToSlug(keyword);
       const conceptFile = path.join(outputDir, `${slug}-concept.yaml`);
@@ -150,7 +211,16 @@ program
 
       // Interactive mode: confirm concept before continuing
       if (options.interactive) {
-        const shouldContinue = await confirmConcept(conceptFile, keyword, options);
+        const shouldContinue = await confirmConcept(conceptFile, keyword, {
+          intent,
+          scene,
+          lang,
+          market,
+          results,
+          words,
+          outputDir,
+          filter: options.filter,
+        });
         if (!shouldContinue) {
           console.log(chalk.yellow('\n⚠️  Workflow cancelled\n'));
           return;
@@ -186,6 +256,49 @@ program
       console.log(chalk.gray('  2. Fix any quality issues'));
       console.log(chalk.gray('  3. Publish article'));
 
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('auto <keyword>')
+  .description('Run the unattended workflow: concept -> draft -> images -> quality -> vault import')
+  .option('-p, --project <name>', 'Project name (skip project selection)')
+  .option('-l, --lang <lang>', 'Language (en/zh)')
+  .option('-m, --market <market>', 'Market (us/cn)')
+  .option('-r, --results <number>', 'Search results')
+  .option('-w, --words <number>', 'Target word count')
+  .option('-o, --out <dir>', 'Output directory override')
+  .option('--intent <type>', 'Keyword intent (informational/navigational/commercial/transactional)')
+  .option('--scene <scenes>', 'DICloak business scenes, comma-separated')
+  .option('--skip-images', 'Skip image generation')
+  .option('--skip-import', 'Skip automatic vault import')
+  .option('--force-import', 'Import draft into vault even if quality check fails')
+  .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Published')
+  .option('--no-filter', 'Disable domain filtering for research')
+  .action(async (keyword, options) => {
+    try {
+      const report = await runAutomatedWorkflow(keyword, {
+        project: options.project,
+        lang: options.lang,
+        market: options.market,
+        results: options.results,
+        words: options.words,
+        intent: options.intent,
+        scene: options.scene,
+        skipImages: options.skipImages,
+        skipImport: options.skipImport,
+        forceImport: options.forceImport,
+        importDir: options.importDir,
+        outputDir: options.out,
+        filterDomains: options.filter !== false,
+      });
+      printWorkflowSummary(report);
+      if (report.status !== 'completed') {
+        process.exit(1);
+      }
     } catch (error) {
       console.error(chalk.red('\n❌ Failed:'), error.message);
       process.exit(1);

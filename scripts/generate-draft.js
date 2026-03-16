@@ -16,18 +16,7 @@ const fs = require('fs');
 const { loadDraftConfig } = require('./lib/draft-config');
 const { generateIntro, generateSection, generateFAQ, generateCTA, getTail, postProcessDraft } = require('./lib/draft-generator');
 const { listKnowledgeFiles } = require('./lib/knowledge');
-
-function parseArgs(argv) {
-  const args = {};
-  for (let i = 2; i < argv.length; i++) {
-    if (argv[i].startsWith('--')) {
-      const key = argv[i].slice(2);
-      args[key] = argv[i + 1] || true;
-      i++;
-    }
-  }
-  return args;
-}
+const { parseArgs } = require('./lib/parse-args');
 
 function resolvePath(p) {
   if (path.isAbsolute(p)) return p;
@@ -135,9 +124,8 @@ async function main() {
   console.log(`📊 Total words: ${totalWords}${totalWords > 15000 ? ' ⚠️  exceeds 15000 limit' : ''}\n`);
   console.log(`📋 Next steps:`);
   console.log(`   1. Run quality check: node scripts/quality-check.js ${draftPath}`);
-  console.log(`   2. Fill in [DATA: ...] placeholders with real data`);
-  console.log(`   3. Review image positions (<!-- IMAGE: ... -->)`);
-  console.log(`   4. Fill in thesis and CTA in concept.yaml`);
+  console.log(`   2. Review image positions (<!-- IMAGE: ... -->)`);
+  console.log(`   3. Import to vault or continue the automated workflow`);
   console.log('─'.repeat(60) + '\n');
 }
 

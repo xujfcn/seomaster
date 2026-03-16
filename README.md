@@ -11,8 +11,8 @@ cd D:\lemondata-free\lemondata-content\seomaster
 # 2. 启动交互式菜单（推荐）
 seomaster
 
-# 或使用命令行模式
-seomaster new "your keyword"
+# 或直接运行无人值守自动工作流
+seomaster auto "your keyword"
 ```
 
 ## 核心特性
@@ -22,8 +22,9 @@ seomaster new "your keyword"
 - ✅ **多项目支持** - 为不同产品维护独立知识库
 - ✅ **智能知识库** - 基于关键词自动加载相关知识（Obsidian 集成）
 - ✅ **Blog-Only 模式** - 自动过滤论坛/问答网站，只参考高质量博客
-- ✅ **完整工作流** - Concept → Draft → Images → Quality Check
+- ✅ **完整工作流** - Concept → Draft → Images → Quality Check → Vault Import
 - ✅ **自动配图** - AI 生成文章配图
+- ✅ **无人值守模式** - 自动补全 Thesis / CTA，并输出工作流报告
 
 ## 使用模式
 
@@ -44,20 +45,20 @@ seomaster
 ### 命令行模式（推荐高级用户）
 
 ```bash
-# 生成英文文章
-seomaster new "ai api pricing"
+# 无人值守自动工作流（推荐）
+seomaster auto "ai api pricing"
 
 # 生成中文文章
-seomaster new "AI API 定价" --lang zh
+seomaster auto "AI API 定价" --lang zh
 
 # 交互式模式（推荐新手）
 seomaster new "keyword" -i
 
 # 自定义参数
-seomaster new "keyword" --words 3000 --results 5
+seomaster auto "keyword" --words 3000 --results 5
 
-# 导入文章到 Obsidian vault
-seomaster vault:import output/keyword-draft.md
+# 跳过图片或导入
+seomaster auto "keyword" --skip-images --skip-import
 ```
 
 ### 多项目管理
@@ -73,7 +74,7 @@ seomaster project:add
 seomaster project
 
 # 为指定项目生成文章
-seomaster new "keyword" --project myproduct
+seomaster auto "keyword" --project myproduct
 ```
 
 ## 命令参考
@@ -89,7 +90,8 @@ seomaster project         # 切换项目
 ### 文章生成
 
 ```bash
-seomaster new "keyword"           # 完整流程（推荐）
+seomaster auto "keyword"          # 无人值守完整流程（推荐）
+seomaster new "keyword"           # 与 auto 相同；加 -i 可进入人工确认
 seomaster concept "keyword"       # 只生成 concept
 seomaster draft concept.yaml      # 只生成 draft
 seomaster images draft.md         # 只生成图片
@@ -111,7 +113,10 @@ seomaster list                    # 列出所有文章
 -w, --words <number>      字数（默认: 2500）
 -r, --results <number>    搜索结果数（默认: 5）
 -i, --interactive         交互式模式
+-o, --out <dir>           自定义输出目录
 --skip-images             跳过图片生成
+--skip-import             跳过自动导入 Obsidian vault
+--force-import            即使质检失败也强制导入
 --no-filter               禁用域名过滤（默认过滤论坛/问答网站）
 ```
 
@@ -130,6 +135,7 @@ output/
 ├── keyword-concept.yaml      # 文章大纲和结构
 ├── keyword-draft.md          # 完整文章（Markdown）
 ├── keyword-research.json     # 竞品研究数据
+├── keyword-workflow-report.json # 自动工作流执行报告
 ├── keyword-1.png             # 配图 1
 ├── keyword-2.png             # 配图 2
 └── keyword-3.png             # 配图 3
@@ -202,10 +208,17 @@ seomaster new "keyword" -i
 ### 快速流程（自动）
 
 ```bash
-seomaster new "keyword"
+seomaster auto "keyword"
 ```
 
-自动完成所有步骤。
+自动完成以下步骤：
+1. 生成 concept
+2. 自动补全 thesis / CTA
+3. 生成 draft
+4. 生成图片
+5. 质量检查
+6. 通过质检后自动导入 Obsidian vault
+7. 输出 `*-workflow-report.json`
 
 ### 分步流程（高级）
 

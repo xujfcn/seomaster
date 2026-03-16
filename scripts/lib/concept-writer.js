@@ -2,6 +2,23 @@
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
+const { getDefaultCta, getDefaultThesis } = require('./project-config');
+
+function isFilled(value) {
+  return typeof value === 'string' && value.trim() && !value.trim().startsWith('[待');
+}
+
+function firstFilled(...values) {
+  return values.find((value) => isFilled(value)) || '';
+}
+
+function normalizeCandidates(candidates, fallback) {
+  const items = Array.isArray(candidates) ? candidates.filter(isFilled) : [];
+  if (fallback && !items.includes(fallback)) {
+    items.unshift(fallback);
+  }
+  return items;
+}
 
 /**
  * 把 AI 大纲结构写入 article-concept.yaml
@@ -15,13 +32,27 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
   if (!outline.sections || !Array.isArray(outline.sections)) {
     throw new Error('AI outline missing sections array. Raw response may be malformed.');
   }
+  const defaultThesis = getDefaultThesis();
+  const defaultCta = getDefaultCta();
+  const resolvedThesis = firstFilled(
+    outline.thesis?.recommended,
+    outline.thesis?.final,
+    outline.thesis?.statement,
+    defaultThesis,
+    outline.meta_description,
+    outline.title
+  );
+  const thesisCandidates = normalizeCandidates(outline.thesis?.candidates, resolvedThesis);
+
   // 转换 sections 格式
   const sections = outline.sections.map((s) => {
     const allH3 = s.h3_items || [];
     return {
       title: s.h2,
       key_point: s.key_point,
-      evidence: ['[待填写：发布前补充支撑数据]'],
+      evidence: Array.isArray(s.evidence) && s.evidence.length > 0
+        ? s.evidence
+        : ['Use a verifiable source or product data point to support this section.'],
       word_count: s.word_count,
       subsections: allH3.map((h3) => ({
         title: h3.h3,
@@ -53,9 +84,9 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
 
     // 论点（需人工填写）
     thesis: {
-      statement: '[待确认：用一句话说清读者读完后记住什么]',
-      candidates: [],
-      final: '',
+      statement: resolvedThesis,
+      candidates: thesisCandidates,
+      final: resolvedThesis,
     },
 
     // 文章结构
@@ -69,9 +100,9 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
 
     // CTA
     cta: {
-      text: '[待填写]',
-      url: '[待填写]',
-      placement: outline.cta_placement || '文末',
+      text: firstFilled(outline.cta?.text, defaultCta.text, `Get started with ${keyword}`),
+      url: firstFilled(outline.cta?.url, defaultCta.url, '#'),
+      placement: firstFilled(outline.cta?.placement, outline.cta_placement, '文末'),
     },
 
     // 配图汇总
@@ -94,7 +125,7 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
 
     // 元数据
     generated_at: new Date().toISOString().split('T')[0],
-    status: 'concept',
+    status: 'ready_for_draft',
   };
 
   const yamlStr = yaml.dump(concept, {

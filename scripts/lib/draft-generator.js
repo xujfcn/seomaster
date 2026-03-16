@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const { loadDraftKnowledge } = require('./knowledge');
+const { getDefaultCta, getDefaultThesis } = require('./project-config');
 
 // 加载完整写作规则文件（一次性读取，缓存在内存中）
 const WRITING_RULES_PATH = path.join(__dirname, '../../templates/writing-rules.md');
@@ -22,17 +23,45 @@ function loadWritingRules() {
 
 const CONTEXT_TAIL_CHARS = 800; // 上一段末尾传入的字符数
 
+function isPlaceholderValue(value) {
+  if (typeof value !== 'string') return true;
+  const normalized = value.trim();
+  return !normalized || normalized === '#' || normalized.startsWith('[待');
+}
+
+function resolveThesis(concept) {
+  if (!isPlaceholderValue(concept.thesis?.final)) return concept.thesis.final.trim();
+  if (!isPlaceholderValue(concept.thesis?.statement)) return concept.thesis.statement.trim();
+  const defaultThesis = getDefaultThesis();
+  if (!isPlaceholderValue(defaultThesis)) return defaultThesis.trim();
+  if (!isPlaceholderValue(concept.meta_description)) return concept.meta_description.trim();
+  return concept.title || concept.keyword || '';
+}
+
+function resolveCta(concept) {
+  const defaultCta = getDefaultCta();
+  const text = !isPlaceholderValue(concept.cta?.text)
+    ? concept.cta.text.trim()
+    : (!isPlaceholderValue(defaultCta.text) ? defaultCta.text.trim() : 'Get started');
+  const url = !isPlaceholderValue(concept.cta?.url)
+    ? concept.cta.url.trim()
+    : (!isPlaceholderValue(defaultCta.url) ? defaultCta.url.trim() : '#');
+
+  return { text, url };
+}
+
 /**
  * 生成文章 intro 段落
  */
 async function generateIntro(concept, forbiddenWords, aiPatterns, voice) {
+  const thesis = resolveThesis(concept);
   const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword) + `
 
 ## Your Task: Write the Article Introduction
 
 Article title: "${concept.title}"
 Keyword: "${concept.keyword}"
-Thesis: "${concept.thesis?.final || concept.thesis?.statement || ''}"
+Thesis: "${thesis}"
 
 IMPORTANT: The article subject is "${concept.keyword}". Focus on the topic. Only mention products from the knowledge base where they naturally fit the context.
 
@@ -259,8 +288,7 @@ Output: Markdown only.`;
  * 生成 CTA 结尾
  */
 async function generateCTA(concept, previousTail) {
-  const ctaText = concept.cta?.text || 'Get started for free';
-  const ctaUrl = concept.cta?.url || '#';
+  const { text: ctaText, url: ctaUrl } = resolveCta(concept);
 
   try {
     const prompt = `Write 2-3 sentence closing paragraph for an article about "${concept.keyword}".

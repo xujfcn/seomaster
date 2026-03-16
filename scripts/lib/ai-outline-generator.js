@@ -178,6 +178,10 @@ Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of al
   "keyword": "${keyword}",
   "intent": "${intent}",
   "keyword_variants": ["variant1", "variant2", "variant3"],
+  "thesis": {
+    "candidates": ["publishable thesis option 1", "publishable thesis option 2"],
+    "recommended": "one clear sentence stating the core takeaway for the reader"
+  },
   "competitor_insights": {
     "common_topics": ["topic covered by multiple competitors"],
     "gap_opportunities": ["topic missing from most competitors"]
@@ -186,6 +190,7 @@ Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of al
     {
       "h2": "Section title",
       "key_point": "One sentence: what will reader learn/believe after this section",
+      "evidence": ["specific proof point, product fact, or source-backed angle to mention"],
       "h3_items": [
         {
           "h3": "Subsection title",
@@ -201,6 +206,11 @@ Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of al
   "faq": [
     { "question": "FAQ question with keyword", "answer_hint": "brief answer direction" }
   ],
+  "cta": {
+    "text": "action-oriented CTA text",
+    "url": "official product or docs URL when available",
+    "placement": "文末"
+  },
   "total_word_count": ${maxWords},
   "dicloak_integration": {
     "section_index": 5,

@@ -26,19 +26,7 @@ const { listKnowledgeFiles, setKnowledgeBasePath } = require('./lib/knowledge');
 const { saveResearchToVault } = require('./lib/research-saver');
 const { getCurrentProject } = require('./lib/project-manager');
 const { checkKnowledgeBase } = require('./lib/knowledge-checker');
-
-// 解析命令行参数
-function parseArgs(argv) {
-  const args = {};
-  for (let i = 2; i < argv.length; i++) {
-    if (argv[i].startsWith('--')) {
-      const key = argv[i].slice(2);
-      args[key] = argv[i + 1] || true;
-      i++;
-    }
-  }
-  return args;
-}
+const { parseArgs } = require('./lib/parse-args');
 
 function keywordToSlug(keyword) {
   return keyword
@@ -161,10 +149,9 @@ async function main() {
   console.log(`   ${researchPath}`);
   console.log(`   ${conceptPath}\n`);
   console.log(`📋 Next steps:`);
-  console.log(`   1. Review ${path.basename(conceptPath)}`);
-  console.log(`   2. Fill in the thesis.final field`);
-  console.log(`   3. Add data evidence for each section`);
-  console.log(`   4. Run: node scripts/generate-draft.js --concept ${conceptPath}`);
+  console.log(`   1. Generate draft: node scripts/generate-draft.js --concept ${conceptPath}`);
+  console.log(`   2. Optional review: ${path.basename(conceptPath)}`);
+  console.log(`   3. Continue with the automated workflow if needed`);
   console.log('─'.repeat(60) + '\n');
 }
 

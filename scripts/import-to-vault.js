@@ -12,18 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const { saveToVault } = require('./lib/vault-writer');
 const { getCurrentProject } = require('./lib/project-manager');
-
-function parseArgs(argv) {
-  const args = {};
-  for (let i = 2; i < argv.length; i++) {
-    if (argv[i].startsWith('--')) {
-      const key = argv[i].slice(2);
-      args[key] = argv[i + 1] || true;
-      i++;
-    }
-  }
-  return args;
-}
+const { parseArgs } = require('./lib/parse-args');
 
 function extractMetadata(draftPath) {
   const filename = path.basename(draftPath, '-draft.md');

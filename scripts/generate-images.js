@@ -4,23 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const config = require('./lib/config');
+const { parseArgs } = require('./lib/parse-args');
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'username/image-repo';
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const IMAGE_BASE_PATH = 'seomaster';
-
-function parseArgs(argv) {
-  const args = {};
-  for (let i = 2; i < argv.length; i++) {
-    if (argv[i].startsWith('--')) {
-      const key = argv[i].slice(2);
-      args[key] = argv[i + 1] || true;
-      i++;
-    }
-  }
-  return args;
-}
 
 function extractImageMarkers(content) {
   const regex = /<!-- IMAGE: (.+?) -->/g;
