@@ -683,6 +683,19 @@ program
     }
   });
 
+program
+  .command('sync:blog <mode>')
+  .description('Sync remote blog data into the local mirror and export Published markdown')
+  .option('-p, --project <name>', 'Project name')
+  .action(async (mode, options) => {
+    try {
+      await runScript('./scripts/sync-blog.js', [mode, ...(options.project ? ['--project', options.project] : [])]);
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
 // 如果没有提供任何命令，启动交互式菜单
 if (!process.argv.slice(2).length) {
   const interactiveProcess = spawn('node', [path.join(__dirname, 'interactive.js')], {

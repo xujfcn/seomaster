@@ -100,6 +100,9 @@ seomaster images draft.md         # 只生成图片
 seomaster kb:reindex              # 重建 Topics/Articles 本地索引
 seomaster topics:check "keyword"  # 检查该关键词应新建还是更新
 seomaster topics:create "keyword" # 手动创建 topic 卡
+seomaster sync:blog full          # 全量同步线上 blogs 到本地镜像并导出 Published
+seomaster sync:blog incremental   # 增量同步线上 blogs
+seomaster sync:blog repair        # 仅重建本地索引并修复 Published 导出
 ```
 
 ### 查看和检查
@@ -124,6 +127,18 @@ seomaster list                    # 列出所有文章
 --force-import            即使质检失败也强制导入
 --no-filter               禁用域名过滤（默认过滤论坛/问答网站）
 ```
+
+### Blog 同步
+
+```bash
+seomaster sync:blog full --project crazyrouter
+seomaster sync:blog incremental --project crazyrouter
+seomaster sync:blog export-obsidian --project crazyrouter
+```
+
+- 需要在 `.env` 中配置 `SEOMASTER_LOCAL_DSN` 或 `SQL_DSN`
+- 推荐连接本地 PostgreSQL Mirror，而不是直接写生产库
+- `full` 会同步 `blogs` 表、重建 `blog_local_index`，并导出到 Vault 的 `Published/YYYY-MM/`
 
 ### 域名过滤（Blog-Only 模式）
 
