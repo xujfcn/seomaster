@@ -63,8 +63,8 @@ sections:
   - title: "第一节标题"
     keyPoint: >
       本节要证明什么（判断句，不是描述句）
-      例如：「LemonData 的价格比 OpenRouter 低 30%」
-      而不是：「介绍 LemonData 的价格」
+      例如：「Crazyrouter 的价格比 OpenRouter 低 30%-50%」
+      而不是：「介绍 Crazyrouter 的价格」
     evidence:
       - "支撑数据 1（含来源和日期）"
       - "支撑数据 2（含来源和日期）"

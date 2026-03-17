@@ -696,6 +696,31 @@ program
     }
   });
 
+program
+  .command('publish <draft-or-article>')
+  .description('Publish a draft/article through the configured publish adapter')
+  .option('-p, --project <name>', 'Project name')
+  .option('--target <name>', 'Publish target override')
+  .option('--skip-sync', 'Skip sync:blog incremental backfill after publish')
+  .action(async (input, options) => {
+    try {
+      const args = [input];
+      if (options.project) {
+        args.push('--project', options.project);
+      }
+      if (options.target) {
+        args.push('--target', options.target);
+      }
+      if (options.skipSync) {
+        args.push('--skip-sync');
+      }
+      await runScript('./scripts/publish.js', args);
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
 // 如果没有提供任何命令，启动交互式菜单
 if (!process.argv.slice(2).length) {
   const interactiveProcess = spawn('node', [path.join(__dirname, 'interactive.js')], {

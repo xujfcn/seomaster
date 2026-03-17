@@ -110,8 +110,8 @@ seomaster draft output/free-ai-api-guide-concept.yaml
 
 多项目支持正在开发中，将支持：
 ```bash
-seomaster init lemondata
-seomaster use lemondata
+seomaster init crazyrouter
+seomaster use crazyrouter
 seomaster new "keyword"
 ```
 

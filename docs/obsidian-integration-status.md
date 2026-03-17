@@ -13,7 +13,7 @@ SEOMaster 已经集成了 Obsidian 知识库的读取功能：
 {
   "projects": {
     "crazyrouter": {
-      "name": "Crazyrouter (LemonData)",
+      "name": "Crazyrouter",
       "vault_path": "D:/crazyrouter",  // Obsidian vault 路径
       "output_dir": "output",
       ...
@@ -286,7 +286,7 @@ if (project && project.vault_path) {
 {
   "projects": {
     "crazyrouter": {
-      "name": "Crazyrouter (LemonData)",
+      "name": "Crazyrouter",
       "vault_path": "D:/crazyrouter",
       "output_dir": "output",
       "save_to_vault": true,           // 是否自动保存到 vault

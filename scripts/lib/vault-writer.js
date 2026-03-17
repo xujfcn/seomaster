@@ -54,12 +54,12 @@ function buildArticleFrontMatter(metadata, subDir, date) {
  * @param {string} subDir - 子目录名称（默认：Drafts）
  * @returns {string} 保存的文件路径
  */
-function saveToVault(draftContent, metadata, vaultPath, subDir = 'Drafts') {
+function saveToVault(draftContent, metadata, vaultPath, subDir = 'Drafts', dateOverride = null) {
   if (!vaultPath || !fs.existsSync(vaultPath)) {
     throw new Error(`Vault path does not exist: ${vaultPath}`);
   }
 
-  const date = new Date();
+  const date = dateOverride ? new Date(dateOverride) : new Date();
   const monthDir = getBucketDirectory(vaultPath, subDir, date);
   const frontMatter = buildArticleFrontMatter(metadata, subDir, date);
 
@@ -81,6 +81,7 @@ function shouldSaveToVault(project) {
 }
 
 module.exports = {
+  buildArticleFrontMatter,
   saveToVault,
   shouldSaveToVault,
 };

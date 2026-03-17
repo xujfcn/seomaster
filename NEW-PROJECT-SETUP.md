@@ -442,7 +442,7 @@ knowledge/
 
 ## 示例项目
 
-参考现有配置（LemonData/Crazyrouter）：
+参考现有配置（Crazyrouter）：
 - [knowledge/product.md](knowledge/product.md)
 - [knowledge/competitors.md](knowledge/competitors.md)
 - [knowledge/models_pricing.md](knowledge/models_pricing.md)

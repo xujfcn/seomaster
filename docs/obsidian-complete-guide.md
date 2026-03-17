@@ -104,7 +104,7 @@ seomaster/output/                  # 生成的文章
 {
   "projects": {
     "crazyrouter": {
-      "name": "Crazyrouter (LemonData)",
+      "name": "Crazyrouter",
       "vault_path": "D:/crazyrouter",        // Obsidian vault 路径
       "output_dir": "output",                // 输出目录
       "default_lang": "en",

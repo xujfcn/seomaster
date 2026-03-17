@@ -370,6 +370,88 @@ function getLatestUpdatedAt(rows) {
   return latest;
 }
 
+function normalizeRemoteBlogRow(blog) {
+  return {
+    id: blog.id ?? blog.remote_blog_id ?? blog.remoteBlogId ?? null,
+    title: blog.title ?? '',
+    slug: blog.slug ?? '',
+    content: blog.content ?? '',
+    content_type: blog.content_type ?? blog.contentType ?? 'markdown',
+    summary: blog.summary ?? '',
+    cover_image_url: blog.cover_image_url ?? blog.coverImageUrl ?? '',
+    tag: blog.tag ?? '',
+    language: blog.language ?? '',
+    group_id: blog.group_id ?? blog.groupId ?? '',
+    status: blog.status ?? null,
+    author_id: blog.author_id ?? blog.authorId ?? null,
+    view_count: blog.view_count ?? blog.viewCount ?? 0,
+    sort_order: blog.sort_order ?? blog.sortOrder ?? 0,
+    created_at: blog.created_at ?? blog.createdAt ?? null,
+    updated_at: blog.updated_at ?? blog.updatedAt ?? null,
+    published_at: blog.published_at ?? blog.publishedAt ?? null,
+    deleted_at: blog.deleted_at ?? blog.deletedAt ?? null,
+    type: blog.type ?? '',
+    video_url: blog.video_url ?? blog.videoUrl ?? '',
+    video_id: blog.video_id ?? blog.videoId ?? '',
+    channel_name: blog.channel_name ?? blog.channelName ?? '',
+    channel_url: blog.channel_url ?? blog.channelUrl ?? '',
+    video_duration: blog.video_duration ?? blog.videoDuration ?? null,
+    video_published_at: blog.video_published_at ?? blog.videoPublishedAt ?? null,
+    key_information: blog.key_information ?? blog.keyInformation ?? '',
+    timeline: blog.timeline ?? '',
+    faqs: blog.faqs ?? '',
+    subtitle_source: blog.subtitle_source ?? blog.subtitleSource ?? '',
+    subtitle_content: blog.subtitle_content ?? blog.subtitleContent ?? '',
+  };
+}
+
+function exportBlogToObsidian(blog, projectId, vaultPath, projectConfig, overrides = {}) {
+  const topicKey = overrides.topicKey || inferTopicKey(blog);
+  const articleId = overrides.articleId || `${projectId}-remote-${blog.remote_blog_id}`;
+  const keyword = overrides.keyword || blog.slug || blog.title || '';
+  const publishedAt = blog.published_at || blog.updated_at || blog.created_at || new Date();
+  const yearMonth = toDateOnly(publishedAt).slice(0, 7) || new Date().toISOString().slice(0, 7);
+  const targetDir = path.join(vaultPath, 'Published', yearMonth);
+  fs.mkdirSync(targetDir, { recursive: true });
+
+  ensureTopicCard(vaultPath, {
+    projectId,
+    topicKey,
+    keyword: keyword || topicKey,
+    intent: 'informational',
+    primaryArticleId: articleId,
+  });
+
+  const targetPath = path.join(targetDir, `${blog.slug || topicKey}.md`);
+  writeMarkdownDocument(targetPath, {
+    type: 'article',
+    project: projectId,
+    topic_key: topicKey,
+    article_id: articleId,
+    remote_blog_id: blog.remote_blog_id,
+    status: 'published',
+    lang: blog.language || '',
+    keyword,
+    slug: blog.slug || topicKey,
+    canonical: true,
+    published_url: buildPublishedUrl(projectConfig, blog),
+    group_id: blog.group_id || '',
+    remote_status: blog.status,
+    sync_source: 'remote',
+    sync_time: new Date().toISOString(),
+    created_at: toDateOnly(blog.created_at),
+    updated_at: toDateOnly(blog.updated_at),
+    published_at: toDateOnly(blog.published_at),
+    quality_score: '',
+    review_status: 'synced',
+    view_count: blog.view_count || 0,
+    tag: blog.tag || '',
+    cover_image_url: blog.cover_image_url || '',
+  }, buildPublishedMarkdown(blog));
+
+  return targetPath;
+}
+
 async function exportRemoteBlogsToObsidian(client, projectId, vaultPath) {
   ensureVaultStructure(vaultPath);
 
@@ -383,46 +465,7 @@ async function exportRemoteBlogsToObsidian(client, projectId, vaultPath) {
 
   let exported = 0;
   for (const blog of result.rows) {
-    const topicKey = inferTopicKey(blog);
-    const publishedAt = blog.published_at || blog.updated_at || blog.created_at || new Date();
-    const yearMonth = toDateOnly(publishedAt).slice(0, 7) || new Date().toISOString().slice(0, 7);
-    const targetDir = path.join(vaultPath, 'Published', yearMonth);
-    fs.mkdirSync(targetDir, { recursive: true });
-
-    ensureTopicCard(vaultPath, {
-      projectId,
-      topicKey,
-      keyword: blog.slug || blog.title || topicKey,
-      intent: 'informational',
-      primaryArticleId: `${projectId}-remote-${blog.remote_blog_id}`,
-    });
-
-    const targetPath = path.join(targetDir, `${blog.slug || topicKey}.md`);
-    writeMarkdownDocument(targetPath, {
-      type: 'article',
-      project: projectId,
-      topic_key: topicKey,
-      article_id: `${projectId}-remote-${blog.remote_blog_id}`,
-      remote_blog_id: blog.remote_blog_id,
-      status: 'published',
-      lang: blog.language || '',
-      keyword: blog.slug || blog.title || '',
-      slug: blog.slug || topicKey,
-      canonical: true,
-      published_url: buildPublishedUrl(projectConfig, blog),
-      group_id: blog.group_id || '',
-      remote_status: blog.status,
-      sync_source: 'remote',
-      sync_time: new Date().toISOString(),
-      created_at: toDateOnly(blog.created_at),
-      updated_at: toDateOnly(blog.updated_at),
-      published_at: toDateOnly(blog.published_at),
-      quality_score: '',
-      review_status: 'synced',
-      view_count: blog.view_count || 0,
-      tag: blog.tag || '',
-      cover_image_url: blog.cover_image_url || '',
-    }, buildPublishedMarkdown(blog));
+    exportBlogToObsidian(blog, projectId, vaultPath, projectConfig);
     exported++;
   }
 
@@ -433,6 +476,39 @@ async function exportRemoteBlogsToObsidian(client, projectId, vaultPath) {
     exported,
     indexPath,
   };
+}
+
+async function backfillRemoteBlog(blog, options = {}) {
+  const { projectId, project } = getProjectContext(options.project);
+  if (!project.vault_path) {
+    throw new Error(`Project "${projectId}" does not define vault_path`);
+  }
+
+  const normalizedBlog = normalizeRemoteBlogRow(blog);
+
+  return withClient(async (client) => {
+    await ensureMirrorSchema(client);
+    await upsertRemoteBlogs(client, [normalizedBlog], EXPECTED_BLOG_COLUMNS);
+    const indexed = await rebuildLocalIndex(client, projectId, project.vault_path);
+    ensureVaultStructure(project.vault_path);
+    const publishedPath = exportBlogToObsidian({
+      remote_blog_id: normalizedBlog.id,
+      ...normalizedBlog,
+    }, projectId, project.vault_path, loadProjectConfig(), {
+      articleId: options.articleId,
+      topicKey: options.topicKey,
+      keyword: options.keyword,
+    });
+    const indexPath = saveArticleIndex(buildArticleIndex(project.vault_path, projectId));
+
+    return {
+      mirrored: 1,
+      exported: 1,
+      indexed,
+      publishedPath,
+      indexPath,
+    };
+  });
 }
 
 async function syncBlogs(mode, options = {}) {
@@ -486,6 +562,7 @@ async function syncBlogs(mode, options = {}) {
 }
 
 module.exports = {
+  backfillRemoteBlog,
   ensureMirrorSchema,
   exportRemoteBlogsToObsidian,
   getProjectContext,

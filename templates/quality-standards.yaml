@@ -261,7 +261,7 @@ opening:
       when: "有颠覆认知的观点"
 
     - type: "真实案例"
-      example: "某创业公司用 LemonData 省了 $5000/月"
+      example: "某 AI 创业团队用 Crazyrouter 降低了 35% API 成本"
       when: "有可核实的用户案例"
 
   # 禁止的开篇方式

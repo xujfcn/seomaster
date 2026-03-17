@@ -15,7 +15,8 @@
     "check": "node scripts/quality-check.js",
     "workflow": "node scripts/workflow.js",
     "reindex": "node scripts/reindex-knowledge.js",
-    "sync:blog": "node scripts/sync-blog.js"
+    "sync:blog": "node scripts/sync-blog.js",
+    "publish": "node scripts/publish.js"
   },
   "keywords": [
     "seo",

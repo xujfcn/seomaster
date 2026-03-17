@@ -190,7 +190,7 @@ function checkHardMetrics(draft, concept) {
   });
 
   // 9. 内链检查
-  const internalLinks = (draft.match(/\[.+?\]\(https?:\/\/(api\.lemondata|lemondata|crazyrouter)/g) || []).length;
+  const internalLinks = (draft.match(/\[.+?\]\(https?:\/\/(?:docs\.)?crazyrouter\.com/g) || []).length;
   results.push({
     name: '内链 (≥1)',
     pass: internalLinks >= 1,
@@ -223,9 +223,9 @@ function checkHardMetrics(draft, concept) {
   });
 
   // 13. 产品植入
-  const hasProduct = /crazyrouter|lemondata/i.test(draft);
+  const hasProduct = /crazyrouter/i.test(draft);
   results.push({
-    name: '产品植入 (Crazyrouter/LemonData)',
+    name: '产品植入 (Crazyrouter)',
     pass: hasProduct,
     detail: hasProduct ? '有' : '缺失',
   });
@@ -276,7 +276,7 @@ async function runAIReview(draft, concept, sop, product, published) {
 ## Article Info
 - Keyword: "${keyword}"
 - Keyword variants: ${variants}
-- Our product: Crazyrouter (LemonData) — AI API gateway, 300+ models, one key
+- Our product: Crazyrouter - unified AI API gateway, 469 models, 30+ providers, one key
 
 ## SOP Key Requirements (summarized)
 1. E-E-A-T: Experience (real usage examples), Expertise (technical depth), Authoritativeness (cite sources), Trustworthiness (accurate data)

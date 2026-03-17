@@ -7,7 +7,7 @@
 **Architecture:**
 1. Apify Google Search Scraper API → 获取前 10 条 organic results（标题 + URL）
 2. node-fetch + cheerio → 并发抓取每篇文章的 H1-H4 标签
-3. LemonData/OpenAI API → 分析 10 篇大纲，按「是什么→为什么→怎么做」逻辑生成本文大纲
+3. Crazyrouter/OpenAI-compatible API → 分析 10 篇大纲，按「是什么→为什么→怎么做」逻辑生成本文大纲
 4. 输出 `{slug}-research.json`（原始数据）+ `{slug}-concept.yaml`（结构化大纲）
 
 **Tech Stack:** Node.js, node-fetch (已有), cheerio (新增), js-yaml (新增), Apify API, OpenAI-compatible API
@@ -62,7 +62,7 @@ git commit -m "feat: add cheerio and js-yaml dependencies for generate-concept"
 # seomaster/.env.example
 APIFY_API_TOKEN=apify_api_xxxx
 AI_API_KEY=sk-xxxx
-AI_API_BASE_URL=https://api.lemondata.ai/v1
+AI_API_BASE_URL=https://crazyrouter.com/v1
 AI_MODEL=gpt-4o
 ```
 
@@ -281,7 +281,7 @@ async function scrapeOne(article) {
       timeout: FETCH_TIMEOUT,
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; SEOMaster/1.0; +https://lemondata.ai)',
+          'Mozilla/5.0 (compatible; SEOMaster/1.0; +https://crazyrouter.com)',
         Accept: 'text/html',
       },
     });
@@ -937,6 +937,6 @@ Tasks 3、4、5 可以并行开发（都依赖 Task 2，互相独立）。
 - 失败的 URL 会在 research.json 中记录 error 字段
 
 **AI API 配置**
-- 项目默认使用 LemonData/OpenAI 兼容 API
-- 修改 `.env` 中的 `AI_API_BASE_URL` 即可切换到 LemonData 端点
+- 项目默认使用 Crazyrouter/OpenAI 兼容 API
+- 修改 `.env` 中的 `AI_API_BASE_URL` 即可切换到 Crazyrouter 端点
 - 推荐模型：gpt-4o（支持 JSON mode）

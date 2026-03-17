@@ -69,16 +69,16 @@ knowledge/
 ### 示例：product.md
 
 ```markdown
-# LemonData 产品信息
+# Crazyrouter 产品信息
 
 ## 基本信息
-- 产品名称：LemonData (Crazyrouter)
+- 产品名称：Crazyrouter
 - 定位：多协议 AI API 网关
-- 官网：https://lemondata.com
+- 官网：https://crazyrouter.com
 - 成立时间：2024
 
 ## 核心功能
-- 支持 300+ AI 模型（来源：官网模型列表，2026-03-09）
+- 支持 469 个 AI 模型（来源：官网定价页，2026-03-17）
 - 价格比官方低 30-50%（来源：价格对比页，2026-03-09）
 - 多协议支持：OpenAI、Anthropic、Gemini 原生协议
 

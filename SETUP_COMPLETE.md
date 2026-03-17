@@ -21,7 +21,7 @@
 - ✅ `quick-start.md` - 快速开始指南
 
 ### 📦 示例 (`examples/`)
-- ✅ `lemondata/README.md` - LemonData 示例说明
+- ✅ `crazyrouter/README.md` - Crazyrouter 示例说明
 
 ### 📖 主文档
 - ✅ `README.md` - 完整的使用说明
@@ -44,7 +44,7 @@ seomaster/
 │   ├── workflow-guide.md
 │   └── quick-start.md
 ├── examples/               # 示例
-│   └── lemondata/
+│   └── crazyrouter/
 │       └── README.md
 └── README.md               # 主文档
 ```
@@ -52,7 +52,7 @@ seomaster/
 ## 核心特性
 
 ### 1. 完全参数化
-所有 LemonData 特定的内容都抽象为配置参数：
+所有 Crazyrouter 特定的内容都抽象为配置参数：
 - 产品信息 → `project.name`, `project.tagline`
 - 品牌声音 → `voice.tone`, `voice.principles`
 - 竞品信息 → `competitors[]`
@@ -104,14 +104,14 @@ vim articles/blog-001.yaml
 # 4. 开始写作
 ```
 
-### 方式 B: 基于 LemonData 示例
+### 方式 B: 基于 Crazyrouter 示例
 
 ```bash
-# 1. 查看 LemonData 示例
-cd seomaster/examples/lemondata/
+# 1. 查看 Crazyrouter 示例
+cd seomaster/examples/crazyrouter/
 
 # 2. 复制并修改配置
-cp project-config-lemondata.yaml ../../../your-project-config.yaml
+cp project-config.yaml ../../../your-project-config.yaml
 
 # 3. 参考已完成的文章
 # 查看 blog-openclaw-tutorial.md 的写作方式
@@ -139,7 +139,7 @@ cat docs/quick-start.md
 
 ### 深入学习
 - 📖 阅读 [工作流详细指南](docs/workflow-guide.md)
-- 📝 查看 [LemonData 示例](examples/lemondata/)
+- 📝 查看 [Crazyrouter 示例](examples/crazyrouter/)
 - 🎯 了解 [质量标准](templates/quality-standards.yaml)
 
 ### 开发脚本
@@ -152,14 +152,14 @@ cat docs/quick-start.md
 
 ## 与原工作流的对比
 
-| 项目 | 原工作流（LemonData 特定） | SEOMaster（通用） |
+| 项目 | 原工作流（Crazyrouter 特定） | SEOMaster（通用） |
 |------|---------------------------|------------------|
 | 产品信息 | 硬编码在文档中 | 参数化配置 |
 | 品牌声音 | 固定为"技术老手" | 可自定义 |
 | 竞品 | OpenRouter 等 | 配置化 |
 | 发布渠道 | 知乎、掘金等 | 可配置 |
 | 质量标准 | 固定规则 | 可自定义 |
-| 复用性 | 仅适用 LemonData | 适用任何产品 |
+| 复用性 | 仅适用 Crazyrouter | 适用任何产品 |
 
 ## 贡献
 

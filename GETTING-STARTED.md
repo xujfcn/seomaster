@@ -13,7 +13,7 @@ seomaster project:list
 ```
 📁 Projects:
 
-● Crazyrouter (LemonData) (crazyrouter)
+● Crazyrouter (crazyrouter)
   Multi-protocol AI API gateway
   Vault: D:/crazyrouter
 ```
@@ -103,7 +103,7 @@ seomaster project
 选择项目：
 ```
 ? Select a project:
-  ● Crazyrouter (LemonData)
+  ● Crazyrouter
   ○ My Product
   + Add new project
 ```

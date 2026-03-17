@@ -76,7 +76,7 @@ seomaster new "keyword"
 {
   "projects": {
     "crazyrouter": {
-      "name": "Crazyrouter (LemonData)",
+      "name": "Crazyrouter",
       "vault_path": "D:/crazyrouter",
       "description": "Multi-protocol AI API gateway",
       "output_dir": "output",

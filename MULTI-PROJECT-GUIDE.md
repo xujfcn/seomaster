@@ -29,7 +29,7 @@ seomaster project:list
 ```
 📁 Projects:
 
-● Crazyrouter (LemonData) (crazyrouter)
+● Crazyrouter (crazyrouter)
   Multi-protocol AI API gateway
   Vault: D:/crazyrouter
 
@@ -71,7 +71,7 @@ seomaster project
 会显示项目列表供选择：
 ```
 ? Select a project:
-  ● Crazyrouter (LemonData) - Multi-protocol AI API gateway
+  ● Crazyrouter - Multi-protocol AI API gateway
   ○ My Product - My awesome product
   + Add new project
 ```
@@ -117,7 +117,7 @@ seomaster new "your keyword" --words 3000 --lang zh
 {
   "projects": {
     "crazyrouter": {
-      "name": "Crazyrouter (LemonData)",
+      "name": "Crazyrouter",
       "vault_path": "D:/crazyrouter",
       "description": "Multi-protocol AI API gateway",
       "output_dir": "output",
@@ -145,7 +145,7 @@ seomaster new "your keyword" --words 3000 --lang zh
 
 | 字段 | 说明 | 示例 |
 |------|------|------|
-| `name` | 项目名称 | "Crazyrouter (LemonData)" |
+| `name` | 项目名称 | "Crazyrouter" |
 | `vault_path` | 知识库路径 | "D:/crazyrouter" |
 | `description` | 项目描述 | "Multi-protocol AI API gateway" |
 | `output_dir` | 输出目录 | "output" |

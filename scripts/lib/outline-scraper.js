@@ -33,7 +33,7 @@ async function scrapeOne(article) {
       timeout: FETCH_TIMEOUT,
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; SEOMaster/1.0; +https://lemondata.ai)',
+          'Mozilla/5.0 (compatible; SEOMaster/1.0; +https://crazyrouter.com)',
         Accept: 'text/html',
       },
     });
