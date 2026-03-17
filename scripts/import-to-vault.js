@@ -11,7 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const { saveToVault } = require('./lib/vault-writer');
-const { getCurrentProject } = require('./lib/project-manager');
+const { getCurrentProject, loadProjects } = require('./lib/project-manager');
 const { parseArgs } = require('./lib/parse-args');
 
 function extractMetadata(draftPath) {
@@ -34,6 +34,11 @@ function extractMetadata(draftPath) {
     word_count: wordCount,
     quality_score: 'N/A',
   };
+}
+
+function getCurrentProjectId() {
+  const config = loadProjects();
+  return config.current_project || '';
 }
 
 async function main() {
@@ -87,10 +92,14 @@ async function main() {
   console.log(`  Word count: ${metadata.word_count}\n`);
 
   // 保存到 vault
-  const subDir = args.dir || 'Published';
+  const subDir = args.dir || 'Drafts';
 
   try {
-    const savedPath = saveToVault(content, metadata, project.vault_path, subDir);
+    const savedPath = saveToVault(content, {
+      ...metadata,
+      project: getCurrentProjectId(),
+      status: subDir === 'Published' ? 'published' : 'draft',
+    }, project.vault_path, subDir);
     console.log(`✅ Saved to vault: ${savedPath}\n`);
     console.log('You can now view and edit this article in Obsidian.\n');
   } catch (error) {

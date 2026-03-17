@@ -48,9 +48,12 @@ async function main() {
   if (report.files.vault) {
     console.log(`  Vault: ${report.files.vault}`);
   }
+  if (report.files.index) {
+    console.log(`  Index: ${report.files.index}`);
+  }
   console.log(`  Report: ${report.files.report}\n`);
 
-  if (report.status !== 'completed') {
+  if (report.status !== 'completed' && report.status !== 'update_ready') {
     process.exit(1);
   }
 }

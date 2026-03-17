@@ -9,6 +9,10 @@ const inquirer = require('inquirer');
 const yaml = require('js-yaml');
 const { initWorkflow, getProjectDefaults } = require('./scripts/lib/cli-workflow');
 const { runAutomatedWorkflow } = require('./scripts/lib/automated-workflow');
+const { buildArticleIndex, saveArticleIndex, slugify } = require('./scripts/lib/article-index');
+const { detectDuplicates } = require('./scripts/lib/duplicate-detector');
+const { createOrUpdateTopicFromInput, ensureVaultStructure } = require('./scripts/lib/topic-manager');
+const { loadProjects } = require('./scripts/lib/project-manager');
 
 const VERSION = '1.0.0';
 
@@ -109,17 +113,41 @@ async function confirmConcept(conceptFile, keyword, options) {
 
 function printWorkflowSummary(report) {
   console.log(chalk.green('\n✅ Workflow finished\n'));
+  console.log(chalk.gray(`  Status: ${report.status}`));
   console.log(chalk.cyan('Files:'));
   console.log(chalk.gray(`  Concept: ${report.files.concept}`));
   console.log(chalk.gray(`  Draft: ${report.files.draft}`));
   if (report.files.vault) {
     console.log(chalk.gray(`  Vault: ${report.files.vault}`));
   }
+  if (report.files.index) {
+    console.log(chalk.gray(`  Index: ${report.files.index}`));
+  }
   console.log(chalk.gray(`  Report: ${report.files.report}`));
 
-  if (report.status !== 'completed') {
-    console.log(chalk.yellow('\n⚠️  Quality check found critical issues. See the workflow report for details.\n'));
+  if (report.status === 'needs_review') {
+    console.log(chalk.yellow('\n⚠️  Duplicate risk or quality issues require review. See the workflow report for details.\n'));
+  } else if (report.status === 'update_ready') {
+    console.log(chalk.yellow('\n⚠️  Existing topic detected. Treat this run as an update candidate, not a net-new article.\n'));
   }
+}
+
+function workflowSucceeded(report) {
+  return report.status === 'completed' || report.status === 'update_ready';
+}
+
+function getProjectContext(projectId) {
+  const config = loadProjects();
+  const resolvedId = projectId || config.current_project;
+
+  if (!resolvedId || !config.projects[resolvedId]) {
+    throw new Error(`Project not found: ${resolvedId || '(none)'}`);
+  }
+
+  return {
+    projectId: resolvedId,
+    project: config.projects[resolvedId],
+  };
 }
 
 program
@@ -137,7 +165,7 @@ program
   .option('--skip-images', 'Skip image generation')
   .option('--skip-import', 'Skip automatic vault import')
   .option('--force-import', 'Import draft into vault even if quality check fails')
-  .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Published')
+  .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Drafts')
   .option('--no-filter', 'Disable domain filtering for research')
   .action(async (keyword, options) => {
     if (!options.interactive) {
@@ -158,7 +186,7 @@ program
           filterDomains: options.filter !== false,
         });
         printWorkflowSummary(report);
-        if (report.status !== 'completed') {
+        if (!workflowSucceeded(report)) {
           process.exit(1);
         }
         return;
@@ -276,7 +304,7 @@ program
   .option('--skip-images', 'Skip image generation')
   .option('--skip-import', 'Skip automatic vault import')
   .option('--force-import', 'Import draft into vault even if quality check fails')
-  .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Published')
+  .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Drafts')
   .option('--no-filter', 'Disable domain filtering for research')
   .action(async (keyword, options) => {
     try {
@@ -296,7 +324,7 @@ program
         filterDomains: options.filter !== false,
       });
       printWorkflowSummary(report);
-      if (report.status !== 'completed') {
+      if (!workflowSucceeded(report)) {
         process.exit(1);
       }
     } catch (error) {
@@ -527,12 +555,132 @@ program
 program
   .command('vault:import <draft-file>')
   .description('Import article to Obsidian vault')
-  .option('--dir <name>', 'Vault subdirectory', 'Published')
+  .option('--dir <name>', 'Vault subdirectory', 'Drafts')
   .action(async (draftFile, options) => {
     await runScript('./scripts/import-to-vault.js', [
       '--draft', draftFile,
       '--dir', options.dir
     ]);
+  });
+
+program
+  .command('kb:reindex')
+  .description('Rebuild the local article/topic index for the current project vault')
+  .option('-p, --project <name>', 'Project name')
+  .option('--ensure-structure', 'Create standard vault directories if missing')
+  .action(async (options) => {
+    try {
+      const args = [];
+      if (options.project) {
+        args.push('--project', options.project);
+      }
+      if (options.ensureStructure) {
+        args.push('--ensure-structure');
+      }
+      await runScript('./scripts/reindex-knowledge.js', args);
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('topics:list')
+  .description('List topic cards for the current project')
+  .option('-p, --project <name>', 'Project name')
+  .action((options) => {
+    try {
+      const { projectId, project } = getProjectContext(options.project);
+      const index = buildArticleIndex(project.vault_path, projectId);
+      saveArticleIndex(index);
+
+      console.log(chalk.cyan('\nTopics\n'));
+      if (index.topics.length === 0) {
+        console.log(chalk.yellow('No topics found.\n'));
+        return;
+      }
+
+      index.topics.forEach((topic) => {
+        console.log(chalk.white(`- ${topic.topic_key}`));
+        console.log(chalk.gray(`  keyword: ${topic.canonical_keyword || '(none)'}`));
+        console.log(chalk.gray(`  status: ${topic.status}`));
+        console.log(chalk.gray(`  file: ${topic.relative_path}`));
+      });
+      console.log('');
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('topics:check <keyword>')
+  .description('Check whether a keyword should create a new article, update an existing topic, or be blocked')
+  .option('-p, --project <name>', 'Project name')
+  .option('--slug <slug>', 'Slug override')
+  .action((keyword, options) => {
+    try {
+      const { projectId, project } = getProjectContext(options.project);
+      const index = buildArticleIndex(project.vault_path, projectId);
+      const duplicate = detectDuplicates({
+        keyword,
+        slug: options.slug || slugify(keyword),
+        title: keyword,
+        topic_key: slugify(keyword),
+      }, index);
+
+      saveArticleIndex(index);
+
+      console.log(chalk.cyan('\nTopic Check\n'));
+      console.log(chalk.gray(`  Project: ${projectId}`));
+      console.log(chalk.gray(`  Vault: ${project.vault_path}`));
+      console.log(chalk.white(`  Topic key: ${duplicate.topic_key}`));
+      console.log(chalk.white(`  Decision: ${duplicate.decision}`));
+      if (duplicate.reasons.length > 0) {
+        console.log(chalk.cyan('\nReasons:'));
+        duplicate.reasons.forEach((reason) => console.log(chalk.gray(`  - ${reason}`)));
+      }
+      if (duplicate.matched_topic) {
+        console.log(chalk.cyan('\nMatched Topic:'));
+        console.log(chalk.gray(`  ${duplicate.matched_topic.topic_key}`));
+      }
+      if (duplicate.similar_articles.length > 0) {
+        console.log(chalk.cyan('\nSimilar Articles:'));
+        duplicate.similar_articles.forEach((item) => {
+          console.log(chalk.gray(`  - ${item.relative_path}`));
+        });
+      }
+      console.log('');
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('topics:create <keyword>')
+  .description('Create a topic card in the current project vault')
+  .option('-p, --project <name>', 'Project name')
+  .option('--intent <type>', 'Keyword intent', 'informational')
+  .option('--cluster <name>', 'Topic cluster', '')
+  .action((keyword, options) => {
+    try {
+      const { projectId, project } = getProjectContext(options.project);
+      ensureVaultStructure(project.vault_path);
+      const result = createOrUpdateTopicFromInput(project.vault_path, projectId, {
+        keyword,
+        intent: options.intent,
+        cluster: options.cluster,
+      });
+
+      console.log(chalk.green('\n✅ Topic ready\n'));
+      console.log(chalk.gray(`  Topic key: ${result.topicKey}`));
+      console.log(chalk.gray(`  File: ${result.topicPath}`));
+      console.log(chalk.gray(`  Index: ${result.indexPath}\n`));
+    } catch (error) {
+      console.error(chalk.red('\n❌ Failed:'), error.message);
+      process.exit(1);
+    }
   });
 
 // 如果没有提供任何命令，启动交互式菜单

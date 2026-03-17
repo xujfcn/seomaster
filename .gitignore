@@ -29,6 +29,7 @@ output/*.yaml
 output/*.json
 output/*.txt
 output/*.png
+data/indexes/*.json
 
 # Project configs (keep local only)
 *-project-config.yaml

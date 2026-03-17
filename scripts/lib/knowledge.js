@@ -2,10 +2,29 @@
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+const { parseFrontMatter } = require('./frontmatter');
 
 // 支持两种知识库模式
 const LEGACY_KNOWLEDGE_DIR = path.join(__dirname, '../../knowledge');
 let OBSIDIAN_VAULT_PATH = process.env.OBSIDIAN_VAULT_PATH;
+
+function resolveProjectVaultPath() {
+  try {
+    const { loadProjects } = require('./project-manager');
+    const config = loadProjects();
+    const projectId = config.current_project;
+    if (projectId && config.projects[projectId] && config.projects[projectId].vault_path) {
+      return config.projects[projectId].vault_path;
+    }
+  } catch (error) {
+    return '';
+  }
+  return '';
+}
+
+if (!OBSIDIAN_VAULT_PATH) {
+  OBSIDIAN_VAULT_PATH = resolveProjectVaultPath();
+}
 
 /**
  * Set knowledge base path dynamically (for multi-project support)
@@ -19,49 +38,6 @@ function setKnowledgeBasePath(vaultPath) {
  */
 function getKnowledgeBasePath() {
   return OBSIDIAN_VAULT_PATH;
-}
-
-/**
- * 解析 YAML Front Matter
- * @param {string} content - 文件内容
- * @returns {object} { metadata, content }
- */
-function parseFrontMatter(content) {
-  // Normalize line endings to \n for consistent parsing on Windows
-  content = content.replace(/\r\n/g, '\n');
-  const frontMatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
-  const match = content.match(frontMatterRegex);
-
-  if (!match) {
-    return { metadata: {}, content };
-  }
-
-  const yamlContent = match[1];
-  const mainContent = match[2];
-
-  // 简单的 YAML 解析（仅支持基本格式）
-  const metadata = {};
-  const lines = yamlContent.split('\n');
-
-  for (const line of lines) {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex === -1) continue;
-
-    const key = line.slice(0, colonIndex).trim();
-    let value = line.slice(colonIndex + 1).trim();
-
-    // 处理数组格式 [item1, item2]
-    if (value.startsWith('[') && value.endsWith(']')) {
-      value = value.slice(1, -1).split(',').map(s => s.trim());
-    }
-    // 处理布尔值
-    else if (value === 'true') value = true;
-    else if (value === 'false') value = false;
-
-    metadata[key] = value;
-  }
-
-  return { metadata, content: mainContent };
 }
 
 /**
@@ -152,6 +128,45 @@ function matchFilesByKeyword(files, keyword) {
   return matched;
 }
 
+function shouldIncludeForKnowledge(file) {
+  const topLevel = file.relativePath.split(path.sep)[0];
+  const excludedTopLevels = new Set(['Published', 'Drafts', 'Operations', 'Archive', 'Research', 'Updates']);
+
+  if (excludedTopLevels.has(topLevel)) {
+    return false;
+  }
+
+  return true;
+}
+
+function sortKnowledgeFiles(files) {
+  const topLevelPriority = {
+    Core: 1000,
+    Domain: 800,
+    Competitors: 700,
+    Cases: 600,
+    Topics: 550,
+    Templates: 100,
+  };
+
+  return [...files].sort((a, b) => {
+    const aTop = a.relativePath.split(path.sep)[0];
+    const bTop = b.relativePath.split(path.sep)[0];
+    const aPriority = topLevelPriority[aTop] || 0;
+    const bPriority = topLevelPriority[bTop] || 0;
+
+    if (a.score !== b.score) {
+      return b.score - a.score;
+    }
+
+    if (aPriority !== bPriority) {
+      return bPriority - aPriority;
+    }
+
+    return a.relativePath.localeCompare(b.relativePath);
+  });
+}
+
 /**
  * 从 Obsidian vault 加载知识库
  * @param {string} keyword - 关键词（用于匹配）
@@ -165,10 +180,10 @@ function loadObsidianKnowledge(keyword, maxChars = 15000) {
   }
 
   // 读取所有文件
-  const allFiles = readAllMarkdownFiles(OBSIDIAN_VAULT_PATH);
+  const allFiles = readAllMarkdownFiles(OBSIDIAN_VAULT_PATH).filter(shouldIncludeForKnowledge);
 
   // 匹配关键词
-  const matchedFiles = matchFilesByKeyword(allFiles, keyword);
+  const matchedFiles = sortKnowledgeFiles(matchFilesByKeyword(allFiles, keyword));
 
   // 拼接内容
   const parts = [];
@@ -287,6 +302,12 @@ function loadKnowledgeContext(files, maxChars = 20000) {
 }
 
 function listKnowledgeFiles() {
+  if (OBSIDIAN_VAULT_PATH && fs.existsSync(OBSIDIAN_VAULT_PATH)) {
+    return readAllMarkdownFiles(OBSIDIAN_VAULT_PATH)
+      .filter(shouldIncludeForKnowledge)
+      .map((file) => file.relativePath);
+  }
+
   if (!fs.existsSync(LEGACY_KNOWLEDGE_DIR)) return [];
   return fs.readdirSync(LEGACY_KNOWLEDGE_DIR).filter((f) => f.endsWith('.md'));
 }

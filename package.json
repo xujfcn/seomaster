@@ -13,7 +13,8 @@
     "concept": "node scripts/generate-concept.js",
     "draft": "node scripts/generate-draft.js",
     "check": "node scripts/quality-check.js",
-    "workflow": "node scripts/workflow.js"
+    "workflow": "node scripts/workflow.js",
+    "reindex": "node scripts/reindex-knowledge.js"
   },
   "keywords": [
     "seo",
