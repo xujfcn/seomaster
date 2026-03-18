@@ -82,6 +82,15 @@ function readAllMarkdownFiles(dir, baseDir = dir) {
   return files;
 }
 
+function normalizeKeywordList(keywords) {
+  const values = Array.isArray(keywords) ? keywords : [keywords];
+  return values
+    .filter((value) => value !== null && value !== undefined)
+    .map((value) => (typeof value === 'string' ? value : String(value)))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 /**
  * 根据关键词匹配文件
  * @param {Array} files - 文件列表
@@ -90,7 +99,11 @@ function readAllMarkdownFiles(dir, baseDir = dir) {
  */
 function matchFilesByKeyword(files, keyword) {
   const matched = [];
-  const keywordLower = keyword.toLowerCase();
+  const keywordLower = String(keyword || '').trim().toLowerCase();
+
+  if (!keywordLower) {
+    return matched;
+  }
 
   for (const file of files) {
     const { metadata } = file;
@@ -102,9 +115,9 @@ function matchFilesByKeyword(files, keyword) {
     }
 
     // 检查关键词匹配
-    if (metadata.keywords && Array.isArray(metadata.keywords)) {
-      const hasMatch = metadata.keywords.some(kw => {
-        const kwLower = kw.toLowerCase();
+    const normalizedKeywords = normalizeKeywordList(metadata.keywords);
+    if (normalizedKeywords.length > 0) {
+      const hasMatch = normalizedKeywords.some((kwLower) => {
         return keywordLower.includes(kwLower) || kwLower.includes(keywordLower);
       });
 
