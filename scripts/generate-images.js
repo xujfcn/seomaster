@@ -10,6 +10,21 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'username/image-repo';
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const IMAGE_BASE_PATH = 'seomaster';
+const DEFAULT_IMAGE_MODELS = [
+  'gemini-3.1-flash-image-preview',
+  'gemini-2.5-flash-image',
+  'gemini-2.5-flash-image-preview',
+  'imagen-4.0-generate-001',
+];
+
+function getImageModels() {
+  const configured = (process.env.IMAGE_MODELS || process.env.IMAGE_MODEL || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return configured.length > 0 ? configured : DEFAULT_IMAGE_MODELS;
+}
 
 function extractImageMarkers(content) {
   const regex = /<!-- IMAGE: (.+?) -->/g;
@@ -31,76 +46,170 @@ async function generateImage(description, index) {
   console.log(`  [${index + 1}] Generating: "${description.slice(0, 60)}..."`);
 
   const imagePrompt = buildImagePrompt(description);
+  const models = getImageModels();
 
-  try {
-    // 使用 Gemini 3.1 Flash Image Preview 模型
-    const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.aiApiKey()}`
-      },
-      body: JSON.stringify({
-        model: 'gemini-3.1-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: imagePrompt
-          }
-        ],
-        max_tokens: 4096,
-        temperature: 0.7
-      })
-    });
+  for (const model of models) {
+    try {
+      const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.aiApiKey()}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'user',
+              content: imagePrompt
+            }
+          ],
+          max_tokens: 4096,
+          temperature: 0.7
+        })
+      });
 
-    if (!res.ok) {
-      const error = await res.text();
-      console.warn(`    ⚠️  Generation failed: ${error}`);
-      return null;
+      if (!res.ok) {
+        const error = await res.text();
+        console.warn(`    ⚠️  ${model} failed: ${error}`);
+        continue;
+      }
+
+      const data = await res.json();
+      const extracted = extractImageFromResponse(data);
+
+      let imageBuffer = extracted.imageBuffer;
+
+      if (extracted.imageUrl) {
+        const imageRes = await fetch(extracted.imageUrl);
+        imageBuffer = await imageRes.buffer();
+      }
+
+      if (imageBuffer) {
+        console.log(`    ✓ ${model} generated (${(imageBuffer.length / 1024).toFixed(1)} KB)`);
+        return imageBuffer;
+      }
+
+      console.warn(`    ⚠️  ${model} returned no usable image data`);
+    } catch (error) {
+      console.warn(`    ⚠️  ${model} error: ${error.message}`);
     }
+  }
 
-    const data = await res.json();
+  return null;
+}
 
-    // Gemini 返回的图片可能在 message.content 中（base64 或 URL）
-    // 需要根据实际 API 响应格式调整
-    let imageUrl = null;
-    let imageBuffer = null;
+function extractMarkdownImage(content) {
+  if (typeof content !== 'string') {
+    return { imageUrl: null, imageBuffer: null };
+  }
 
-    if (data.choices && data.choices[0] && data.choices[0].message) {
-      const message = data.choices[0].message;
+  const dataUrlMatch = content.match(/data:image\/[a-zA-Z0-9.+-]+;base64,([A-Za-z0-9+/=\s]+)/);
+  if (dataUrlMatch) {
+    return {
+      imageUrl: null,
+      imageBuffer: Buffer.from(dataUrlMatch[1].replace(/\s+/g, ''), 'base64'),
+    };
+  }
 
-      // 检查是否有图片 URL
-      if (message.image_url) {
-        imageUrl = message.image_url;
-      } else if (message.content && typeof message.content === 'string') {
-        // 检查是否是 base64 图片
-        if (message.content.startsWith('data:image')) {
-          const base64Data = message.content.split(',')[1];
-          imageBuffer = Buffer.from(base64Data, 'base64');
-        } else if (message.content.startsWith('http')) {
-          imageUrl = message.content;
-        }
+  const markdownUrlMatch = content.match(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)\)/);
+  if (markdownUrlMatch) {
+    return { imageUrl: markdownUrlMatch[1], imageBuffer: null };
+  }
+
+  const rawUrlMatch = content.match(/https?:\/\/\S+/);
+  if (rawUrlMatch) {
+    return { imageUrl: rawUrlMatch[0], imageBuffer: null };
+  }
+
+  return { imageUrl: null, imageBuffer: null };
+}
+
+function extractImageFromContentPart(part) {
+  if (!part) {
+    return { imageUrl: null, imageBuffer: null };
+  }
+
+  if (typeof part === 'string') {
+    return extractMarkdownImage(part);
+  }
+
+  if (part.image_url) {
+    if (typeof part.image_url === 'string') {
+      return { imageUrl: part.image_url, imageBuffer: null };
+    }
+    if (part.image_url.url) {
+      return { imageUrl: part.image_url.url, imageBuffer: null };
+    }
+  }
+
+  if (part.b64_json) {
+    return {
+      imageUrl: null,
+      imageBuffer: Buffer.from(part.b64_json, 'base64'),
+    };
+  }
+
+  if (part.inline_data && part.inline_data.data) {
+    return {
+      imageUrl: null,
+      imageBuffer: Buffer.from(part.inline_data.data, 'base64'),
+    };
+  }
+
+  if (part.data && typeof part.data === 'string' && part.mime_type && part.mime_type.startsWith('image/')) {
+    return {
+      imageUrl: null,
+      imageBuffer: Buffer.from(part.data, 'base64'),
+    };
+  }
+
+  if (part.text) {
+    return extractMarkdownImage(part.text);
+  }
+
+  return { imageUrl: null, imageBuffer: null };
+}
+
+function extractImageFromResponse(data) {
+  if (data && Array.isArray(data.data)) {
+    for (const item of data.data) {
+      const extracted = extractImageFromContentPart(item);
+      if (extracted.imageUrl || extracted.imageBuffer) {
+        return extracted;
       }
     }
-
-    // 如果有 URL，下载图片
-    if (imageUrl) {
-      const imageRes = await fetch(imageUrl);
-      imageBuffer = await imageRes.buffer();
-    }
-
-    if (!imageBuffer) {
-      console.warn(`    ⚠️  No image data in response`);
-      return null;
-    }
-
-    console.log(`    ✓ Generated (${(imageBuffer.length / 1024).toFixed(1)} KB)`);
-    return imageBuffer;
-
-  } catch (error) {
-    console.warn(`    ⚠️  Error: ${error.message}`);
-    return null;
   }
+
+  if (!data || !Array.isArray(data.choices)) {
+    return { imageUrl: null, imageBuffer: null };
+  }
+
+  for (const choice of data.choices) {
+    if (!choice.message) continue;
+
+    const directImage = extractImageFromContentPart(choice.message.image_url || choice.message);
+    if (directImage.imageUrl || directImage.imageBuffer) {
+      return directImage;
+    }
+
+    const content = choice.message.content;
+    if (Array.isArray(content)) {
+      for (const part of content) {
+        const extracted = extractImageFromContentPart(part);
+        if (extracted.imageUrl || extracted.imageBuffer) {
+          return extracted;
+        }
+      }
+    } else {
+      const extracted = extractImageFromContentPart(content);
+      if (extracted.imageUrl || extracted.imageBuffer) {
+        return extracted;
+      }
+    }
+  }
+
+  return { imageUrl: null, imageBuffer: null };
 }
 
 function buildImagePrompt(description) {
