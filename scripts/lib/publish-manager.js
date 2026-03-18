@@ -203,9 +203,9 @@ async function resolvePublishConfig(projectConfig, overrides = {}) {
     overrides.baseUrl ||
       envBaseUrl ||
       projectConfig?.publish_config?.base_url ||
-      LOCAL_NEW_API_BASE_URL ||
       projectConfig?.project?.website ||
-      stripBlogSuffix(projectConfig?.channels?.blog?.base_url || '')
+      stripBlogSuffix(projectConfig?.channels?.blog?.base_url || '') ||
+      LOCAL_NEW_API_BASE_URL
   );
 
   let token = overrides.token || process.env.NEW_API_BLOG_TOKEN || process.env.ADMIN_TOKEN || '';

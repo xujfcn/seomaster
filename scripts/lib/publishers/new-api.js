@@ -52,7 +52,7 @@ function buildHeaders(config) {
     Authorization: `Bearer ${config.token}`,
     'Content-Type': 'application/json',
     'New-Api-User': String(config.userId),
-    'User-Agent': 'SEOMaster/1.0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
   };
 }
 
