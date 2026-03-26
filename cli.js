@@ -162,7 +162,7 @@ program
   .option('-i, --interactive', 'Interactive mode with confirmations')
   .option('--intent <type>', 'Keyword intent (informational/navigational/commercial/transactional)')
   .option('--scene <scenes>', 'DICloak business scenes, comma-separated')
-  .option('--skip-images', 'Skip image generation')
+  .option('--skip-images', 'Deprecated: the image-required workflow will reject this flag')
   .option('--skip-import', 'Skip automatic vault import')
   .option('--force-import', 'Import draft into vault even if quality check fails')
   .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Drafts')
@@ -258,16 +258,17 @@ program
       console.log(chalk.cyan('\n[2/4] Generating draft...\n'));
       await runScript('./scripts/generate-draft.js', ['--concept', conceptFile, '--out', outputDir]);
 
-      // 自动生成配图（最多3张）
+      // 自动生成封面图和正文配图
       if (!options.skipImages) {
-        console.log(chalk.cyan('\n[3/4] Generating images (max 3)...\n'));
+        console.log(chalk.cyan('\n[3/4] Generating cover + inline images...\n'));
         try {
           await runScript('./scripts/generate-images.js', ['--draft', draftFile]);
         } catch (err) {
-          console.log(chalk.yellow('  ⚠️  Image generation failed, continuing...'));
+          console.log(chalk.red('  ❌ Image generation failed'));
+          throw err;
         }
       } else {
-        console.log(chalk.gray('\n[3/4] Skipping image generation\n'));
+        throw new Error('Image generation is required by the workflow. Remove --skip-images.');
       }
 
       // 质量检查
@@ -301,7 +302,7 @@ program
   .option('-o, --out <dir>', 'Output directory override')
   .option('--intent <type>', 'Keyword intent (informational/navigational/commercial/transactional)')
   .option('--scene <scenes>', 'DICloak business scenes, comma-separated')
-  .option('--skip-images', 'Skip image generation')
+  .option('--skip-images', 'Deprecated: the image-required workflow will reject this flag')
   .option('--skip-import', 'Skip automatic vault import')
   .option('--force-import', 'Import draft into vault even if quality check fails')
   .option('--import-dir <name>', 'Vault subdirectory for automatic import', 'Drafts')
@@ -481,7 +482,7 @@ program
 
 program
   .command('images <draft-file>')
-  .description('Generate images for draft (max 3 per article)')
+  .description('Generate required cover and inline images for an article')
   .action(async (draftFile) => {
     // Auto-resolve path
     let filePath = draftFile;

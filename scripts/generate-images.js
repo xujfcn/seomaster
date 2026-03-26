@@ -5,6 +5,7 @@ const path = require('path');
 const fetch = require('node-fetch');
 const config = require('./lib/config');
 const { parseArgs } = require('./lib/parse-args');
+const { readMarkdownDocument, writeMarkdownDocument } = require('./lib/frontmatter');
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'username/image-repo';
@@ -42,10 +43,8 @@ function extractImageMarkers(content) {
   return markers;
 }
 
-async function generateImage(description, index) {
-  console.log(`  [${index + 1}] Generating: "${description.slice(0, 60)}..."`);
-
-  const imagePrompt = buildImagePrompt(description);
+async function generateImage(imagePrompt, label) {
+  console.log(`  Generating ${label}...`);
   const models = getImageModels();
 
   for (const model of models) {
@@ -97,6 +96,20 @@ async function generateImage(description, index) {
   }
 
   return null;
+}
+
+function getMarkdownTitle(content, metadata, fallbackSlug) {
+  if (metadata.title) return String(metadata.title).trim();
+  const match = String(content || '').match(/^#\s+(.+)$/m);
+  if (match) return match[1].trim();
+  return String(fallbackSlug || 'untitled')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function getArticleSlug(filePath, metadata) {
+  if (metadata.slug) return String(metadata.slug).trim();
+  return path.basename(filePath, '.md').replace(/-draft$/, '');
 }
 
 function extractMarkdownImage(content) {
@@ -228,6 +241,19 @@ function buildImagePrompt(description) {
   }
 }
 
+function buildCoverPrompt(title, keyword = '') {
+  return [
+    'Create a cinematic 16:9 blog cover illustration for a technical SEO article.',
+    `Article title: ${title}.`,
+    keyword ? `Primary keyword: ${keyword}.` : '',
+    'Style: modern technical editorial hero image, crisp lighting, premium product-style composition.',
+    'Subject: AI video generation workflow, API orchestration, monitoring dashboard, motion pipeline.',
+    'Constraints: no text, no logos, no watermark, no UI chrome, no stock-photo look, no people close-up.',
+    'Colors: clean blue, cyan, graphite, subtle gradients.',
+    'Output should feel polished enough for a SaaS blog hero image.'
+  ].filter(Boolean).join(' ');
+}
+
 async function uploadToGitHub(imageBuffer, filename) {
   if (!GITHUB_TOKEN) {
     console.warn('    ⚠️  GITHUB_TOKEN not set, skipping upload');
@@ -301,6 +327,27 @@ function replaceImageMarkers(content, replacements) {
   return newContent;
 }
 
+function resolveStoredImageReference(imageBuffer, imageUrl, outputPath, allowLocal) {
+  if (imageUrl) {
+    return {
+      imageRef: imageUrl,
+      isPublic: true,
+      savedPath: '',
+    };
+  }
+
+  if (!allowLocal) {
+    throw new Error(`Image upload failed for ${outputPath}; public image URL is required.`);
+  }
+
+  fs.writeFileSync(outputPath, imageBuffer);
+  return {
+    imageRef: `./${path.basename(outputPath)}`,
+    isPublic: false,
+    savedPath: outputPath,
+  };
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   
@@ -310,6 +357,8 @@ async function main() {
   }
   
   const draftPath = args.draft;
+  const maxImages = Number(args['max-images'] || process.env.MAX_INLINE_IMAGES || 3);
+  const allowLocal = args['allow-local'] === true;
   
   if (!fs.existsSync(draftPath)) {
     console.error(`Error: File not found: ${draftPath}`);
@@ -320,70 +369,109 @@ async function main() {
   console.log(`  Draft: ${draftPath}`);
   console.log(`  GitHub: ${GITHUB_REPO}\n`);
   
-  const content = fs.readFileSync(draftPath, 'utf-8');
+  const { metadata, content } = readMarkdownDocument(draftPath);
+  const slug = getArticleSlug(draftPath, metadata);
+  const title = getMarkdownTitle(content, metadata, slug);
   const markers = extractImageMarkers(content);
-  
-  if (markers.length === 0) {
-    console.log('✅ No image markers found.\n');
-    return;
-  }
-  
-  // 限制最多3张配图
-  const maxImages = 3;
   const markersToProcess = markers.slice(0, maxImages);
 
   if (markers.length > maxImages) {
     console.log(`⚠️  Found ${markers.length} markers, limiting to ${maxImages} images\n`);
   }
 
-  console.log(`[1/3] Processing ${markersToProcess.length} image marker(s)\n`);
-  console.log('[2/3] Generating images...\n');
+  const nextMetadata = {
+    ...metadata,
+    slug,
+  };
+
+  console.log('[1/4] Generating cover image...\n');
+
+  if (!nextMetadata.cover_image_url) {
+    const coverBuffer = await generateImage(
+      buildCoverPrompt(title, nextMetadata.keyword || title),
+      `cover for "${title}"`
+    );
+
+    if (!coverBuffer) {
+      throw new Error('Cover image generation failed.');
+    }
+
+    const coverUploadUrl = await uploadToGitHub(coverBuffer, `${slug}-cover.png`);
+    const coverRef = resolveStoredImageReference(
+      coverBuffer,
+      coverUploadUrl,
+      path.join(path.dirname(draftPath), `${slug}-cover.png`),
+      allowLocal
+    );
+    nextMetadata.cover_image_url = coverRef.imageRef;
+    if (coverRef.savedPath) {
+      console.log(`    → Saved cover: ${coverRef.savedPath}\n`);
+    } else {
+      console.log(`    → Cover: ${coverRef.imageRef}\n`);
+    }
+  } else {
+    console.log(`  ✓ Existing cover found: ${nextMetadata.cover_image_url}\n`);
+  }
+
+  if (markersToProcess.length === 0) {
+    writeMarkdownDocument(draftPath, nextMetadata, content);
+    console.log('✅ Cover image ready. No inline image markers found.\n');
+    return;
+  }
+
+  console.log(`[2/4] Processing ${markersToProcess.length} inline image marker(s)\n`);
+  console.log('[3/4] Generating inline images...\n');
 
   const replacements = [];
-  const slug = path.basename(draftPath, '-draft.md');
+  const failures = [];
 
   for (let i = 0; i < markersToProcess.length; i++) {
     const marker = markersToProcess[i];
     const filename = `${slug}-${i + 1}.png`;
-    
-    const imageBuffer = await generateImage(marker.description, i);
-    
+
+    const imageBuffer = await generateImage(
+      buildImagePrompt(marker.description),
+      `inline image ${i + 1}: "${marker.description.slice(0, 60)}..."`
+    );
+
     if (!imageBuffer) {
-      console.log(`    ⚠️  Skipping\n`);
+      failures.push(`Inline image ${i + 1} failed to generate`);
       continue;
     }
-    
+
     const imageUrl = await uploadToGitHub(imageBuffer, filename);
-    
-    if (imageUrl) {
-      replacements.push({
-        marker: marker.fullMatch,
+    try {
+      const imageRef = resolveStoredImageReference(
+        imageBuffer,
         imageUrl,
-        altText: marker.description.slice(0, 100)
-      });
-      console.log(`    → ${imageUrl}\n`);
-    } else {
-      const localPath = path.join(path.dirname(draftPath), filename);
-      fs.writeFileSync(localPath, imageBuffer);
-      console.log(`    → Saved: ${localPath}\n`);
-      
+        path.join(path.dirname(draftPath), filename),
+        allowLocal
+      );
       replacements.push({
         marker: marker.fullMatch,
-        imageUrl: `./${filename}`,
+        imageUrl: imageRef.imageRef,
         altText: marker.description.slice(0, 100)
       });
+      if (imageRef.savedPath) {
+        console.log(`    → Saved: ${imageRef.savedPath}\n`);
+      } else {
+        console.log(`    → ${imageRef.imageRef}\n`);
+      }
+    } catch (error) {
+      failures.push(error.message);
     }
   }
-  
-  if (replacements.length > 0) {
-    console.log('[3/3] Updating draft...\n');
-    
-    const newContent = replaceImageMarkers(content, replacements);
-    fs.writeFileSync(draftPath, newContent, 'utf-8');
-    
-    console.log(`  ✓ Updated ${replacements.length} image(s)\n`);
+
+  if (failures.length > 0 || replacements.length !== markersToProcess.length) {
+    throw new Error(`Image generation incomplete: ${failures.join('; ') || 'some inline images were not updated'}`);
   }
-  
+
+  console.log('[4/4] Updating draft...\n');
+
+  const newContent = replaceImageMarkers(content, replacements);
+  writeMarkdownDocument(draftPath, nextMetadata, newContent);
+
+  console.log(`  ✓ Updated cover + ${replacements.length} inline image(s)\n`);
   console.log('✅ Done!\n');
 }
 

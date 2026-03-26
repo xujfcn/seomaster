@@ -32,6 +32,7 @@ function buildArticleFrontMatter(metadata, subDir, date) {
     published_url: metadata.published_url || '',
     cms_target: metadata.cms_target || '',
     cms_post_id: metadata.cms_post_id || '',
+    cover_image_url: metadata.cover_image_url || '',
     content_hash: metadata.content_hash || '',
     summary_hash: metadata.summary_hash || '',
     source_of_truth: 'vault',

@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const yaml = require('js-yaml');
 const { initWorkflow, getProjectDefaults } = require('./cli-workflow');
+const { readMarkdownDocument } = require('./frontmatter');
 const { saveToVault, shouldSaveToVault } = require('./vault-writer');
 const { buildArticleIndex, saveArticleIndex, slugify } = require('./article-index');
 const { detectDuplicates } = require('./duplicate-detector');
@@ -44,15 +45,21 @@ function countWords(text) {
 }
 
 function extractDraftMetadata(draftPath, keyword, slug, qualityStatus) {
-  const content = fs.readFileSync(draftPath, 'utf-8');
+  const { metadata: draftMetadata, content } = readMarkdownDocument(draftPath);
   const titleMatch = content.match(/^#\s+(.+)$/m);
 
   return {
-    keyword: titleMatch ? titleMatch[1] : keyword,
-    slug,
+    keyword: draftMetadata.keyword || (titleMatch ? titleMatch[1] : keyword),
+    slug: draftMetadata.slug || slug,
     word_count: countWords(content),
     quality_score: qualityStatus === 'passed' ? 'PASS' : 'CHECK_FAILED',
+    cover_image_url: draftMetadata.cover_image_url || '',
   };
+}
+
+function persistReport(report, outputDir, slug) {
+  report.files.report = path.join(outputDir, `${slug}-workflow-report.json`);
+  fs.writeFileSync(report.files.report, JSON.stringify(report, null, 2), 'utf-8');
 }
 
 function getProjectId(project, explicitProjectId) {
@@ -164,8 +171,7 @@ async function runAutomatedWorkflow(keyword, options = {}) {
   if (duplicate.decision === 'block') {
     report.status = 'blocked_duplicate';
     report.finished_at = new Date().toISOString();
-    report.files.report = path.join(outputDir, `${slug}-workflow-report.json`);
-    fs.writeFileSync(report.files.report, JSON.stringify(report, null, 2), 'utf-8');
+    persistReport(report, outputDir, slug);
     throw new Error(`Workflow blocked: ${duplicate.reasons.join('; ')}`);
   }
 
@@ -217,14 +223,25 @@ async function runAutomatedWorkflow(keyword, options = {}) {
   report.steps.draft = { status: 'completed' };
 
   if (options.skipImages) {
-    report.steps.images = { status: 'skipped' };
-  } else {
-    try {
-      await runScript(path.join(SEOMASTER_ROOT, 'scripts', 'generate-images.js'), ['--draft', draftFile]);
-      report.steps.images = { status: 'completed' };
-    } catch (error) {
-      report.steps.images = { status: 'failed', error: error.message };
-    }
+    report.steps.images = {
+      status: 'blocked',
+      reason: 'Image generation is required by the workflow',
+    };
+    report.status = 'blocked_missing_images';
+    report.finished_at = new Date().toISOString();
+    persistReport(report, outputDir, slug);
+    throw new Error('Image generation is required by the workflow. Remove --skip-images.');
+  }
+
+  try {
+    await runScript(path.join(SEOMASTER_ROOT, 'scripts', 'generate-images.js'), ['--draft', draftFile]);
+    report.steps.images = { status: 'completed' };
+  } catch (error) {
+    report.steps.images = { status: 'failed', error: error.message };
+    report.status = 'blocked_missing_images';
+    report.finished_at = new Date().toISOString();
+    persistReport(report, outputDir, slug);
+    throw new Error(`Image generation failed: ${error.message}`);
   }
 
   let qualityPassed = true;
@@ -274,8 +291,7 @@ async function runAutomatedWorkflow(keyword, options = {}) {
     report.status = 'completed';
   }
   report.finished_at = new Date().toISOString();
-  report.files.report = path.join(outputDir, `${slug}-workflow-report.json`);
-  fs.writeFileSync(report.files.report, JSON.stringify(report, null, 2), 'utf-8');
+  persistReport(report, outputDir, slug);
 
   return report;
 }
