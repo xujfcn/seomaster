@@ -223,12 +223,17 @@ async function resolvePublishConfig(projectConfig, overrides = {}) {
     throw new Error('Missing publish credentials. Set NEW_API_BLOG_TOKEN/NEW_API_BLOG_USER_ID or ADMIN_TOKEN/ADMIN_USER_ID.');
   }
 
-  let blogBaseUrl = overrides.blogBaseUrl || process.env.NEW_API_BLOG_PUBLIC_BASE_URL || '';
+  let blogBaseUrl =
+    overrides.blogBaseUrl ||
+    process.env.NEW_API_BLOG_PUBLIC_BASE_URL ||
+    projectConfig?.publish_config?.blog_base_url ||
+    projectConfig?.channels?.blog?.base_url ||
+    '';
   if (!blogBaseUrl) {
     if (isLocalUrl(baseUrl)) {
       blogBaseUrl = `${trimTrailingSlash(baseUrl)}/blog`;
     } else {
-      blogBaseUrl = projectConfig?.channels?.blog?.base_url || `${trimTrailingSlash(baseUrl)}/blog`;
+      blogBaseUrl = `${trimTrailingSlash(baseUrl)}/blog`;
     }
   }
 
