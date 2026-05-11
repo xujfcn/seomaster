@@ -580,6 +580,50 @@ program
   });
 
 program
+  .command('captcha:create <task-json-file>')
+  .description('Create a 2Captcha task from a JSON task payload file')
+  .option('--wait', 'Wait until the task is solved')
+  .option('--timeout <ms>', 'Solve timeout in milliseconds', '180000')
+  .option('--interval <ms>', 'Polling interval in milliseconds', '5000')
+  .action(async (taskJsonFile, options) => {
+    try {
+      const { TwoCaptchaClient } = require('./scripts/lib/two-captcha');
+      const taskPath = path.resolve(process.cwd(), taskJsonFile);
+      const task = JSON.parse(fs.readFileSync(taskPath, 'utf-8'));
+      const client = new TwoCaptchaClient({
+        solveTimeout: Number(options.timeout),
+        pollingInterval: Number(options.interval),
+      });
+
+      const taskId = await client.createTask(task);
+      console.log(chalk.green('\n✅ 2Captcha task created\n'));
+      console.log(chalk.gray(`  Task ID: ${taskId}\n`));
+
+      if (options.wait) {
+        const result = await client.waitForResult(taskId);
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (error) {
+      console.error(chalk.red('\n❌ 2Captcha task failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('captcha:result <task-id>')
+  .description('Get a 2Captcha task result by task ID')
+  .action(async (taskId) => {
+    try {
+      const { TwoCaptchaClient } = require('./scripts/lib/two-captcha');
+      const result = await new TwoCaptchaClient().getTaskResult(taskId);
+      console.log(JSON.stringify(result, null, 2));
+    } catch (error) {
+      console.error(chalk.red('\n❌ 2Captcha result failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
   .command('kb:reindex')
   .description('Rebuild the local article/topic index for the current project vault')
   .option('-p, --project <name>', 'Project name')
