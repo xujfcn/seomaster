@@ -5,6 +5,8 @@ summary: "面向开发者和内容团队的 AI 扩图路线选择：什么时候
 tag: Guide
 language: zh
 cover_image_url: https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-cover.svg
+cms_post_id: 775
+remote_blog_id: 775
 meta_title: "AI 扩图 API 指南 2026 | CrazyRouter 示例"
 meta_description: "用 CrazyRouter 已验证文档口径对比 AI 扩图、outpainting、图片编辑 API：gpt-image-2、Nano Banana 2、Nano Banana Pro 怎么选，附可复制代码。"
 meta_keywords: AI 扩图, AI 外扩, outpaint, uncrop, gpt-image-2, nano banana 2, nano banana pro, CrazyRouter 图片 API
@@ -14,7 +16,7 @@ docs_checked: "D:/Downloads/new-api-main/newapi/crazyrouter-docs, checked 2026-0
 
 # AI 扩图 API 指南 2026：Uncrop、Outpaint、gpt-image-2 和 Nano Banana 路线怎么选
 
-<img src="https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-cover.svg" alt="AI 扩图 API 工作流封面">
+![AI 扩图 API 工作流封面](https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-cover.svg)
 
 把一张裁得太紧的图硬拉宽，结果通常很糟：人物变形、商品边缘发糊、背景纹理重复。AI 扩图的价值不是“把像素撑大”，而是在原画框外生成新内容，让图片能适配横幅、广告位、商品主图和应用内素材。
 
@@ -33,13 +35,13 @@ docs_checked: "D:/Downloads/new-api-main/newapi/crazyrouter-docs, checked 2026-0
 | 使用 Nano Banana 2 做图片生成 | Gemini 原生路径 | `/v1beta/models/gemini-3.1-flash-image-preview:generateContent` | 不要写成稳定 Images API 入口 |
 | 使用 Nano Banana Pro 做参考图横幅 | CrazyRouter Images API | `model: "nano-banana-pro"` + `image_input` | 当前公开承诺 URL 参考图 |
 
-<img src="https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-decision.svg" alt="AI 扩图工具决策图">
+![AI 扩图工具决策图](https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-decision.svg)
 
 一句话版本：单张图先选工具，成规模后再选 API。
 
 ## AI 扩图不是一个任务
 
-<img src="https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-api-map.svg" alt="CrazyRouter 图像 API 路线图">
+![CrazyRouter 图像 API 路线图](https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-api-map.svg)
 
 “AI 扩图”至少拆成四类。
 
@@ -298,7 +300,7 @@ IMAGE_ROUTE = {
 
 ## 让扩图更干净的操作清单
 
-<img src="https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-checklist.svg" alt="AI 扩图稳定性清单">
+![AI 扩图稳定性清单](https://raw.githubusercontent.com/xujfcn/images/ai-expand-image-crazyrouter-assets/seomaster/ai-expand-image-crazyrouter-checklist.svg)
 
 一次少扩一点。15% 到 25% 的边界补充通常更稳，过大的空白会诱导模型重写整张图。
 
