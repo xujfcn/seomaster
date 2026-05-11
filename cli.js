@@ -565,6 +565,21 @@ program
   });
 
 program
+  .command('captcha:balance')
+  .description('Check the configured 2Captcha account balance')
+  .action(async () => {
+    try {
+      const { getBalance } = require('./scripts/lib/two-captcha');
+      const balance = await getBalance();
+      console.log(chalk.green('\n✅ 2Captcha connected\n'));
+      console.log(chalk.gray(`  Balance: $${Number(balance).toFixed(5)}\n`));
+    } catch (error) {
+      console.error(chalk.red('\n❌ 2Captcha check failed:'), error.message);
+      process.exit(1);
+    }
+  });
+
+program
   .command('kb:reindex')
   .description('Rebuild the local article/topic index for the current project vault')
   .option('-p, --project <name>', 'Project name')

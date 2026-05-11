@@ -27,4 +27,6 @@ module.exports = {
   aiApiKey: () => getRequired('AI_API_KEY'),
   aiBaseUrl: () => process.env.AI_API_BASE_URL || 'https://api.openai.com/v1',
   aiModel: () => process.env.AI_MODEL || 'gpt-4o',
+  twoCaptchaApiKey: () => getRequired('TWO_CAPTCHA_API_KEY'),
+  twoCaptchaBaseUrl: () => process.env.TWO_CAPTCHA_API_BASE_URL || 'https://api.2captcha.com',
 };
