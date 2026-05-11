@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">CrazyRouter 图像 API 路线图</title>
+  <desc id="desc">展示 gpt-image-2、Nano Banana 2、Nano Banana Pro 的推荐接入路径和返回格式。</desc>
+  <rect width="1400" height="760" fill="#101b22"/>
+  <text x="70" y="82" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="40" font-weight="700" fill="#f6fbfa">CrazyRouter 图像 API 路线</text>
+  <text x="70" y="124" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="22" fill="#a6c6c0">按返回格式和输入方式选择，不要只看模型名。</text>
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif">
+    <rect x="78" y="196" width="346" height="390" rx="14" fill="#172a31" stroke="#2f5e56"/>
+    <text x="118" y="250" font-size="30" font-weight="700" fill="#8ee6c0">gpt-image-2</text>
+    <text x="118" y="306" font-size="21" fill="#f6fbfa">生成：/v1/images/generations</text>
+    <text x="118" y="344" font-size="21" fill="#f6fbfa">编辑：/v1/images/edits</text>
+    <text x="118" y="404" font-size="18" fill="#a6c6c0">适合：可解析结果、遮罩编辑、</text>
+    <text x="118" y="432" font-size="18" fill="#a6c6c0">多图参考。</text>
+    <rect x="118" y="494" width="226" height="44" rx="22" fill="#0d9373"/>
+    <text x="142" y="522" font-size="18" font-weight="700" fill="#ffffff">data[].url 或 b64_json</text>
+    <rect x="528" y="196" width="346" height="390" rx="14" fill="#172a31" stroke="#2f5e56"/>
+    <text x="568" y="250" font-size="30" font-weight="700" fill="#8ee6c0">Nano Banana 2</text>
+    <text x="568" y="306" font-size="21" fill="#f6fbfa">Gemini 原生路径</text>
+    <text x="568" y="344" font-size="21" fill="#f6fbfa">generateContent</text>
+    <text x="568" y="404" font-size="18" fill="#a6c6c0">适合：当前推荐的 Gemini</text>
+    <text x="568" y="432" font-size="18" fill="#a6c6c0">图片生成与编辑链路。</text>
+    <rect x="568" y="494" width="226" height="44" rx="22" fill="#0d9373"/>
+    <text x="592" y="522" font-size="18" font-weight="700" fill="#ffffff">inlineData 优先</text>
+    <rect x="978" y="196" width="346" height="390" rx="14" fill="#172a31" stroke="#2f5e56"/>
+    <text x="1018" y="250" font-size="30" font-weight="700" fill="#8ee6c0">Nano Banana Pro</text>
+    <text x="1018" y="306" font-size="21" fill="#f6fbfa">/v1/images/generations</text>
+    <text x="1018" y="344" font-size="21" fill="#f6fbfa">image_input URL</text>
+    <text x="1018" y="404" font-size="18" fill="#a6c6c0">适合：参考图改横幅、4K、</text>
+    <text x="1018" y="432" font-size="18" fill="#a6c6c0">1 到 2 张 URL 参考图。</text>
+    <rect x="1018" y="494" width="226" height="44" rx="22" fill="#0d9373"/>
+    <text x="1042" y="522" font-size="18" font-weight="700" fill="#ffffff">data[].url</text>
+  </g>
+  <text x="78" y="668" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="22" fill="#d7ebe6">文档复核：gpt-image-2 为 2026-05-06；Nano Banana 2 与 Gemini 图片路径为 2026-04-14。</text>
+</svg>

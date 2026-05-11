@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">AI 扩图稳定性清单</title>
+  <desc id="desc">展示让 AI 扩图更稳定的五项操作：少量扩边、保护主体、分阶段提示、记录参数、人工修边。</desc>
+  <rect width="1400" height="760" fill="#fffdf8"/>
+  <text x="78" y="82" font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="40" font-weight="700" fill="#203233">减少扩图翻车的五个动作</text>
+  <g font-family="Arial, 'Microsoft YaHei', sans-serif" font-size="25">
+    <rect x="90" y="160" width="1220" height="86" rx="12" fill="#ecf7f3"/>
+    <circle cx="136" cy="203" r="20" fill="#0d9373"/>
+    <path d="M126 202 L134 212 L150 190" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="180" y="211" fill="#203233">一次只扩 15% 到 25%，别让模型一次补太多画面。</text>
+    <rect x="90" y="272" width="1220" height="86" rx="12" fill="#edf2fb"/>
+    <circle cx="136" cy="315" r="20" fill="#3b6ea8"/>
+    <path d="M126 314 L134 324 L150 302" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="180" y="323" fill="#203233">主体贴边时优先用遮罩或参考图编辑，别只用文生图重画。</text>
+    <rect x="90" y="384" width="1220" height="86" rx="12" fill="#fff3df"/>
+    <circle cx="136" cy="427" r="20" fill="#d58b27"/>
+    <path d="M126 426 L134 436 L150 414" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="180" y="435" fill="#203233">先做连续性外扩，再做风格、道具和构图变化。</text>
+    <rect x="90" y="496" width="1220" height="86" rx="12" fill="#f3eefb"/>
+    <circle cx="136" cy="539" r="20" fill="#7b5bb7"/>
+    <path d="M126 538 L134 548 L150 526" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="180" y="547" fill="#203233">记录模型、尺寸、质量、输入图 URL 和响应字段，方便复现。</text>
+    <rect x="90" y="608" width="1220" height="86" rx="12" fill="#fbeeee"/>
+    <circle cx="136" cy="651" r="20" fill="#b95050"/>
+    <path d="M126 650 L134 660 L150 638" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="180" y="659" fill="#203233">文字、Logo、包装边缘和 UI 截图，扩完后回设计工具里修。</text>
+  </g>
+</svg>
