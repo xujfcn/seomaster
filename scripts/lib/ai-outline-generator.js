@@ -1,8 +1,15 @@
 // seomaster/scripts/lib/ai-outline-generator.js
 const fetch = require('node-fetch');
 const config = require('./config');
-const { loadFileByName, loadContentByType } = require('./knowledge');
+const { loadConceptKnowledge, loadFileByName } = require('./knowledge');
 const { isBlogUrl } = require('../../config/domain-filter');
+const { fetchWithTimeout } = require('./fetch-timeout');
+const {
+  formatStructuredRequirementPrompt,
+  inferStructuredRequirements,
+  normalizeRankedOutline,
+  validateStructuredOutline,
+} = require('./structured-requirements');
 
 /**
  * 调用 AI API，根据竞品大纲生成本文大纲
@@ -12,12 +19,14 @@ const { isBlogUrl } = require('../../config/domain-filter');
  * @returns {Promise<object>} - 结构化大纲对象
  */
 async function generateOutline(keyword, competitorData, options = {}) {
-  const { lang = 'en', maxWords = 15000, intent = 'informational', scenes = [] } = options;
+  const { lang = 'en', maxWords = 15000, intent = 'informational', scenes = [], keywords = [keyword], brief = '' } = options;
+  const structuredRequirements = inferStructuredRequirements({ keyword, keywords, brief, intent });
 
   const competitorSummary = formatCompetitorData(competitorData);
-  const prompt = buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes);
+  const knowledgeContext = await loadOutlineKnowledgeContext(keyword);
+  const prompt = buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes, keywords, brief, knowledgeContext, structuredRequirements);
 
-  const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
+  const res = await fetchWithTimeout(fetch, `${config.aiBaseUrl()}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -29,7 +38,7 @@ async function generateOutline(keyword, competitorData, options = {}) {
       temperature: 0.3,
       max_tokens: 4096,
     }),
-  });
+  }, config.aiRequestTimeoutMs(), 'AI outline request');
 
   if (!res.ok) {
     const text = await res.text();
@@ -40,7 +49,10 @@ async function generateOutline(keyword, competitorData, options = {}) {
 
   // Debug: 保存完整 API 响应
   const fs = require('fs');
-  const debugApiPath = require('path').join(process.cwd(), 'output', 'debug-api-full-response.json');
+  const path = require('path');
+  const debugDir = path.join(process.cwd(), 'output');
+  fs.mkdirSync(debugDir, { recursive: true });
+  const debugApiPath = path.join(debugDir, 'debug-api-full-response.json');
   fs.writeFileSync(debugApiPath, JSON.stringify(data, null, 2), 'utf8');
   console.log(`\n[DEBUG] Full API response saved to: ${debugApiPath}`);
 
@@ -55,28 +67,123 @@ async function generateOutline(keyword, competitorData, options = {}) {
   }
 
   // Debug: 保存 AI 文本响应
-  const debugPath = require('path').join(process.cwd(), 'output', 'debug-ai-response.txt');
+  const debugPath = path.join(debugDir, 'debug-ai-response.txt');
   fs.writeFileSync(debugPath, content, 'utf8');
   console.log(`[DEBUG] AI content saved to: ${debugPath}`);
   console.log(`[DEBUG] Content length: ${content.length}`);
 
   // Debug: 保存完整 prompt
-  const debugPromptPath = require('path').join(process.cwd(), 'output', 'debug-prompt.txt');
+  const debugPromptPath = path.join(debugDir, 'debug-prompt.txt');
   fs.writeFileSync(debugPromptPath, prompt, 'utf8');
   console.log(`[DEBUG] Prompt saved to: ${debugPromptPath}`);
   console.log(`[DEBUG] Prompt length: ${prompt.length}`);
 
-  try {
-    // 剥离 markdown 代码块包裹（```json ... ``` 或 ``` ... ```），支持前后空行
-    let cleaned = content.trim();
-    // 移除开头的 ```json 或 ```
-    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '');
-    // 移除结尾的 ```
-    cleaned = cleaned.replace(/\s*```\s*$/, '');
-    return JSON.parse(cleaned.trim());
-  } catch (e) {
-    throw new Error(`AI returned invalid JSON: ${content.slice(0, 300)}`);
+  const outline = normalizeRankedOutline(parseOutlineJson(content), structuredRequirements, { lang });
+  const structureErrors = validateStructuredOutline(outline, structuredRequirements);
+  if (structureErrors.length > 0) {
+    throw new Error(`AI outline failed hard structure requirements: ${structureErrors.join('; ')}`);
   }
+  return outline;
+}
+
+function parseOutlineJson(content) {
+  const candidates = buildJsonCandidates(content);
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  const preview = String(content || '').trim().slice(0, 300);
+  throw new Error(`AI returned invalid JSON (${lastError?.message || 'parse failed'}): ${preview}`);
+}
+
+function buildJsonCandidates(content) {
+  const cleaned = stripMarkdownFence(String(content || '').trim());
+  const extracted = extractFirstJsonObject(cleaned) || cleaned;
+  const withoutTrailingCommas = extracted.replace(/,\s*([}\]])/g, '$1');
+  const repaired = closeJsonTail(withoutTrailingCommas);
+  return Array.from(new Set([
+    cleaned,
+    extracted,
+    withoutTrailingCommas,
+    repaired,
+  ].map((item) => item.trim()).filter(Boolean)));
+}
+
+function stripMarkdownFence(content) {
+  return content
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```\s*$/i, '')
+    .trim();
+}
+
+function extractFirstJsonObject(content) {
+  const start = content.indexOf('{');
+  if (start === -1) return '';
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < content.length; index += 1) {
+    const char = content[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\' && inString) {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === '{') depth += 1;
+    if (char === '}') depth -= 1;
+    if (depth === 0) {
+      return content.slice(start, index + 1);
+    }
+  }
+
+  return content.slice(start);
+}
+
+function closeJsonTail(content) {
+  const stack = [];
+  let inString = false;
+  let escaped = false;
+
+  for (const char of content) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\' && inString) {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === '{') stack.push('}');
+    if (char === '[') stack.push(']');
+    if ((char === '}' || char === ']') && stack[stack.length - 1] === char) {
+      stack.pop();
+    }
+  }
+
+  let repaired = content.trimEnd();
+  if (inString) repaired += '"';
+  repaired = repaired.replace(/,\s*$/g, '');
+  return repaired + stack.reverse().join('');
 }
 
 function formatCompetitorData(competitorData) {
@@ -109,7 +216,15 @@ function formatCompetitorData(competitorData) {
   return parts.join('\n\n---\n\n');
 }
 
-function buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes) {
+async function loadOutlineKnowledgeContext(keyword) {
+  const knowledge = loadConceptKnowledge(keyword);
+  if (process.env.SEOMASTER_KNOWLEDGE_TRACE_FILE && !String(knowledge || '').trim()) {
+    throw new Error('Knowledge base context is required for outline generation, but no current project knowledge was loaded.');
+  }
+  return knowledge;
+}
+
+function buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes, keywords = [keyword], brief = '', knowledgeContext = '', structuredRequirements = {}) {
   const langInstruction =
     lang === 'zh'
       ? '用中文输出大纲标题。整篇大纲必须全部用中文，不得混入英文。'
@@ -127,24 +242,18 @@ function buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes)
     ? `\n## Outline Generation Rules (MUST FOLLOW)\n\n${outlineRules}\n`
     : '';
 
-  // 3. 加载 DICloak 基础介绍
-  const dicloakIntro = loadFileByName('dicloak-intro.md');
-  const introSection = dicloakIntro
-    ? `\n## DICloak Product Information\n\n${dicloakIntro}\n`
-    : '';
-
-  // 4. 加载选中的业务场景
+  // 3. 加载选中的业务场景（通用知识库文件，不绑定具体品牌）
   let scenesSection = '';
   if (scenes && scenes.length > 0) {
     const sceneParts = [];
     for (const scene of scenes) {
-      const sceneContent = loadFileByName(`dicloak-scene-${scene}.md`);
+      const sceneContent = loadFileByName(`scene-${scene}.md`);
       if (sceneContent) {
         sceneParts.push(sceneContent);
       }
     }
     if (sceneParts.length > 0) {
-      scenesSection = `\n## DICloak Business Scenes to Integrate\n\nThe user has selected the following DICloak business scenes. Integrate them naturally according to the outline rules (max 1 main integration section).\n\n${sceneParts.join('\n\n---\n\n')}\n`;
+      scenesSection = `\n## Business Scenes\n\nUse these selected scene notes only when they match the keyword. Do not force product mentions.\n\n${sceneParts.join('\n\n---\n\n')}\n`;
     }
   }
 
@@ -152,23 +261,43 @@ function buildPrompt(keyword, competitorSummary, lang, maxWords, intent, scenes)
   const loadedParts = [];
   if (intentContent) loadedParts.push(`intent-${intent}`);
   if (outlineRules) loadedParts.push('outline-rules');
-  if (dicloakIntro) loadedParts.push('dicloak-intro');
   if (scenes && scenes.length > 0) loadedParts.push(`scenes: ${scenes.join(', ')}`);
   if (loadedParts.length > 0) {
     console.log(`  📚 Prompt knowledge: ${loadedParts.join(' | ')}`);
   }
 
+  const projectKnowledgeSection = knowledgeContext
+    ? `\n## Current Project Knowledge\n\nUse this current project knowledge as the primary factual source. Competitor outlines are only for structure and coverage gaps. Do not expose internal labels, file names, workflow notes, vault names, or knowledge-base process details.\n\n${knowledgeContext}\n`
+    : '';
+  const structuredSection = formatStructuredRequirementPrompt(structuredRequirements, lang);
+
   return `You are an expert SEO content strategist. Generate an optimized article outline for the keyword: "${keyword}"
 
 LANGUAGE RULE: ${langInstruction}
+PRIMARY KEYWORD: "${keyword}"
+SECONDARY KEYWORDS: ${(keywords || []).filter((item) => item && item !== keyword).join(', ') || 'none'}
+WRITING BRIEF / LIMITS: ${brief || 'none'}
+
+Use the primary keyword as the main topic. Use secondary keywords only when natural. Follow the writing brief strictly.
+If WRITING BRIEF / LIMITS is not "none", the title, thesis, section angles, and FAQ MUST visibly reflect that brief. For repeated keywords, do not reuse a generic title when the brief changes; make the title specific to the requested angle, audience, constraint, or scenario.
+${structuredSection ? `\n## Hard Structured Requirements\n\n${structuredSection}\n` : ''}
 ${intentSection}${rulesSection}
+${projectKnowledgeSection}
 ## Competitor Outlines
 
 ${competitorSummary}
-${introSection}${scenesSection}
+${scenesSection}
 ## Word Count Constraint
 
 Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of all section word_count values MUST NOT exceed ${maxWords}.
+For a ${maxWords}-word article, prefer 3-4 H2 sections. Keep FAQ brief.
+
+## GEO Heading Rules
+
+- H2 headings must read like natural user questions or decisions, not keyword-stuffed SEO labels.
+- Use helpful phrases a reader would ask in an AI search answer.
+- Avoid mechanical headings like "keyword + guide", "keyword recommendation", or internal workflow terms.
+- Do not mention internal research, competitor scraping, data sources, workflow, report, outline, vault, or knowledge base in public headings.
 
 ## Output Format (JSON only, no markdown wrapper):
 
@@ -212,12 +341,7 @@ Total article must be ${Math.round(maxWords * 0.8)}-${maxWords} words. Sum of al
     "placement": "文末"
   },
   "total_word_count": ${maxWords},
-  "dicloak_integration": {
-    "section_index": 5,
-    "integration_type": "natural scene mention",
-    "product_angle": "Which specific DICloak feature/benefit solves the problem in this section",
-    "talking_points": ["concrete point 1 connecting the section topic to DICloak", "concrete point 2"]
-  }
+  "product_integration": null
 }`;
 }
 

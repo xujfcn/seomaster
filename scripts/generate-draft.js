@@ -15,7 +15,8 @@ const path = require('path');
 const fs = require('fs');
 const { loadDraftConfig } = require('./lib/draft-config');
 const { generateIntro, generateSection, generateFAQ, generateCTA, getTail, postProcessDraft } = require('./lib/draft-generator');
-const { listKnowledgeFiles } = require('./lib/knowledge');
+const { listKnowledgeFiles, setKnowledgeBasePath, setKnowledgeProject } = require('./lib/knowledge');
+const { getCurrentProject, getProject } = require('./lib/project-manager');
 const { parseArgs } = require('./lib/parse-args');
 
 function resolvePath(p) {
@@ -49,20 +50,47 @@ async function main() {
   console.log(`  concept: ${conceptPath}`);
   console.log(`  output:  ${outputDir}`);
 
-  // 显示知识库状态
+  const explicitProjectId = args.project || process.env.SEOMASTER_PROJECT_ID || process.env.SEOMASTER_PROJECT || '';
+  if (explicitProjectId) {
+    process.env.SEOMASTER_PROJECT_ID = explicitProjectId;
+  }
+  const project = explicitProjectId ? getProject(explicitProjectId) : getCurrentProject();
+  if (project) {
+    setKnowledgeBasePath(project.vault_path || '');
+    setKnowledgeProject(project.id || explicitProjectId, project);
+  }
+
+  // 显示当前项目知识库状态。数据库知识库会在正文提示构建时按项目加载。
   const knowledgeFiles = listKnowledgeFiles();
   if (knowledgeFiles.length > 0) {
-    console.log(`  📚 knowledge: ${knowledgeFiles.length} files (${knowledgeFiles.join(', ')})`);
+    console.log(`  📚 project knowledge files: ${knowledgeFiles.length} (${knowledgeFiles.join(', ')})`);
+  } else if (project?.knowledge_source?.type === 'database' || (!project?.vault_path && project)) {
+    console.log(`  📚 project knowledge source: database (${project.id || explicitProjectId || 'current project'})`);
   } else {
-    console.log(`  ⚠️  knowledge: empty (add files to knowledge/ for better accuracy)`);
+    console.log(`  ⚠️  project knowledge files: empty (add files to the current project knowledge base for better accuracy)`);
   }
   console.log('');
 
   // 加载配置
   const { concept, forbiddenWords, voice, aiPatterns } = loadDraftConfig(conceptPath);
+  if (args.lang) {
+    concept.lang = args.lang;
+  }
+  if (args.words) {
+    const targetWords = Number(args.words);
+    if (Number.isFinite(targetWords) && targetWords > 0) {
+      concept.word_count = {
+        ...(concept.word_count || {}),
+        target: targetWords,
+        max: targetWords,
+      };
+      concept.total_word_count = targetWords;
+    }
+  }
   const slug = concept.slug || path.basename(conceptPath, '-concept.yaml');
 
   console.log(`  title:   ${concept.title}`);
+  console.log(`  lang:    ${concept.lang || 'en'}`);
   console.log(`  sections: ${concept.sections?.length || 0}\n`);
 
   const parts = [];

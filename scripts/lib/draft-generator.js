@@ -5,6 +5,7 @@ const path = require('path');
 const config = require('./config');
 const { loadDraftKnowledge } = require('./knowledge');
 const { getDefaultCta, getDefaultThesis } = require('./project-config');
+const { fetchWithTimeout } = require('./fetch-timeout');
 
 // 加载完整写作规则文件（一次性读取，缓存在内存中）
 const WRITING_RULES_PATH = path.join(__dirname, '../../templates/writing-rules.md');
@@ -50,22 +51,75 @@ function resolveCta(concept) {
   return { text, url };
 }
 
+function isChineseDraft(concept) {
+  return concept.lang === 'zh';
+}
+
+function languageRule(concept) {
+  return isChineseDraft(concept)
+    ? 'LANGUAGE: Write ENTIRELY in Simplified Chinese. Do NOT write English body paragraphs unless a product name, URL, source name, or technical term requires English.'
+    : 'LANGUAGE: Write ENTIRELY in English. Do NOT use any Chinese characters, even if the reference data below contains Chinese text.';
+}
+
+function faqHeading(concept) {
+  return isChineseDraft(concept) ? '## 常见问题' : '## Frequently Asked Questions';
+}
+
+function targetWordCount(concept, fallback = 1400) {
+  const value = Number(concept.word_count?.target || concept.total_word_count || concept.target_words || fallback);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function formatDraftStructuredRequirements(concept) {
+  const count = Number(concept.structured_requirements?.requiredListCount || concept.structured_requirements?.required_list_count || 0);
+  if (!count) return '';
+  if (isChineseDraft(concept)) {
+    return [
+      `硬性结构要求：这篇文章是 TOP${count}/排行榜类内容。`,
+      `正文必须完整输出 ${count} 个独立排名项，不能只写两三个代表项。`,
+      `每个排名项都要包含推荐理由、适用场景、注意事项或对比依据。`,
+    ].join('\n');
+  }
+  return [
+    `Hard structure requirement: this is a TOP ${count} ranking/list article.`,
+    `The draft must include all ${count} distinct ranked items, not just a few examples.`,
+    'Each ranked item needs reasons, best fit, cautions, or comparison criteria.',
+  ].join('\n');
+}
+
+function clampSectionWordCount(section, concept) {
+  const sections = Array.isArray(concept.sections) && concept.sections.length > 0 ? concept.sections.length : 4;
+  const budget = Math.max(120, Math.floor((targetWordCount(concept) - 260) / sections));
+  const declared = Number(section.word_count || budget);
+  return Math.max(120, Math.min(declared || budget, budget));
+}
+
+function closingFallback(concept, ctaText, ctaUrl) {
+  return isChineseDraft(concept)
+    ? `如果你正在为宠物选择驱虫方案，可以先根据体重、年龄和寄生虫风险筛选，再对照产品说明确认用法。[${ctaText}](${ctaUrl})`
+    : `Ready to get started? [${ctaText}](${ctaUrl})`;
+}
+
 /**
  * 生成文章 intro 段落
  */
 async function generateIntro(concept, forbiddenWords, aiPatterns, voice) {
   const thesis = resolveThesis(concept);
-  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword) + `
+  const introMax = isChineseDraft(concept) ? '120-180 Chinese characters' : '90-130 words';
+  const systemPrompt = await buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword, concept.lang);
+  const prompt = systemPrompt + `
 
 ## Your Task: Write the Article Introduction
 
 Article title: "${concept.title}"
 Keyword: "${concept.keyword}"
 Thesis: "${thesis}"
+Writing brief / limits: ${concept.writing_brief || 'none'}
+${formatDraftStructuredRequirements(concept)}
 
 IMPORTANT: The article subject is "${concept.keyword}". Focus on the topic. Only mention products from the knowledge base where they naturally fit the context.
 
-WORD COUNT: 150-250 words (STRICT)
+WORD COUNT: ${introMax} (STRICT)
 
 Opening style options (pick the most suitable):
 - Data shock: lead with a surprising statistic with source
@@ -105,7 +159,7 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - No "In this article, we will..."
    - Example: "Here's how developers are doing it."
 
-Output: Markdown paragraph(s) only, no heading. 150-250 words.`;
+Output: Markdown paragraph(s) only, no heading. Keep it within ${introMax}.`;
 
   return callAI(prompt);
 }
@@ -114,16 +168,18 @@ Output: Markdown paragraph(s) only, no heading. 150-250 words.`;
  * 生成单个 H2 section
  */
 async function generateSection(section, concept, forbiddenWords, aiPatterns, voice, previousTail) {
+  const sectionLimit = clampSectionWordCount(section, concept);
   const subsectionsText = (section.subsections || []).map((sub) => {
     const points = (sub.points || []).map((p) => `    - ${p}`).join('\n');
-    const imageMarker = sub.image_needed
+    const imageDescription = String(sub.image_description || '').trim();
+    const imageMarker = sub.image_needed && imageDescription
       ? `\n    <!-- IMAGE: ${sub.image_description} -->`
       : '';
     return `  ### ${sub.title}\n${points}${imageMarker}`;
   }).join('\n\n');
 
-  // 检查此 section 是否是 DICloak 融合 section
-  const integration = concept.dicloak_integration;
+  // Optional product integration must come from the current project concept only.
+  const integration = concept.product_integration;
   const sectionIndex = (concept.sections || []).indexOf(section);
   const isIntegrationSection = integration && integration.section_index === sectionIndex;
 
@@ -134,34 +190,37 @@ async function generateSection(section, concept, forbiddenWords, aiPatterns, voi
     integrationPrompt = `
 
 PRODUCT INTEGRATION (this is the designated integration section):
-This section should naturally weave in how DICloak helps solve the problem being discussed.
+This section may naturally weave in the project product only if it directly helps the reader.
 Product angle: ${angle}
 Key points to cover:
 ${points}
 
 Requirements:
-- Lead with the user's problem, then introduce DICloak as a practical solution
-- Mention specific DICloak features (from the knowledge base) that address this problem
-- Use "You can use..." or "Tools like DICloak let you..." style, NOT "DICloak provides..."
-- Keep the product mention substantial (2-3 paragraphs) but not dominant
+- Lead with the user's problem, then mention the product only if useful
+- Mention only specific features from the current project knowledge base
+- Use "You can use..." style, not "[Product] provides..."
+- Keep the product mention short and practical
 - Do NOT write like a landing page or sales pitch`;
   }
 
-  const prompt = buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword) + `
+  const systemPrompt = await buildSystemPrompt(forbiddenWords, aiPatterns, voice, concept.keyword, concept.lang);
+  const prompt = systemPrompt + `
 
 ## Task: Write Section "${section.title}"
 
 Keyword: "${concept.keyword}"
 Key point: ${section.key_point}
+Writing brief / limits: ${concept.writing_brief || 'none'}
+${formatDraftStructuredRequirements(concept)}
 
-WORD COUNT LIMIT (STRICT): ${section.word_count} words maximum. This is a HARD LIMIT. If you exceed this, the content will be rejected. Count carefully.
+WORD COUNT LIMIT (STRICT): ${sectionLimit} words/Chinese characters maximum. This is a HARD LIMIT.
 
 ${previousTail ? `Previous context:\n...${previousTail}\n\n` : ''}Structure:
 ${subsectionsText}
 ${integrationPrompt}
 MANDATORY REQUIREMENTS (SOP Compliance):
 
-1. WORD COUNT: ${section.word_count} words MAX. Stop writing when you reach this limit.
+1. WORD COUNT: ${sectionLimit} words/Chinese characters MAX. Stop writing when you reach this limit.
 
 2. LANGUAGE LEVEL: 8th grade reading level
    - Use simple words (avoid: utilize → use, commence → start)
@@ -178,12 +237,14 @@ MANDATORY REQUIREMENTS (SOP Compliance):
 4. STRUCTURE:
    - Start with ## ${section.title}
    - Use tables for ANY comparison (pricing, features, specs)
-   - Add <!-- IMAGE: description --> where visual aids help
-   - H3/H4 must contain keyword variants
+   - Tables must use GitHub-Flavored Markdown pipe syntax only. Do not output HTML table tags such as <table>, <thead>, <tbody>, <tr>, <th>, or <td>.
+   - Add <!-- IMAGE: concrete non-empty description --> only where visual aids help
+   - Never output empty image markers
+   - H3/H4 should be natural-language subquestions or decision points
 
 5. KEYWORD USAGE:
    - Include "${concept.keyword}" naturally 1-2 times
-   - Use variants in H3/H4 headings
+   - Use variants naturally when useful
    - NO keyword stuffing
 
 6. BOLD USAGE:
@@ -208,7 +269,7 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - Every sentence must add value
    - Use concrete examples, not abstract concepts
 
-Output: Markdown with headings. STOP at ${section.word_count} words.`;
+Output: Markdown with headings. STOP at ${sectionLimit} words/Chinese characters.`;
 
   try {
     const result = await callAI(prompt);
@@ -235,21 +296,25 @@ async function generateFAQ(concept, forbiddenWords, aiPatterns, voice, previousT
     `Q: ${f.question}\nHint: ${f.answer_hint}`
   ).join('\n\n');
 
-  const prompt = `Write FAQ section for article about "${concept.keyword}".
+  const prompt = `${languageRule(concept)}
+
+Write FAQ section for article about "${concept.keyword}".
+Writing brief / limits: ${concept.writing_brief || 'none'}
+${formatDraftStructuredRequirements(concept)}
 
 FAQ items:
 ${faqItems}
 
-WORD COUNT: 400-600 words total (all Q&A combined)
+WORD COUNT: 120-220 words/Chinese characters total (all Q&A combined)
 
 Format:
-## Frequently Asked Questions
+${faqHeading(concept)}
 
 ### [Question 1]
-[50-100 word answer with specific details]
+[25-45 word answer with specific details]
 
 ### [Question 2]
-[50-100 word answer]
+[25-45 word answer]
 
 MANDATORY REQUIREMENTS (SOP Compliance):
 
@@ -270,8 +335,8 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - Active voice
 
 4. ANSWER LENGTH:
-   - 50-100 words per answer
-   - No one-sentence answers
+   - 25-45 words/Chinese characters per answer
+   - 1-2 short sentences per answer
    - No essay-length answers
 
 5. FORBIDDEN:
@@ -279,7 +344,7 @@ MANDATORY REQUIREMENTS (SOP Compliance):
    - No "There are many ways..."
    - No vague generalizations
 
-Output: Markdown only.`;
+Output: Markdown only. Keep answers short.`;
 
   return callAI(prompt);
 }
@@ -291,13 +356,14 @@ async function generateCTA(concept, previousTail) {
   const { text: ctaText, url: ctaUrl } = resolveCta(concept);
 
   try {
-    const prompt = `Write 2-3 sentence closing paragraph for an article about "${concept.keyword}".
+    const prompt = `${languageRule(concept)}
+
+Write 2-3 sentence closing paragraph for an article about "${concept.keyword}".
 
 Requirements:
 - Summarize key takeaway (no "In conclusion")
 - End with this exact markdown link: [${ctaText}](${ctaUrl})
 - Output ONLY the paragraph text in plain markdown. No code blocks, no preamble.
-- Write ENTIRELY in English.
 - Do NOT use exclamation marks.
 
 Output: plain markdown paragraph only.`;
@@ -311,14 +377,22 @@ Output: plain markdown paragraph only.`;
   }
 
   // Fallback: generate simple CTA
-  return `Ready to get started? [${ctaText}](${ctaUrl})`;
+  return closingFallback(concept, ctaText, ctaUrl);
 }
 
-function buildSystemPrompt(forbiddenWords, aiPatterns, voice, keyword = '') {
-  // 加载知识库上下文（传递关键词以匹配相关文件）
+async function loadDraftKnowledgeContext(keyword) {
   const knowledge = loadDraftKnowledge(keyword);
+  if (process.env.SEOMASTER_KNOWLEDGE_TRACE_FILE && !String(knowledge || '').trim()) {
+    throw new Error('Knowledge base context is required for draft generation, but no current project knowledge was loaded.');
+  }
+  return knowledge;
+}
+
+async function buildSystemPrompt(forbiddenWords, aiPatterns, voice, keyword = '', lang = 'en') {
+  // 加载知识库上下文（优先 Supabase，失败时回退到本地 vault）
+  const knowledge = await loadDraftKnowledgeContext(keyword);
   const knowledgeSection = knowledge
-    ? `\nREFERENCE DATA — Use this product and industry data for accuracy when relevant. Do NOT confuse different products. Use exact pricing and feature data from the knowledge base:\n${knowledge}\n`
+    ? `\nREFERENCE DATA — Use only this current project data when relevant. Do NOT mention unrelated products, projects, or brands. Do NOT expose internal labels, file names, data-source notes, workflow notes, vault names, or research process details:\n${knowledge}\n`
     : '';
 
   return `You are a technical content writer following Google's E-E-A-T principles (Experience, Expertise, Authoritativeness, Trustworthiness).
@@ -326,7 +400,7 @@ function buildSystemPrompt(forbiddenWords, aiPatterns, voice, keyword = '') {
 Voice: "${voice.tone}"
 Style: "${voice.style}"
 
-LANGUAGE: Write ENTIRELY in English. Do NOT use any Chinese characters, even if the reference data below contains Chinese text.
+${languageRule({ lang })}
 
 ${knowledgeSection}
 GOOGLE SEO & E-E-A-T REQUIREMENTS:
@@ -369,6 +443,7 @@ ADDITIONAL FORBIDDEN PATTERNS (SOP):
 - "First/Second/Finally" (use natural transitions)
 - "In conclusion", "To sum up", "Overall"
 - "It depends...", "There are many ways..."
+- Internal production words in public copy: "数据来源", "Source:", "workflow", "流程报告", "竞品研究", "大纲", "知识库", "vault", "Published", "Drafts", "DICloak" unless DICloak is the current project product
 
 STRICT FORMATTING RULES:
 
@@ -386,7 +461,7 @@ STRICT FORMATTING RULES:
 4. TABLES:
    - REQUIRED for any comparison (pricing, features, specs)
    - Use markdown table format
-   - Include sources in caption
+   - Do not add "source" captions unless the source is meant for public readers
 
 5. DATA FORMAT:
    - Numbers: "40%" not "forty percent"
@@ -404,7 +479,7 @@ ${loadWritingRules()}`;
 }
 
 async function callAI(prompt) {
-  const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
+  const res = await fetchWithTimeout(fetch, `${config.aiBaseUrl()}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -416,7 +491,7 @@ async function callAI(prompt) {
       temperature: 0.7,
       max_tokens: 8192, // Add max_tokens to prevent truncation
     }),
-  });
+  }, config.aiRequestTimeoutMs(), 'AI draft request');
 
   if (!res.ok) {
     const text = await res.text();
@@ -544,6 +619,13 @@ function postProcessDraft(text, forbiddenWords) {
 
   // Clean up artifacts: double spaces, leading commas/periods after removal, empty lines
   result = result
+    .replace(/<!--\s*IMAGE:\s*-->/gi, '')
+    .replace(/<\.\s*--\s*IMAGE:\s*--\s*>/gi, '')
+    .replace(/\[DATA:[^\]]*\]/gi, '')
+    .replace(/^\s*(数据来源|Source)\s*[:：].*$/gim, '')
+    .replace(/\bDICloak\b/gi, '')
+    .replace(/\bdicloack\b/gi, '')
+    .replace(/流程报告|竞品研究|知识库|内部流程|生产流程|大纲生成|vault|Published|Drafts/gi, '')
     .replace(/，，/g, '，')
     .replace(/。。/g, '。')
     .replace(/  +/g, ' ')
@@ -570,9 +652,7 @@ function postProcessDraft(text, forbiddenWords) {
  * Add external reference links to first mentions of key terms
  */
 function addExternalLinks(text) {
-  const links = {
-    'DICloak': 'https://dicloak.com/',
-  };
+  const links = {};
 
   let result = text;
   const linkedTerms = new Set();

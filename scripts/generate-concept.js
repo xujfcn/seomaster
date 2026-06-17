@@ -22,11 +22,13 @@ const { searchGoogle } = require('./lib/google-search');
 const { scrapeOutlines } = require('./lib/outline-scraper');
 const { generateOutline } = require('./lib/ai-outline-generator');
 const { writeConceptYaml, writeResearchJson } = require('./lib/concept-writer');
-const { listKnowledgeFiles, setKnowledgeBasePath } = require('./lib/knowledge');
+const { listKnowledgeFiles, setKnowledgeBasePath, setKnowledgeProject } = require('./lib/knowledge');
 const { saveResearchToVault } = require('./lib/research-saver');
-const { getCurrentProject } = require('./lib/project-manager');
+const { getCurrentProject, getProject } = require('./lib/project-manager');
+const { ensureGitVault, pullGitVault, syncGitVaultAfterWrite } = require('./lib/git-vault');
 const { checkKnowledgeBase } = require('./lib/knowledge-checker');
 const { parseArgs } = require('./lib/parse-args');
+const { normalizeMarket } = require('./lib/market');
 
 function keywordToSlug(keyword) {
   return keyword
@@ -46,8 +48,12 @@ async function main() {
   const keyword = args.keyword.trim();
   const slug = args.slug || keywordToSlug(keyword);
   const lang = args.lang || 'en';
-  const market = args.market || 'us';
+  const market = normalizeMarket(args.market || 'us', 'us');
   const intent = (typeof args.intent === 'string') ? args.intent : 'informational';
+  const extraKeywords = typeof args.keywords === 'string'
+    ? args.keywords.split(/[,，、\n]/).map((item) => item.trim()).filter(Boolean).slice(0, 3)
+    : [keyword];
+  const brief = typeof args.brief === 'string' ? args.brief.trim() : '';
   const scene = (typeof args.scene === 'string') ? args.scene : '';
   const scenes = scene ? scene.split(',').filter(Boolean) : [];
   const maxResults = Math.min(parseInt(args.results) || 10, 10);
@@ -64,18 +70,40 @@ async function main() {
   console.log(`\n🔍 SEOMaster: Generating concept for keyword "${keyword}"\n`);
   console.log(`  slug:    ${slug}`);
   console.log(`  intent:  ${intent}`);
+  if (extraKeywords.length > 1) console.log(`  keywords: ${extraKeywords.join(', ')}`);
+  if (brief) console.log(`  brief:   ${brief.slice(0, 120)}`);
   if (scenes.length > 0) console.log(`  scenes:  ${scenes.join(', ')}`);
   console.log(`  lang:    ${lang}`);
   console.log(`  market:  ${market}`);
   console.log(`  filter:  ${filterDomains ? 'enabled (blog-only)' : 'disabled (all sites)'}`);
   console.log(`  output:  ${outputDir}`);
 
-  // 显示知识库状态
+  const explicitProjectId = args.project || process.env.SEOMASTER_PROJECT_ID || process.env.SEOMASTER_PROJECT || '';
+  if (explicitProjectId) {
+    process.env.SEOMASTER_PROJECT_ID = explicitProjectId;
+  }
+  const project = explicitProjectId ? getProject(explicitProjectId) : getCurrentProject();
+  if (project) {
+    setKnowledgeBasePath(project.vault_path || '');
+    setKnowledgeProject(project.id || explicitProjectId, project);
+  }
+
+  if (project?.knowledge_source?.type === 'git') {
+    await ensureGitVault(project, project.id);
+    if (project.knowledge_source.auto_pull) {
+      await pullGitVault(project, project.id);
+    }
+    setKnowledgeBasePath(project.vault_path);
+  }
+
+  // 显示当前项目知识库状态。数据库知识库会在下方检查阶段按项目加载，避免误报本地 knowledge empty。
   const knowledgeFiles = listKnowledgeFiles();
   if (knowledgeFiles.length > 0) {
-    console.log(`  📚 knowledge: ${knowledgeFiles.length} files (${knowledgeFiles.join(', ')})`);
+    console.log(`  📚 project knowledge files: ${knowledgeFiles.length} (${knowledgeFiles.join(', ')})`);
+  } else if (project?.knowledge_source?.type === 'database' || (!project?.vault_path && project)) {
+    console.log(`  📚 project knowledge source: database (${project.id || explicitProjectId || 'current project'})`);
   } else {
-    console.log(`  ⚠️  knowledge: empty (run init-project.js or add files to knowledge/)`);
+    console.log(`  ⚠️  project knowledge files: empty (run init-project.js or add files to the current project knowledge base)`);
   }
   console.log('');
 
@@ -120,12 +148,15 @@ async function main() {
   console.log(`  Research data saved: ${researchPath}\n`);
 
   // 保存研究数据到 Obsidian vault
-  const project = getCurrentProject();
   if (project && project.vault_path) {
     try {
       const vaultResearchPath = saveResearchToVault(keyword, searchResults, outlineData, project.vault_path);
       if (vaultResearchPath) {
         console.log(`  📚 Research saved to vault: ${path.basename(vaultResearchPath)}\n`);
+        const syncResult = await syncGitVaultAfterWrite(project, project.id, `Add research for ${keyword}`);
+        if (syncResult.pushed) {
+          console.log(`  🔄 Research pushed to knowledge repo: ${syncResult.commit}\n`);
+        }
       }
     } catch (err) {
       console.warn(`  ⚠️  Failed to save research to vault: ${err.message}\n`);
@@ -134,12 +165,12 @@ async function main() {
 
   // Step 3: AI 生成大纲
   console.log(`[3/4] Generating optimized outline with AI...`);
-  const outline = await generateOutline(keyword, outlineData, { lang, maxWords, intent, scenes });
+  const outline = await generateOutline(keyword, outlineData, { lang, maxWords, intent, scenes, keywords: extraKeywords, brief });
   console.log(`  Generated ${outline.sections?.length || 0} sections\n`);
 
   // Step 4: 写入 YAML
   console.log(`[4/4] Writing article-concept.yaml...`);
-  const conceptPath = writeConceptYaml(slug, keyword, outline, outlineData, outputDir);
+  const conceptPath = writeConceptYaml(slug, keyword, outline, outlineData, outputDir, { lang, market, intent, keywords: extraKeywords, brief });
   console.log(`  Concept saved: ${conceptPath}\n`);
 
   // 输出摘要

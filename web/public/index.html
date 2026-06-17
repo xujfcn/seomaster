@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SEOMaster Web</title>
+    <link rel="stylesheet" href="/styles.css?v=1781079000000">
+  </head>
+  <body>
+    <section id="signup-view" class="login-view" hidden>
+      <form id="signup-form" class="login-panel">
+        <div class="brand login-brand">
+          <div class="brand-mark">SM</div>
+          <div>
+            <h1>SEOMaster</h1>
+            <p>Create your account</p>
+          </div>
+        </div>
+
+        <label class="field wide">
+          <span>Username</span>
+          <input id="signup-username" name="username" type="text" autocomplete="username" required>
+        </label>
+
+        <label class="field wide">
+          <span>Password</span>
+          <input id="signup-password" name="password" type="password" autocomplete="new-password" required>
+        </label>
+
+        <button id="signup-button" type="submit">Create Account</button>
+        <p id="signup-error" class="login-error" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="login-view" class="login-view" hidden>
+      <form id="login-form" class="login-panel">
+        <div class="brand login-brand">
+          <div class="brand-mark">SM</div>
+          <div>
+            <h1>SEOMaster</h1>
+            <p>Sign in to continue</p>
+          </div>
+        </div>
+
+        <label class="field wide">
+          <span>Username</span>
+          <input id="login-username" name="username" type="text" autocomplete="username" required>
+        </label>
+
+        <label class="field wide">
+          <span>Password</span>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+        </label>
+
+        <button id="login-button" type="submit">Sign In</button>
+        <p id="login-error" class="login-error" role="alert"></p>
+        <button id="show-signup-button" class="secondary-button" type="button" hidden>Create Account</button>
+      </form>
+    </section>
+
+    <div id="app-shell" class="app-shell" hidden>
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">SM</div>
+          <div>
+            <h1>SEOMaster</h1>
+            <p>Content workflow</p>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="section-label">Projects</div>
+          <div id="project-list" class="project-list"></div>
+        </div>
+
+        <div class="sidebar-section nav-section">
+          <div class="section-label">Workspace</div>
+          <button id="writing-nav-button" class="nav-item active" type="button">写作</button>
+          <button id="knowledge-nav-button" class="nav-item" type="button">知识库</button>
+          <button id="settings-nav-button" class="nav-item hidden-control" type="button">系统配置</button>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Web MVP</p>
+            <h2 id="project-title">Project</h2>
+            <p id="project-subtitle" class="panel-note">Select or create a project to continue.</p>
+          </div>
+          <div class="topbar-actions">
+            <button id="refresh-button" class="icon-button" type="button" title="Refresh">Refresh</button>
+            <button id="create-project-button" class="secondary-button" type="button">New Project</button>
+            <button id="select-button" class="secondary-button hidden-control" type="button">Set Current</button>
+            <button id="logout-button" class="secondary-button" type="button">Sign Out</button>
+          </div>
+        </header>
+
+        <section id="project-create-page" class="page-view" hidden>
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Create Project</h3>
+              <span class="badge">Onboarding</span>
+            </div>
+            <form id="project-create-form" class="settings-form">
+              <div class="settings-grid">
+                <label class="field settings-field">
+                  <span>Project Name</span>
+                  <input name="name" required>
+                </label>
+                <label class="field settings-field">
+                  <span>Project ID</span>
+                  <input name="id" placeholder="auto-generated">
+                </label>
+                <label class="field settings-field">
+                  <span>Description</span>
+                  <input name="description">
+                </label>
+                <label class="field settings-field">
+                  <span>公司官网</span>
+                  <input name="official_url" placeholder="https://example.com 或 example.com" required>
+                </label>
+                <label class="field settings-field">
+                  <span>Vault Path</span>
+                  <input name="vault_path" placeholder="D:\\path\\to\\vault">
+                </label>
+                <label class="field settings-field">
+                  <span>Default Language</span>
+                  <select name="default_lang">
+                    <option value="zh" selected>中文</option>
+                    <option value="en">English</option>
+                  </select>
+                </label>
+                <label class="field settings-field">
+                  <span>Default Market</span>
+                  <input name="default_market" value="中国" placeholder="中国">
+                </label>
+                <label class="field settings-field">
+                  <span>Default Words</span>
+                  <input name="default_words" type="number" min="800" step="100" value="2500">
+                </label>
+                <label class="field settings-field">
+                  <span>Default Results</span>
+                  <input name="default_results" type="number" min="1" step="1" value="5">
+                </label>
+              </div>
+              <div class="form-actions">
+                <button type="submit">Create Project</button>
+              </div>
+            </form>
+            <pre id="project-create-output" class="output compact-output">Fill the form to create your first project.</pre>
+          </section>
+        </section>
+
+        <section id="knowledge-page" class="page-view" hidden>
+          <section class="status-grid">
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Knowledge Source</h3>
+                <span id="source-badge" class="badge">-</span>
+              </div>
+              <dl id="project-details" class="detail-list"></dl>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Vault Status</h3>
+                <span id="ready-badge" class="badge">-</span>
+              </div>
+              <dl id="vault-status" class="detail-list"></dl>
+            </div>
+          </section>
+
+          <section class="panel required-knowledge-panel">
+            <div class="panel-header">
+              <div>
+                <h3>知识库搭建</h3>
+                <p class="panel-note">先补齐基础资料，再维护 SEO、配图、质检和发布规则。每个文件都可以用模型生成或优化。</p>
+              </div>
+              <span id="required-knowledge-summary" class="badge">-</span>
+            </div>
+            <div id="required-knowledge-steps" class="required-knowledge-steps"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h3>文件库与维护</h3>
+              <div class="action-row">
+                <input id="knowledge-search" class="compact-input" type="search" placeholder="搜索文件">
+                <input id="knowledge-import-file-input" type="file" accept=".md,.markdown,text/markdown,text/plain" multiple hidden>
+                <button id="import-knowledge-button" class="secondary-button" type="button">导入 MD</button>
+                <button id="new-knowledge-document-button" class="secondary-button" type="button">New Doc</button>
+                <button id="sync-supabase-button" class="secondary-button" type="button">Sync Supabase</button>
+                <button id="refresh-knowledge-button" class="secondary-button" type="button">Refresh</button>
+              </div>
+            </div>
+            <div class="knowledge-grid">
+              <div class="knowledge-browser">
+                <div id="knowledge-breadcrumb" class="knowledge-breadcrumb"></div>
+                <div id="knowledge-file-list" class="knowledge-file-list"></div>
+              </div>
+              <div class="knowledge-preview">
+                <div id="knowledge-meta" class="editor-meta">Select a knowledge file to preview.</div>
+                <div id="knowledge-rendered" class="artifact-rendered"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section id="writing-page" class="page-view">
+          <section class="panel workflow-panel">
+            <div class="panel-header">
+              <h3>Automatic Article Workflow</h3>
+              <span id="job-status-badge" class="badge">Idle</span>
+            </div>
+
+            <form id="article-form" class="article-form vertical-form compact-article-form">
+              <div class="form-section">
+                <div class="form-section-title">核心输入</div>
+                <label class="field">
+                  <span>目标关键词 <strong>必填，最多3个</strong></span>
+                  <input id="article-keyword" name="keyword" type="text" placeholder="边牧驱虫药, 选择禁忌, 最佳用药方案" required>
+                  <small>第一个作为主关键词，最多 3 个；多个用逗号、顿号或换行分隔。</small>
+                </label>
+              </div>
+
+              <div class="form-section compact-section support-section">
+                <label class="field hidden-control">
+                  <span>Scenes <em>选填</em></span>
+                  <input id="article-scene" name="scene" type="text" placeholder="幼猫驱虫,多猫家庭">
+                  <small>可填业务场景，多个用英文逗号分隔。</small>
+                </label>
+
+                <label class="field brief-field">
+                  <span>补充要求 <em>选填</em></span>
+                  <textarea id="article-brief" name="brief" rows="3" placeholder="例如：重点讲边牧用药安全和禁忌；面向新手铲屎官；不要写成品牌榜单。"></textarea>
+                </label>
+
+                <div class="form-options">
+                  <label class="check-field">
+                    <input id="article-skip-import" name="skip_import" type="checkbox">
+                    <span>仅生成文件</span>
+                  </label>
+
+                  <label class="check-field">
+                    <input id="article-force-import" name="force_import" type="checkbox">
+                    <span>质检失败也导入</span>
+                  </label>
+
+                  <label class="check-field">
+                    <input id="article-skip-cover" name="skip_cover" type="checkbox">
+                    <span>不生成封面</span>
+                  </label>
+
+                  <label class="check-field">
+                    <input id="article-auto-confirm-outline" name="auto_confirm_outline" type="checkbox" checked>
+                    <span>全自动</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-section compact-section">
+                <div class="form-section-title">生成设置</div>
+                <div class="form-row article-settings-row">
+                  <label class="field compact-field">
+                    <span>写作意图 <em>选填</em></span>
+                    <select id="article-intent" name="intent">
+                      <option value="informational">科普解答</option>
+                      <option value="commercial">推荐对比</option>
+                      <option value="transactional">购买决策</option>
+                      <option value="navigational">品牌导航</option>
+                    </select>
+                  </label>
+
+                  <label class="field compact-field">
+                    <span>语言</span>
+                    <select id="article-lang" name="lang">
+                      <option value="zh" selected>中文</option>
+                      <option value="en">English</option>
+                    </select>
+                  </label>
+
+                  <label class="field compact-field">
+                    <span>市场</span>
+                    <input id="article-market" name="market" type="text" value="中国" placeholder="中国">
+                  </label>
+
+                  <label class="field compact-field">
+                    <span>字数</span>
+                    <input id="article-words" name="words" type="number" min="800" step="100" placeholder="1400">
+                  </label>
+
+                  <label class="field compact-field">
+                    <span>Google参考页数</span>
+                    <input id="article-results" name="results" type="number" min="1" max="10" placeholder="5">
+                    <small>仅控制外部参考页面抓取数量，不等于 TOP10 榜单数量。</small>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button id="start-article-button" type="submit">开始生成</button>
+              </div>
+            </form>
+          </section>
+
+          <section id="keyword-pool-panel" class="panel keyword-pool-panel">
+            <div class="panel-header">
+              <div>
+                <h3>关键词池</h3>
+                <p class="panel-note">点击关键词直接填入写作输入框；这里会记录做过几次、最近一次和历史文章。</p>
+              </div>
+              <div class="keyword-pool-actions">
+                <span id="keyword-pool-summary" class="badge">-</span>
+                <button id="keyword-pool-toggle-button" class="secondary-button compact-button" type="button">展开全部</button>
+              </div>
+            </div>
+            <div class="keyword-pool-layout">
+              <div id="keyword-pool-list" class="keyword-pool-list"></div>
+              <div id="keyword-pool-history" class="keyword-pool-history"></div>
+            </div>
+          </section>
+
+          <section class="status-grid">
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Article Jobs</h3>
+                <button id="refresh-jobs-button" class="secondary-button" type="button">Refresh</button>
+              </div>
+              <div id="job-list" class="job-list"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Selected Job</h3>
+                <span id="selected-job-badge" class="badge">-</span>
+              </div>
+              <dl id="job-details" class="detail-list"></dl>
+              <div id="artifact-actions" class="artifact-actions"></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Workflow Logs</h3>
+              <button id="clear-log-button" class="secondary-button" type="button">Clear View</button>
+            </div>
+            <pre id="job-output" class="output">No article job selected.</pre>
+          </section>
+
+          <section class="panel workflow-artifacts-panel">
+            <div class="panel-header">
+              <h3>文章生成流程</h3>
+              <div class="action-row">
+                <button id="toggle-render-button" class="secondary-button" type="button">源码编辑</button>
+                <button id="save-artifact-button" type="button">Save</button>
+                <button id="import-draft-button" type="button">Import Draft</button>
+              </div>
+            </div>
+            <div class="layout-three-columns">
+              <div id="workflow-artifacts" class="workflow-artifacts"></div>
+            </div>
+          </section>
+        </section>
+
+        <section id="settings-page" class="page-view" hidden>
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>系统配置</h3>
+                <p class="panel-note">保存后会写入服务器 .env，并立即热更新后续任务使用的配置。</p>
+              </div>
+              <button id="refresh-settings-button" class="secondary-button" type="button">Refresh</button>
+            </div>
+            <form id="system-settings-form" class="settings-form"></form>
+            <div class="form-actions">
+              <button id="save-settings-button" type="submit" form="system-settings-form">Save Settings</button>
+            </div>
+            <pre id="settings-output" class="output compact-output">Loading settings...</pre>
+          </section>
+
+          <section id="admin-users-panel" class="panel" hidden>
+            <div class="panel-header">
+              <div>
+                <h3>用户管理</h3>
+                <p class="panel-note">由后台 admin 创建 Supabase 用户，普通用户不开放公开注册。</p>
+              </div>
+            </div>
+            <form id="admin-create-user-form" class="settings-form">
+              <div class="settings-grid">
+                <label class="field settings-field">
+                  <span>Username / Email</span>
+                  <input id="admin-user-username" name="username" autocomplete="off" required>
+                </label>
+                <label class="field settings-field">
+                  <span>Password</span>
+                  <input id="admin-user-password" name="password" type="password" autocomplete="new-password" required>
+                </label>
+              </div>
+              <div class="form-actions">
+                <button id="admin-create-user-button" type="submit">Create User</button>
+              </div>
+            </form>
+            <pre id="admin-users-output" class="output compact-output">Only local admin can create users.</pre>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="image-lightbox" class="image-lightbox" hidden>
+      <button id="image-lightbox-close" class="image-lightbox-close" type="button" aria-label="Close image preview">×</button>
+      <img id="image-lightbox-img" alt="">
+    </div>
+
+    <script src="/app.js?v=1781079000000"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

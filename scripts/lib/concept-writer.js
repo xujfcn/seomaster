@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const { getDefaultCta, getDefaultThesis } = require('./project-config');
+const { inferStructuredRequirements } = require('./structured-requirements');
 
 function isFilled(value) {
   return typeof value === 'string' && value.trim() && !value.trim().startsWith('[待');
@@ -27,22 +28,33 @@ function normalizeCandidates(candidates, fallback) {
  * @param {object} outline - AI 生成的大纲对象
  * @param {Array} competitorData - 原始竞品数据
  * @param {string} outputDir - 输出目录
+ * @param {object} options - { lang, market, intent }
  */
-function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
+function writeConceptYaml(slug, keyword, outline, competitorData, outputDir, options = {}) {
   if (!outline.sections || !Array.isArray(outline.sections)) {
     throw new Error('AI outline missing sections array. Raw response may be malformed.');
   }
   const defaultThesis = getDefaultThesis();
   const defaultCta = getDefaultCta();
+  const canUseGlobalDefaults = [outline.title, keyword, options.project || '']
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(String(defaultCta.product || '').toLowerCase()))
+    && defaultCta.product;
   const resolvedThesis = firstFilled(
     outline.thesis?.recommended,
     outline.thesis?.final,
     outline.thesis?.statement,
-    defaultThesis,
+    canUseGlobalDefaults ? defaultThesis : '',
     outline.meta_description,
     outline.title
   );
   const thesisCandidates = normalizeCandidates(outline.thesis?.candidates, resolvedThesis);
+  const structuredRequirements = inferStructuredRequirements({
+    keyword,
+    keywords: options.keywords || [],
+    brief: options.brief || '',
+    intent: options.intent || outline.intent || '',
+  });
 
   // 转换 sections 格式
   const sections = outline.sections.map((s) => {
@@ -70,7 +82,12 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
     slug: slug,
     type: 'technical_blog',
     keyword: keyword,
-    keyword_variants: outline.keyword_variants || [],
+    lang: options.lang || outline.lang || 'en',
+    market: options.market || outline.market || '',
+    intent: options.intent || outline.intent || '',
+    keyword_variants: Array.from(new Set([...(options.keywords || []), ...(outline.keyword_variants || [])])).filter(Boolean),
+    writing_brief: options.brief || '',
+    structured_requirements: structuredRequirements,
     meta_description: outline.meta_description,
 
     // 竞品分析摘要
@@ -95,13 +112,13 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
     // FAQ
     faq: outline.faq || [],
 
-    // DICloak 融合信息
-    dicloak_integration: outline.dicloak_integration || null,
+    // 产品融合信息（可选，必须来自当前项目知识库）
+    product_integration: outline.product_integration || null,
 
     // CTA
     cta: {
-      text: firstFilled(outline.cta?.text, defaultCta.text, `Get started with ${keyword}`),
-      url: firstFilled(outline.cta?.url, defaultCta.url, '#'),
+      text: firstFilled(outline.cta?.text, canUseGlobalDefaults ? defaultCta.text : '', options.lang === 'zh' ? '查看产品说明' : `Learn more about ${keyword}`),
+      url: firstFilled(outline.cta?.url, canUseGlobalDefaults ? defaultCta.url : '', '#'),
       placement: firstFilled(outline.cta?.placement, outline.cta_placement, '文末'),
     },
 
@@ -111,7 +128,7 @@ function writeConceptYaml(slug, keyword, outline, competitorData, outputDir) {
     // 字数
     word_count: {
       target: outline.total_word_count,
-      max: 15000,
+      max: outline.total_word_count,
     },
 
     // 质量检查点

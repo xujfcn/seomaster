@@ -8,6 +8,7 @@ const config = require('./lib/config');
 const { parseArgs } = require('./lib/parse-args');
 const { readMarkdownDocument, writeMarkdownDocument } = require('./lib/frontmatter');
 const { buildImagePromptDetails } = require('./lib/image-rules');
+const { fetchWithTimeout } = require('./lib/fetch-timeout');
 
 const DEFAULT_IMAGE_MODELS = [
   'gpt-image-2',
@@ -18,6 +19,16 @@ const DEFAULT_IMAGE_MODELS = [
   'imagen-4.0-generate-001',
 ];
 const MAX_IMAGE_PROMPT_CHARS = 6000;
+
+function referenceImageInstruction() {
+  return [
+    'Use the uploaded reference image as the primary visual source for image-to-image regeneration.',
+    'If it shows a product photo, preserve the product category, package shape, main colors, angle, and distinctive non-text visual elements as much as the model allows.',
+    'Do not replace the referenced product with a generic unrelated product.',
+    'Do not copy or invent readable brand names, logos, label text, watermarks, dosage claims, or regulatory marks.',
+    'Keep any packaging text abstract or unreadable unless the prompt explicitly requires exact text.',
+  ].join(' ');
+}
 
 function getImageModels() {
   const configured = (process.env.IMAGE_MODELS || process.env.IMAGE_MODEL || '')
@@ -121,7 +132,7 @@ async function generateImageResult(imagePrompt, label, options = {}) {
         ? [
             {
               type: 'text',
-              text: `${imagePrompt}\n\nUse the attached reference image as visual guidance for subject, layout, style, colors, and composition. Do not copy any visible text, logos, or watermark from it.`,
+              text: `${imagePrompt}\n\n${referenceImageInstruction()}`,
             },
             {
               type: 'image_url',
@@ -132,7 +143,7 @@ async function generateImageResult(imagePrompt, label, options = {}) {
           ]
         : imagePrompt;
 
-      const res = await fetch(`${config.aiBaseUrl()}/chat/completions`, {
+      const res = await fetchWithTimeout(fetch, `${config.aiBaseUrl()}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +160,7 @@ async function generateImageResult(imagePrompt, label, options = {}) {
           max_tokens: 4096,
           temperature: 0.7
         })
-      });
+      }, config.aiRequestTimeoutMs(), `${model} image chat request`);
 
       if (!res.ok) {
         const error = await res.text();
@@ -165,7 +176,7 @@ async function generateImageResult(imagePrompt, label, options = {}) {
       let imageBuffer = extracted.imageBuffer;
 
       if (extracted.imageUrl) {
-        const imageRes = await fetch(extracted.imageUrl);
+        const imageRes = await fetchWithTimeout(fetch, extracted.imageUrl, {}, config.aiRequestTimeoutMs(), `${model} image download`);
         if (!imageRes.ok) {
           throw new Error(`${model} image download failed: ${imageRes.status}`);
         }
@@ -259,7 +270,7 @@ function getImageApiOutputParams(model) {
 function getImagesApiPayload(model, prompt, options = {}) {
   const referenceImage = normalizeReferenceImage(options.referenceImage);
   const finalPrompt = truncateImagePrompt(referenceImage
-    ? `${prompt}\n\nUse the uploaded reference image as visual guidance for subject, layout, style, colors, and composition. Do not copy visible text, logos, or watermark from it.`
+    ? `${prompt}\n\n${referenceImageInstruction()}`
     : prompt);
   const payload = {
     model,
@@ -287,14 +298,14 @@ async function generateImageWithImagesApi(model, prompt, options = {}) {
 }
 
 async function generateImageWithGenerationApi(model, prompt, options = {}) {
-  const res = await fetch(`${config.aiBaseUrl()}/images/generations`, {
+  const res = await fetchWithTimeout(fetch, `${config.aiBaseUrl()}/images/generations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${config.aiApiKey()}`
     },
     body: JSON.stringify(getImagesApiPayload(model, prompt, options)),
-  });
+  }, config.aiRequestTimeoutMs(), `${model} images generation request`);
 
   if (!res.ok) {
     const error = await res.text();
@@ -307,7 +318,7 @@ async function generateImageWithGenerationApi(model, prompt, options = {}) {
 
 async function generateImageWithImageEditApi(model, prompt, referenceImage) {
   const multipart = buildImageEditMultipartBody(model, prompt, referenceImage);
-  const res = await fetch(`${config.aiBaseUrl()}/images/edits`, {
+  const res = await fetchWithTimeout(fetch, `${config.aiBaseUrl()}/images/edits`, {
     method: 'POST',
     headers: {
       'Content-Type': multipart.contentType,
@@ -315,7 +326,7 @@ async function generateImageWithImageEditApi(model, prompt, referenceImage) {
       'Content-Length': String(multipart.body.length),
     },
     body: multipart.body,
-  });
+  }, config.aiRequestTimeoutMs(), `${model} images edit request`);
 
   if (!res.ok) {
     const error = await res.text();
@@ -344,7 +355,7 @@ function buildImageEditMultipartBody(model, prompt, referenceImage) {
   };
 
   addField('model', model);
-  addField('prompt', truncateImagePrompt(`${prompt}\n\nUse the uploaded image as the source image for image-to-image regeneration. Preserve the useful subject/composition cues while applying the prompt requirements. Do not copy visible text, logos, or watermark from the source image.`));
+  addField('prompt', truncateImagePrompt(`${prompt}\n\n${referenceImageInstruction()}`));
   addField('n', 1);
   Object.entries(getImageApiOutputParams(model)).forEach(([key, value]) => addField(key, value));
   addFile('image', referenceImage);
@@ -380,7 +391,7 @@ async function extractImageBufferFromImagesApiResponse(model, data) {
     return Buffer.from(item.b64_json, 'base64');
   }
   if (item?.url) {
-    const imageRes = await fetch(item.url);
+    const imageRes = await fetchWithTimeout(fetch, item.url, {}, config.aiRequestTimeoutMs(), `${model} image download`);
     if (!imageRes.ok) {
       throw new Error(`${model} image download failed: ${imageRes.status}`);
     }
@@ -840,8 +851,10 @@ module.exports = {
   getImageGenerationParams,
   getRequestedImageModels,
   getArticleSlug,
+  getImagesApiPayload,
   getMarkdownTitle,
   uploadToGitHub,
   supportsImageEditApi,
+  buildImageEditMultipartBody,
   truncateImagePrompt,
 };
